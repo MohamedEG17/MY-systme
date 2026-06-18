@@ -1570,7 +1570,7 @@ function startPolling() {
   // اول poll فوري عشان نعرف الـ baseline
   pollOnce();
   // بعدين كل 5 ثواني
-  _pollTimer = setInterval(pollOnce, 5000);
+  _pollTimer = setInterval(pollOnce, 3000);
 }
 
 function stopPolling() {
@@ -1971,34 +1971,42 @@ function dayVisibleBlocks(date = dayDateKey()) {
 }
 
 async function dayInit() {
-  dayState.templates = JSON.parse(localStorage.getItem('day_templates') || '[]').map(dayNorm);
+  // Load localStorage as immediate fallback
+  const localTpl = JSON.parse(localStorage.getItem('day_templates') || '[]').map(dayNorm);
   dayState.overrides = JSON.parse(localStorage.getItem('day_overrides') || '{}');
   dayState.completions = JSON.parse(localStorage.getItem('day_completions') || '{}');
   dayState.taskChecks = JSON.parse(localStorage.getItem('day_taskChecks') || '{}');
 
-  if (sb && !dayState.templates.length) {
+  if (sb) {
+    // ALWAYS fetch fresh from Supabase — this is what enables cross-device sync
     try {
-      const { data: tpl } = await sb.from('recurring_blocks').select('*').eq('user_id', OWNER_ID);
-      if (tpl?.length) { dayState.templates = tpl.map(dayNorm); daySaveLocal(); }
-    } catch (_) {}
+      const today = dayDateKey();
+      const [{ data: tpl }, { data: comps }, { data: checks }] = await Promise.all([
+        sb.from('recurring_blocks').select('*').eq('user_id', OWNER_ID),
+        sb.from('block_completions').select('*').eq('user_id', OWNER_ID).eq('completion_date', today),
+        sb.from('task_checks').select('*').eq('user_id', OWNER_ID).eq('check_date', today),
+      ]);
+      if (tpl) dayState.templates = tpl.map(dayNorm);
+      // Reset and rebuild completions from cloud (overrides local)
+      dayState.completions = {};
+      (comps || []).forEach(c => { dayState.completions[`${c.recurring_block_id}_${today}`] = c.status; });
+      dayState.taskChecks = {};
+      (checks || []).forEach(c => { dayState.taskChecks[`${c.recurring_block_id}_${today}_${c.task_id}`] = c.is_checked; });
+      daySaveLocal();
+    } catch (_) {
+      // Supabase failed — fall back to localStorage
+      dayState.templates = localTpl;
+    }
+  } else {
+    dayState.templates = localTpl;
   }
+
   if (!dayState.templates.length) {
     dayState.templates = [
       dayNorm({ id: dayUid(), title: 'صباحية', notes: 'أول حاجة في اليوم', tasks: [{ id: dayTaskId(), text: 'مراجعة التاسكات' }], start_time: '08:00', end_time: '09:00', color: '#6366f1', repeat_mode: 'everyday' }),
       dayNorm({ id: dayUid(), title: 'شغل عميق', notes: 'تركيز بدون مشتتات', tasks: [{ id: dayTaskId(), text: 'التسليم الأول' }], start_time: '09:00', end_time: '13:00', color: '#0ea5e9', repeat_mode: 'everyday' }),
     ];
     daySaveLocal();
-  }
-  // Load completions from cloud
-  if (sb) {
-    try {
-      const today = dayDateKey();
-      const { data: comps } = await sb.from('block_completions').select('*').eq('user_id', OWNER_ID).eq('completion_date', today);
-      (comps || []).forEach(c => { dayState.completions[`${c.recurring_block_id}_${today}`] = c.status; });
-      const { data: checks } = await sb.from('task_checks').select('*').eq('user_id', OWNER_ID).eq('check_date', today);
-      (checks || []).forEach(c => { dayState.taskChecks[`${c.recurring_block_id}_${today}_${c.task_id}`] = c.is_checked; });
-      daySaveLocal();
-    } catch (_) {}
   }
 }
 
@@ -2256,20 +2264,28 @@ const workUid = () => 'w-' + Date.now() + '-' + Math.random().toString(36).slice
 
 async function workInit() {
   const cached = JSON.parse(localStorage.getItem('work_data') || 'null');
-  if (cached?.fulltime) workState.data = cached;
+  // Keep _expanded state from local so UI doesn't collapse on every poll
+  const expandedMap = {};
+  [...(cached?.fulltime||[]), ...(cached?.freelance||[])].forEach(e => { expandedMap[e.id] = e._expanded; });
+
   if (sb) {
     try {
       const { data: ents } = await sb.from('entities').select('*');
       const { data: tsks } = await sb.from('tasks').select('*');
       if (ents) {
         const map = {};
-        ents.forEach(e => { map[e.id] = { ...e, tasks: [] }; });
+        ents.forEach(e => { map[e.id] = { ...e, tasks: [], _expanded: expandedMap[e.id] ?? true }; });
         (tsks || []).forEach(t => { if (map[t.entity_id]) map[t.entity_id].tasks.push(t); });
         workState.data.fulltime = ents.filter(e => e.type === 'company').map(e => map[e.id]);
         workState.data.freelance = ents.filter(e => e.type === 'client').map(e => map[e.id]);
         workSaveLocal();
       }
-    } catch (_) {}
+    } catch (_) {
+      // Fallback to local
+      if (cached?.fulltime) workState.data = cached;
+    }
+  } else {
+    if (cached?.fulltime) workState.data = cached;
   }
 }
 
