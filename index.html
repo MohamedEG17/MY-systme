@@ -1534,15 +1534,12 @@ async function initApp() {
 async function connectSupabase(url, key) {
   setSyncStatus('loading', 'جاري الاتصال...');
   try {
-    sb = window.supabase.createClient(url, key, {
-      realtime: { params: { eventsPerSecond: 10 } }
-    });
-    // test connection
+    sb = window.supabase.createClient(url, key);
     const { error } = await sb.from('recurring_blocks').select('id').limit(1);
     if (error && error.code !== 'PGRST116' && error.code !== '42P01') throw error;
-    setSyncStatus('ok', 'Real-time ✓');
-    document.getElementById('connStatus').textContent = 'متصل ✅ Real-time';
-    startRealtime();
+    setSyncStatus('ok', 'متصل ✓');
+    document.getElementById('connStatus').textContent = 'متصل ✅';
+    startPolling();
   } catch (e) {
     sb = null;
     setSyncStatus('err', 'Local Mode');
@@ -1550,65 +1547,109 @@ async function connectSupabase(url, key) {
   }
 }
 
-/* Realtime channel — يسمع على كل التغييرات من أي جهاز */
-let _realtimeChannel = null;
-function startRealtime() {
-  if (!sb) return;
-  // Unsubscribe first if already listening
-  if (_realtimeChannel) { sb.removeChannel(_realtimeChannel); }
+/* =============================================================
+   SMART POLLING — الحل الجذري للـ sync بين الأجهزة
+   كل جدول عنده updated_at — بنحفظ آخر وقت شفناه
+   ولو في صف أحدث منه معناه في تغيير من جهاز تاني
+   ============================================================= */
+let _pollTimer = null;
+let _lastSeen = {
+  day: new Date(0).toISOString(),
+  work: new Date(0).toISOString(),
+  fin: new Date(0).toISOString(),
+};
+let _localWriteTs = { day: 0, work: 0, fin: 0 };
 
-  _realtimeChannel = sb.channel('hub-realtime')
-    // MY DAY
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'recurring_blocks' }, () => {
-      dayInit().then(() => { if (currentModule === 'day') dayRender(); if (currentModule === 'hub') renderHub(); updateBadges(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'block_completions' }, () => {
-      dayInit().then(() => { if (currentModule === 'day') dayRender(); if (currentModule === 'hub') renderHub(); updateBadges(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'block_overrides' }, () => {
-      dayInit().then(() => { if (currentModule === 'day') dayRender(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'task_checks' }, () => {
-      dayInit().then(() => { if (currentModule === 'day') dayRender(); });
-    })
-    // MY WORK
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'entities' }, () => {
-      workInit().then(() => { if (currentModule === 'work') { workSetTab(workState.currentTab); } if (currentModule === 'hub') renderHub(); updateBadges(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
-      workInit().then(() => { if (currentModule === 'work') { workSetTab(workState.currentTab); } if (currentModule === 'hub') renderHub(); updateBadges(); });
-    })
-    // FINANCE
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'banks' }, () => {
-      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); if (currentModule === 'hub') renderHub(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'gold_items' }, () => {
-      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); if (currentModule === 'hub') renderHub(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'salary_items' }, () => {
-      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
-      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, () => {
-      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'debts' }, () => {
-      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'monthly_increases' }, () => {
-      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
-    })
-    .subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        setSyncStatus('ok', 'Real-time ✓');
-      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        setSyncStatus('err', 'انقطع الاتصال');
-        // retry after 5s
-        setTimeout(() => startRealtime(), 5000);
+// بعد ما نكتب محلياً، نعمل grace period 3 ثواني عشان مانعملش re-fetch غير ضروري
+function markLocalWrite(group) {
+  _localWriteTs[group] = Date.now();
+}
+
+function startPolling() {
+  if (_pollTimer) clearInterval(_pollTimer);
+  // اول poll فوري عشان نعرف الـ baseline
+  pollOnce();
+  // بعدين كل 5 ثواني
+  _pollTimer = setInterval(pollOnce, 5000);
+}
+
+function stopPolling() {
+  if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+}
+
+async function pollOnce() {
+  if (!sb) return;
+  try {
+    const now = new Date().toISOString();
+
+    // --- MY DAY: recurring_blocks + block_completions ---
+    const gracDay = (Date.now() - _localWriteTs.day) < 3000;
+    if (!gracDay) {
+      const [{ data: rb }, { data: bc }] = await Promise.all([
+        sb.from('recurring_blocks').select('updated_at').order('updated_at', { ascending: false }).limit(1),
+        sb.from('block_completions').select('updated_at').order('updated_at', { ascending: false }).limit(1),
+      ]);
+      const latestDay = [rb?.[0]?.updated_at, bc?.[0]?.updated_at].filter(Boolean).sort().pop() || new Date(0).toISOString();
+      if (latestDay > _lastSeen.day) {
+        _lastSeen.day = latestDay;
+        await dayInit();
+        if (currentModule === 'day') dayRender();
+        if (currentModule === 'hub') renderHub();
+        updateBadges();
+        showSyncPulse();
       }
-    });
+    }
+
+    // --- MY WORK: entities + tasks ---
+    const gracWork = (Date.now() - _localWriteTs.work) < 3000;
+    if (!gracWork) {
+      const [{ data: ents }, { data: tsks }] = await Promise.all([
+        sb.from('entities').select('id').limit(1), // entities has no updated_at, just check count change
+        sb.from('tasks').select('updated_at,completed_at,created_at').order('created_at', { ascending: false }).limit(1),
+      ]);
+      const latestWork = tsks?.[0]?.completed_at || tsks?.[0]?.created_at || new Date(0).toISOString();
+      // also track entity count
+      const entKey = String(ents?.length || 0);
+      const fullWorkKey = latestWork + '|' + entKey;
+      if (fullWorkKey > _lastSeen.work) {
+        _lastSeen.work = fullWorkKey;
+        await workInit();
+        if (currentModule === 'work') workSetTab(workState.currentTab);
+        if (currentModule === 'hub') renderHub();
+        updateBadges();
+        showSyncPulse();
+      }
+    }
+
+    // --- FINANCE: banks + expenses + debts ---
+    const gracFin = (Date.now() - _localWriteTs.fin) < 3000;
+    if (!gracFin) {
+      const [{ data: banks }, { data: gold }] = await Promise.all([
+        sb.from('banks').select('created_at').order('created_at', { ascending: false }).limit(1),
+        sb.from('gold_items').select('created_at').order('created_at', { ascending: false }).limit(1),
+      ]);
+      const latestFin = [banks?.[0]?.created_at, gold?.[0]?.created_at].filter(Boolean).sort().pop() || new Date(0).toISOString();
+      if (latestFin > _lastSeen.fin) {
+        _lastSeen.fin = latestFin;
+        await finInit();
+        if (currentModule === 'finance') finRenderAll();
+        if (currentModule === 'hub') renderHub();
+        showSyncPulse();
+      }
+    }
+
+    setSyncStatus('ok', 'متصل ✓');
+  } catch (e) {
+    setSyncStatus('err', 'خطأ في الاتصال');
+  }
+}
+
+// وميض بسيط في الـ sync dot يدل إن في تحديث وصل
+function showSyncPulse() {
+  const dot = document.getElementById('syncDot');
+  dot.classList.add('loading');
+  setTimeout(() => dot.classList.remove('loading'), 800);
+  showToast('🔄 تم مزامنة البيانات');
 }
 
 function setSyncStatus(state, text) {
@@ -2058,6 +2099,7 @@ async function daySetStatus(blockId, status) {
   const key = `${blockId}_${date}`;
   dayState.completions[key] = status;
   daySaveLocal();
+  markLocalWrite('day');
   if (sb) {
     try {
       await sb.from('block_completions').upsert({ user_id: OWNER_ID, recurring_block_id: blockId, completion_date: date, status, updated_at: new Date().toISOString() }, { onConflict: 'recurring_block_id,completion_date' });
@@ -2173,6 +2215,7 @@ async function daySubmitBlock(e) {
     showNotif({ icon: '📅', title: 'تم إضافة بلوك جديد', sub: `"${title}" أُضيف لجدولك`, actions: [{ label: 'عرض', cls: 'primary', onClick: () => switchModule('day') }] });
   }
   daySaveLocal();
+  markLocalWrite('day');
   if (sb) {
     try {
       await sb.from('recurring_blocks').upsert({ ...block, user_id: OWNER_ID, updated_at: new Date().toISOString() });
@@ -2416,6 +2459,7 @@ async function workSaveEntity(type, existingId) {
     if (sb) { try { await sb.from('entities').insert({ name, type, color }); } catch (_) {} }
   }
   workSaveLocal();
+  markLocalWrite('work');
   closeEntityModal();
   workSetTab(workState.currentTab);
   showToast(existingId ? 'تم الحفظ ✅' : 'تم الإضافة ✅');
@@ -2537,6 +2581,7 @@ async function workSaveTask(taskId, entityId, isFreelance) {
     });
   }
   workSaveLocal();
+  markLocalWrite('work');
   if (sb) {
     try {
       if (taskId) await sb.from('tasks').update({ title: tData.title, description: tData.description, deadline: tData.deadline, priority: tData.priority, price: tData.price, links: tData.links }).eq('id', taskId);
@@ -2558,6 +2603,7 @@ async function workToggleTask(taskId, entityId) {
   task.completed = !task.completed;
   task.completed_at = task.completed ? new Date().toISOString() : null;
   workSaveLocal();
+  markLocalWrite('work');
   if (sb) { try { await sb.from('tasks').update({ completed: task.completed, completed_at: task.completed_at }).eq('id', taskId); } catch (_) {} }
   workRenderEntities(workState.currentTab === 'fulltime' ? 'fulltime' : 'freelance');
   workRenderDashboard();
@@ -2778,6 +2824,7 @@ async function finAddRow(key) {
   const stateKey = { banks: 'banks', gold: 'gold', salary: 'salary', expenses: 'expenses', subscriptions: 'subscriptions', debts: 'debts', increases: 'increases' }[key];
   finState[stateKey].push(row);
   finSaveLocal();
+  markLocalWrite('fin');
   if (sb) { try { await sb.from(FIN_TABLE_MAP[key]).insert(row); } catch (_) {} }
   finRenderAll();
 }
@@ -2787,6 +2834,7 @@ async function finUpdate(key, id, patch) {
   const row = finState[stateKey].find(r => r.id === id);
   if (row) Object.assign(row, patch);
   finSaveLocal();
+  markLocalWrite('fin');
   if (sb) { try { await sb.from(FIN_TABLE_MAP[key]).update(patch).eq('id', id); } catch (_) {} }
 }
 
@@ -2794,6 +2842,7 @@ async function finDelRow(key, id) {
   const stateKey = { banks: 'banks', gold: 'gold', salary: 'salary', expenses: 'expenses', subscriptions: 'subscriptions', debts: 'debts', increases: 'increases' }[key];
   finState[stateKey] = finState[stateKey].filter(r => r.id !== id);
   finSaveLocal();
+  markLocalWrite('fin');
   if (sb) { try { await sb.from(FIN_TABLE_MAP[key]).delete().eq('id', id); } catch (_) {} }
   finRenderAll();
 }
@@ -2836,6 +2885,18 @@ function checkMobile() {
 }
 window.addEventListener('resize', checkMobile);
 checkMobile();
+
+// Pause polling when tab hidden, resume on focus
+document.addEventListener('visibilitychange', () => {
+  if (!sb) return;
+  if (document.hidden) {
+    stopPolling();
+  } else {
+    // Reset lastSeen timestamps so we catch changes while away
+    _lastSeen = { day: new Date(0).toISOString(), work: new Date(0).toISOString(), fin: new Date(0).toISOString() };
+    startPolling();
+  }
+});
 
 // Boot
 initApp();
