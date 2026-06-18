@@ -1492,7 +1492,24 @@ drop policy if exists "open_increases" on public.monthly_increases;
 create policy "open_increases" on public.monthly_increases for all using(true) with check(true);
 
 grant usage on schema public to anon, authenticated;
-grant all on all tables in schema public to anon, authenticated;`;
+grant all on all tables in schema public to anon, authenticated;
+
+-- =============================================
+-- تفعيل Realtime على كل الجداول
+-- =============================================
+alter publication supabase_realtime add table public.recurring_blocks;
+alter publication supabase_realtime add table public.block_overrides;
+alter publication supabase_realtime add table public.block_completions;
+alter publication supabase_realtime add table public.task_checks;
+alter publication supabase_realtime add table public.entities;
+alter publication supabase_realtime add table public.tasks;
+alter publication supabase_realtime add table public.banks;
+alter publication supabase_realtime add table public.gold_items;
+alter publication supabase_realtime add table public.salary_items;
+alter publication supabase_realtime add table public.expenses;
+alter publication supabase_realtime add table public.subscriptions;
+alter publication supabase_realtime add table public.debts;
+alter publication supabase_realtime add table public.monthly_increases;`;
 
 document.getElementById('sqlBox').textContent = SQL_ALL;
 
@@ -1517,17 +1534,81 @@ async function initApp() {
 async function connectSupabase(url, key) {
   setSyncStatus('loading', 'جاري الاتصال...');
   try {
-    sb = window.supabase.createClient(url, key);
+    sb = window.supabase.createClient(url, key, {
+      realtime: { params: { eventsPerSecond: 10 } }
+    });
     // test connection
     const { error } = await sb.from('recurring_blocks').select('id').limit(1);
     if (error && error.code !== 'PGRST116' && error.code !== '42P01') throw error;
-    setSyncStatus('ok', 'Cloud Sync ✓');
-    document.getElementById('connStatus').textContent = 'متصل ✅';
+    setSyncStatus('ok', 'Real-time ✓');
+    document.getElementById('connStatus').textContent = 'متصل ✅ Real-time';
+    startRealtime();
   } catch (e) {
     sb = null;
     setSyncStatus('err', 'Local Mode');
     document.getElementById('connStatus').textContent = 'غير متصل — ' + (e.message || e);
   }
+}
+
+/* Realtime channel — يسمع على كل التغييرات من أي جهاز */
+let _realtimeChannel = null;
+function startRealtime() {
+  if (!sb) return;
+  // Unsubscribe first if already listening
+  if (_realtimeChannel) { sb.removeChannel(_realtimeChannel); }
+
+  _realtimeChannel = sb.channel('hub-realtime')
+    // MY DAY
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'recurring_blocks' }, () => {
+      dayInit().then(() => { if (currentModule === 'day') dayRender(); if (currentModule === 'hub') renderHub(); updateBadges(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'block_completions' }, () => {
+      dayInit().then(() => { if (currentModule === 'day') dayRender(); if (currentModule === 'hub') renderHub(); updateBadges(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'block_overrides' }, () => {
+      dayInit().then(() => { if (currentModule === 'day') dayRender(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'task_checks' }, () => {
+      dayInit().then(() => { if (currentModule === 'day') dayRender(); });
+    })
+    // MY WORK
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'entities' }, () => {
+      workInit().then(() => { if (currentModule === 'work') { workSetTab(workState.currentTab); } if (currentModule === 'hub') renderHub(); updateBadges(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+      workInit().then(() => { if (currentModule === 'work') { workSetTab(workState.currentTab); } if (currentModule === 'hub') renderHub(); updateBadges(); });
+    })
+    // FINANCE
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'banks' }, () => {
+      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); if (currentModule === 'hub') renderHub(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'gold_items' }, () => {
+      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); if (currentModule === 'hub') renderHub(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'salary_items' }, () => {
+      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
+      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, () => {
+      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'debts' }, () => {
+      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'monthly_increases' }, () => {
+      finInit().then(() => { if (currentModule === 'finance') finRenderAll(); });
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        setSyncStatus('ok', 'Real-time ✓');
+      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        setSyncStatus('err', 'انقطع الاتصال');
+        // retry after 5s
+        setTimeout(() => startRealtime(), 5000);
+      }
+    });
 }
 
 function setSyncStatus(state, text) {
