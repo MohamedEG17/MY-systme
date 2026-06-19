@@ -8,26 +8,7 @@
 <meta name="theme-color" content="#080c18">
 <title>MY System — نظامك الكامل</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script>
-/* Supabase CDN with mobile-friendly fallback loading */
-(function() {
-  var CDNS = [
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
-    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/supabase/2.39.3/umd/supabase.js'
-  ];
-  function load(i) {
-    if (i >= CDNS.length) return;
-    var s = document.createElement('script');
-    s.src = CDNS[i];
-    s.async = false; // Keep synchronous-ish loading order
-    s.onload = function() { window.__sbLoaded = true; };
-    s.onerror = function() { load(i + 1); };
-    document.head.appendChild(s);
-  }
-  load(0);
-})();
-</script>
+
 <style>
 /* ===== RESET ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -723,20 +704,22 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
   <div class="modal-box">
     <div class="modal-head"><h2>⚙️ الإعدادات</h2><button class="modal-close" onclick="closeSettings()">✕</button></div>
     <div class="settings-section">
-      <h3>🔗 ربط Supabase — نظام جدول واحد ثابت</h3>
+      <h3>🔗 ربط Supabase — حل ثابت بجدول واحد</h3>
       <div class="mf-row"><label>Supabase URL</label><input class="mf-inp" id="cfgUrl" type="text" dir="ltr" placeholder="https://xxxx.supabase.co" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
       <div class="mf-row"><label>Anon Key</label><textarea class="mf-inp" id="cfgKey" dir="ltr" style="min-height:60px;font-size:11px" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea></div>
-      <div class="mf-row"><label>System ID — لازم يكون نفس القيمة على الموبايل والكمبيوتر</label><input class="mf-inp" id="cfgSystemId" type="text" dir="ltr" placeholder="mohamed-main-system" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <div class="mf-row"><label>System ID — لازم يكون نفس القيمة على الموبايل والكمبيوتر</label><input class="mf-inp" id="cfgSystemId" type="text" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="saveConfig()">حفظ وربط</button>
         <button class="btn btn-success" onclick="pushLocalToCloud()">رفع بيانات هذا الجهاز</button>
         <button class="btn btn-ghost" onclick="forceSyncNow()">سحب آخر نسخة</button>
         <button class="btn btn-ghost" onclick="clearConfig()">Local Mode</button>
       </div>
-      <div style="margin-top:8px;font-size:11px;color:var(--text-d);line-height:1.7">
-        الحالة: <span id="connStatus">—</span><br>
-        شغّل ملف <b>mysystem_single_table_setup.sql</b> مرة واحدة فقط في Supabase، وبعدها استخدم نفس System ID على الجهازين.
-      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-d);line-height:1.7">الحالة: <span id="connStatus">—</span><br>النظام هنا لا يستخدم الجداول القديمة نهائياً؛ كل الداتا في جدول واحد: <b>mysystem_state</b>.</div>
+    </div>
+    <div class="settings-section">
+      <h3>🗄️ SQL Setup</h3>
+      <pre class="sql-box" id="sqlBox" style="max-height:160px"></pre>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="copySql()">نسخ SQL</button>
     </div>
   </div>
 </div>
@@ -833,8 +816,8 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
 /* ============================================================
    MY SYSTEM — Complete JS Engine
    ============================================================ */
-const SB_URL = '';
-const SB_KEY = '';
+const SB_URL = 'https://tepkuccwoinpgjfimnvo.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcGt1Y2N3b2lucGdqZmltbnZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NzA2ODcsImV4cCI6MjA5NzM0NjY4N30.RXnZ9m7BqxSuMN4TfhYNh8-XHD7IntVP9UCvwPcVKIQ';
 const OWNER = 'df0d8bf9-4474-4cb2-801b-a50679858740';
 const GOAL_PALLETE = ['#f472b6','#818cf8','#34d399','#fb923c','#38bdf8','#a78bfa','#fbbf24','#e879f9','#86efac','#f87171'];
 const WORK_PAL = ['#6366f1','#a855f7','#ec4899','#0ea5e9','#14b8a6','#22c55e','#f97316','#f59e0b'];
@@ -855,7 +838,7 @@ const fmtNum = n => Math.round(+n||0).toLocaleString('en-US');
 const fmtEGP = (n,s=false) => { const v=Math.round(+n||0); return s&&Math.abs(v)>=1000?(v/1000).toFixed(1)+'k':(fmtNum(v)+' EGP'); };
 const fmtGrams = n => (+n||0).toFixed(2);
 const fmtTime = t => { if(!t)return''; const [h,m]=(t||'').split(':'); const hh=parseInt(h); const per=hh<12?'صباحاً':'مساءاً'; const h12=hh%12||12; return `${String(h12).padStart(2,'0')}:${m} ${per}`; };
-const markWrite = g => { localWriteTs[g] = Date.now(); };
+const markWrite = g => { localWriteTs[g] = Date.now(); if (typeof queueCloudSave === 'function') queueCloudSave(); };
 
 /* ===== STATE ===== */
 const DAY = { blocks:[], overrides:{}, completions:{}, taskChecks:{}, date:new Date(), view:'list', layout:'list', scale:100, editing:null, modalTasks:[], modalLinks:[] };
@@ -923,21 +906,72 @@ function toggleNotifCenter() {
   if(el.classList.contains('open')) document.getElementById('bellDot').classList.remove('show');
 }
 
-/* ===== SETTINGS + SINGLE-TABLE SUPABASE SYNC ===== */
+/* ===== SETTINGS + SUPABASE SINGLE-TABLE SYNC ===== */
 const STATE_TABLE = 'mysystem_state';
-const CLIENT_ID = localStorage.getItem('ms_client_id') || uid();
-localStorage.setItem('ms_client_id', CLIENT_ID);
-let cloudSb = null;
+const DEFAULT_SYSTEM_ID = OWNER;
 let cloudReady = false;
-let syncChannel = null;
-let saveTimer = null;
+let cloudUrl = localStorage.getItem('ms_ready_sb_url') || SB_URL;
+let cloudKey = localStorage.getItem('ms_ready_sb_key') || SB_KEY;
+let cloudSaveTimer = null;
 let applyingRemote = false;
 let lastLocalEdit = 0;
-let lastCloudUpdated = localStorage.getItem('ms_last_cloud_updated') || '';
-let SYSTEM_ID = normalizeSystemId(localStorage.getItem('ms_system_id') || OWNER || 'mysystem-main');
+let lastCloudUpdated = localStorage.getItem('ms_ready_last_cloud_updated') || '';
+let clientId = localStorage.getItem('ms_ready_client_id') || uid();
+let SYSTEM_ID = normalizeSystemId(localStorage.getItem('ms_ready_system_id') || DEFAULT_SYSTEM_ID);
+localStorage.setItem('ms_ready_client_id', clientId);
+
+const SQL_SETUP = `-- MY System — Stable Single Table Setup
+-- شغّل الملف ده مرة واحدة فقط داخل Supabase SQL Editor
+
+create table if not exists public.mysystem_state (
+  system_id text primary key,
+  data jsonb not null default '{}'::jsonb,
+  client_id text,
+  updated_at timestamptz not null default now()
+);
+
+create or replace function public.set_mysystem_state_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_mysystem_state_updated_at on public.mysystem_state;
+create trigger trg_mysystem_state_updated_at
+before update on public.mysystem_state
+for each row execute function public.set_mysystem_state_updated_at();
+
+alter table public.mysystem_state enable row level security;
+alter table public.mysystem_state replica identity full;
+
+drop policy if exists "mysystem_state_read" on public.mysystem_state;
+drop policy if exists "mysystem_state_insert" on public.mysystem_state;
+drop policy if exists "mysystem_state_update" on public.mysystem_state;
+drop policy if exists "mysystem_state_delete" on public.mysystem_state;
+
+create policy "mysystem_state_read" on public.mysystem_state
+for select to anon, authenticated using (true);
+
+create policy "mysystem_state_insert" on public.mysystem_state
+for insert to anon, authenticated with check (true);
+
+create policy "mysystem_state_update" on public.mysystem_state
+for update to anon, authenticated using (true) with check (true);
+
+create policy "mysystem_state_delete" on public.mysystem_state
+for delete to anon, authenticated using (true);
+
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on public.mysystem_state to anon, authenticated;`;
+
+document.getElementById('sqlBox').textContent = SQL_SETUP;
 
 function normalizeSystemId(v) {
-  return String(v || 'mysystem-main')
+  return String(v || DEFAULT_SYSTEM_ID || 'mysystem-main')
     .trim()
     .replace(/[^a-zA-Z0-9_-]/g, '-')
     .replace(/-+/g, '-')
@@ -947,136 +981,91 @@ function normalizeSystemId(v) {
 function cleanSupabaseUrl(raw) {
   let url = String(raw || '').trim();
   if(!url) return '';
-  if(url.includes('mysystem_single_table_setup.sql') || url.endsWith('.sql')) return '';
+  if(url.includes('.sql') || url.includes('mysystem_single_table_setup')) return '';
   if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
-  try {
-    const u = new URL(url);
-    return u.origin;
-  } catch(_) { return ''; }
+  try { return new URL(url).origin; } catch(_) { return ''; }
 }
 function cleanAnonKey(raw) { return String(raw || '').replace(/\s+/g,'').trim(); }
+function apiHeaders(extra={}) { return { apikey: cloudKey, Authorization: 'Bearer ' + cloudKey, ...extra }; }
+function apiBase() { return cleanSupabaseUrl(cloudUrl).replace(/\/+$/,'') + '/rest/v1/' + STATE_TABLE; }
 function connStatus(text) { const el=document.getElementById('connStatus'); if(el) el.textContent=text; }
 function setSyncStatus(state, text) { document.getElementById('syncDot').className='sync-dot '+state; document.getElementById('syncText').textContent=text; }
-function touchCloud() { lastLocalEdit = Date.now(); if(!applyingRemote) queueCloudSave(); }
-function renderAll() {
-  renderHub();
-  if(cur==='day') renderDay();
-  if(cur==='work') renderWork();
-  if(cur==='finance') renderFin();
-  if(cur==='goals') renderGoals();
-  updateBadges();
+function stopPoll() { if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
+function startPoll() { if(pollTimer) clearInterval(pollTimer); pollTimer=setInterval(()=>pullCloud(false,true),2000); pullCloud(false,true); }
+function syncPulse(silent=false) { const d=document.getElementById('syncDot'); if(d){d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900);} if(!silent) toast('🔄 تم المزامنة'); }
+function touchCloud() { lastLocalEdit=Date.now(); if(!applyingRemote) queueCloudSave(); }
+function queueCloudSave() {
+  if(!cloudReady || applyingRemote) return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer=setTimeout(()=>pushCloud('auto'),650);
+}
+function dbErrText(e) { return e?.message || e?.details || e?.hint || String(e||'Unknown error'); }
+function parsePayloadError(status, txt) {
+  try { const j=JSON.parse(txt); return j.message || j.hint || j.details || txt || ('HTTP '+status); }
+  catch(_) { return txt || ('HTTP '+status); }
 }
 
 function openSettings() {
-  document.getElementById('cfgUrl').value = localStorage.getItem('sb_url')||'';
-  document.getElementById('cfgKey').value = localStorage.getItem('sb_key')||'';
-  const sys=document.getElementById('cfgSystemId'); if(sys) sys.value = SYSTEM_ID;
+  document.getElementById('cfgUrl').value = localStorage.getItem('ms_ready_sb_url') || SB_URL;
+  document.getElementById('cfgKey').value = localStorage.getItem('ms_ready_sb_key') || SB_KEY;
+  const sid=document.getElementById('cfgSystemId'); if(sid) sid.value = SYSTEM_ID;
   document.getElementById('settingsModal').classList.remove('hidden');
 }
 function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
 async function saveConfig() {
-  const url=cleanSupabaseUrl(document.getElementById('cfgUrl').value);
-  const key=cleanAnonKey(document.getElementById('cfgKey').value);
+  const url=cleanSupabaseUrl(document.getElementById('cfgUrl').value || SB_URL);
+  const key=cleanAnonKey(document.getElementById('cfgKey').value || SB_KEY);
   const sid=normalizeSystemId(document.getElementById('cfgSystemId')?.value || SYSTEM_ID);
-  if(!url) return toast('Supabase URL غير صحيح — انسخه من Project URL كامل');
-  if(!key || key.split('.').length < 3) return toast('Anon Key غير صحيح — انسخ anon public key كامل');
-  SYSTEM_ID=sid;
-  localStorage.setItem('sb_url',url); localStorage.setItem('sb_key',key); localStorage.setItem('ms_system_id',SYSTEM_ID);
-  await connect(url,key);
-  if(cloudReady){
-    toast('تم الربط ✅'); closeSettings();
-    await loadAll(); renderAll();
-  } else toast('فشل الربط — راجع URL / Key / SQL');
+  if(!url) return toast('Supabase URL غير صحيح');
+  if(!key || key.split('.').length<3) return toast('Anon Key غير صحيح');
+  cloudUrl=url; cloudKey=key; SYSTEM_ID=sid;
+  localStorage.setItem('ms_ready_sb_url',cloudUrl); localStorage.setItem('ms_ready_sb_key',cloudKey); localStorage.setItem('ms_ready_system_id',SYSTEM_ID);
+  const ok=await connect(cloudUrl,cloudKey);
+  if(ok){ toast('تم الربط ✅'); closeSettings(); await pullCloud(true,false); renderAll(); }
+  else toast('فشل الربط — شغّل SQL أو راجع بيانات Supabase');
 }
 function clearConfig() {
-  localStorage.removeItem('sb_url'); localStorage.removeItem('sb_key');
-  stopPoll();
-  try{ if(syncChannel && cloudSb) cloudSb.removeChannel(syncChannel); }catch(_){}
-  syncChannel=null; cloudSb=null; cloudReady=false; sb=null;
+  localStorage.removeItem('ms_ready_sb_url'); localStorage.removeItem('ms_ready_sb_key');
+  cloudReady=false; sb=null; stopPoll();
   setSyncStatus('err','Local Mode'); connStatus('Local Mode'); toast('Local Mode');
 }
-function copySql() { toast('ملف SQL منفصل مرفق باسم mysystem_single_table_setup.sql'); }
+function copySql() { navigator.clipboard.writeText(SQL_SETUP).then(()=>toast('تم نسخ SQL ✅')).catch(()=>toast('انسخ SQL يدويًا من الصندوق')); }
 
-async function waitForSupabaseLib(timeout=15000) {
-  let waited = 0;
-  while (!window.supabase && waited < timeout) {
-    await new Promise(r => setTimeout(r, 300));
-    waited += 300;
-  }
-  return !!window.supabase;
-}
-function dbErrText(e) { return e?.message || e?.details || e?.hint || String(e||'Unknown error'); }
-
-/* ===== SUPABASE CONNECT & SINGLE-ROW POLLING ===== */
 async function connect(rawUrl, rawKey) {
-  const url=cleanSupabaseUrl(rawUrl), key=cleanAnonKey(rawKey);
-  if(!url || !key) { setSyncStatus('err','إعدادات ناقصة'); connStatus('URL أو Key غير صحيح'); return; }
+  cloudUrl=cleanSupabaseUrl(rawUrl || SB_URL); cloudKey=cleanAnonKey(rawKey || SB_KEY);
+  sb=null; // مهم: إيقاف نظام الجداول القديمة بالكامل
+  if(!cloudUrl || !cloudKey) { cloudReady=false; setSyncStatus('err','بيانات ناقصة'); connStatus('URL أو Key ناقص'); return false; }
   setSyncStatus('loading','جاري الاتصال...'); connStatus('جاري الاتصال...');
-  const loaded = await waitForSupabaseLib();
-  if (!loaded) {
-    cloudSb=null; cloudReady=false; sb=null;
-    setSyncStatus('err','لم يتم تحميل Supabase');
-    connStatus('لم يتحمل Supabase CDN — تأكد من الإنترنت ثم أعد تحميل الصفحة');
-    setTimeout(() => connect(url, key), 10000);
-    return;
-  }
   try {
-    cloudSb = window.supabase.createClient(url, key, { auth: { persistSession:false, autoRefreshToken:false } });
-    // Important: keep old multi-table sync disabled. We only use mysystem_state.
-    sb = null;
-    const {error} = await cloudSb.from(STATE_TABLE).select('system_id,updated_at').eq('system_id',SYSTEM_ID).maybeSingle();
-    if(error) throw error;
+    const res = await fetch(apiBase()+`?select=system_id,updated_at&system_id=eq.${encodeURIComponent(SYSTEM_ID)}&limit=1`, { headers: apiHeaders({Accept:'application/json'}), cache:'no-store' });
+    const txt = await res.text();
+    if(!res.ok) throw new Error(parsePayloadError(res.status, txt));
     cloudReady=true;
-    setSyncStatus('ok','متصل ✓'); connStatus('متصل ✅ — جدول واحد');
-    startRealtime(); startPoll();
+    localStorage.setItem('ms_ready_sb_url',cloudUrl); localStorage.setItem('ms_ready_sb_key',cloudKey); localStorage.setItem('ms_ready_system_id',SYSTEM_ID);
+    setSyncStatus('ok','متصل ✓'); connStatus('متصل ✅ — جدول واحد ثابت');
+    startPoll();
+    return true;
   } catch(e) {
-    console.error('Supabase connection error:', e);
-    cloudSb=null; cloudReady=false; sb=null; stopPoll();
+    cloudReady=false; stopPoll();
     setSyncStatus('err','فشل الاتصال');
-    const msg = dbErrText(e);
-    if(String(msg).includes('Failed to fetch')) connStatus('فشل اتصال: غالباً URL غلط أو المشروع متوقف أو الإنترنت مانع الاتصال');
-    else connStatus('شغّل SQL مرة واحدة أو راجع الصلاحيات: '+msg);
+    const msg=dbErrText(e);
+    if(String(msg).includes('Failed to fetch')) connStatus('فشل وصول للشبكة: تأكد أن Project URL صحيح والمشروع ليس Paused والإنترنت شغال');
+    else if(String(msg).toLowerCase().includes('schema cache') || String(msg).includes('mysystem_state')) connStatus('جدول mysystem_state غير موجود — شغّل SQL الموجود في الأسفل مرة واحدة');
+    else connStatus('خطأ: '+msg);
+    console.error('Supabase connect error:', e);
+    return false;
   }
 }
-function startPoll() { if(pollTimer)clearInterval(pollTimer); poll(); pollTimer=setInterval(poll,2000); }
-function stopPoll() { if(pollTimer){clearInterval(pollTimer);pollTimer=null;} }
-function startRealtime() {
-  if(!cloudSb || !cloudSb.channel) return;
-  try{
-    if(syncChannel) cloudSb.removeChannel(syncChannel);
-    syncChannel = cloudSb.channel('mysystem_state_'+SYSTEM_ID)
-      .on('postgres_changes',{event:'*',schema:'public',table:STATE_TABLE,filter:'system_id=eq.'+SYSTEM_ID}, payload => {
-        const r = payload.new || payload.old;
-        if(r?.updated_at && r.client_id !== CLIENT_ID) loadStateFromCloud(false, true);
-      })
-      .subscribe();
-  }catch(e){ console.warn('Realtime unavailable, polling will continue', e); }
-}
-async function poll() {
-  if(!cloudReady || !cloudSb) return;
-  if(Date.now()-lastLocalEdit < 1200) return;
-  try { await loadStateFromCloud(false, true); setSyncStatus('ok','متصل ✓'); }
-  catch(e){ console.error('poll error', e); setSyncStatus('err','خطأ في الاتصال'); }
-}
-function syncPulse(silent=false) { const d=document.getElementById('syncDot'); if(d){d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900);} if(!silent) toast('🔄 تم المزامنة'); }
 
 function stateSnapshot() {
   return JSON.parse(JSON.stringify({
-    version: 4,
+    version: 10,
     saved_at: new Date().toISOString(),
-    day: {
-      blocks: (DAY.blocks||[]).map(dayNorm),
-      overrides: DAY.overrides || {},
-      completions: DAY.completions || {},
-      taskChecks: DAY.taskChecks || {}
-    },
-    work: WORK.data || {company:[], client:[]},
-    fin: {
-      banks: FIN.banks||[], gold: FIN.gold||[], salary: FIN.salary||[], expenses: FIN.expenses||[],
-      subscriptions: FIN.subscriptions||[], debts: FIN.debts||[], increases: FIN.increases||[]
-    },
-    goals: { items: GOALS.items||[], sections: GOALS.sections||[] },
-    settings: { usdRate: document.getElementById('usdRate')?.value || '50' }
+    day: { blocks:(DAY.blocks||[]).map(dayNorm), overrides:DAY.overrides||{}, completions:DAY.completions||{}, taskChecks:DAY.taskChecks||{} },
+    work: WORK.data || {company:[],client:[]},
+    fin: { banks:FIN.banks||[], gold:FIN.gold||[], salary:FIN.salary||[], expenses:FIN.expenses||[], subscriptions:FIN.subscriptions||[], debts:FIN.debts||[], increases:FIN.increases||[] },
+    goals: { items:GOALS.items||[], sections:GOALS.sections||[] },
+    settings: { usdRate:document.getElementById('usdRate')?.value || '50' }
   }));
 }
 function saveAllLocalRaw() {
@@ -1089,92 +1078,65 @@ function saveAllLocalRaw() {
   localStorage.setItem('ms_goals',JSON.stringify({items:GOALS.items||[],sections:GOALS.sections||[]}));
 }
 function applyRemoteState(data) {
-  if(!data || typeof data !== 'object') return;
-  applyingRemote = true;
-  try{
+  if(!data || typeof data!=='object') return;
+  applyingRemote=true;
+  try {
     const d=data.day||{};
-    DAY.blocks = Array.isArray(d.blocks) ? d.blocks.map(dayNorm) : [];
-    DAY.overrides = d.overrides || {};
-    DAY.completions = d.completions || {};
-    DAY.taskChecks = d.taskChecks || {};
-    const w=data.work||{};
-    WORK.data = { company: Array.isArray(w.company)?w.company:[], client: Array.isArray(w.client)?w.client:[] };
-    const f=data.fin||{};
-    FIN.banks=f.banks||[]; FIN.gold=f.gold||[]; FIN.salary=f.salary||[]; FIN.expenses=f.expenses||[];
-    FIN.subscriptions=f.subscriptions||[]; FIN.debts=f.debts||[]; FIN.increases=f.increases||[];
-    const g=data.goals||{};
-    GOALS.items=Array.isArray(g.items)?g.items:[];
-    GOALS.sections=Array.isArray(g.sections)?g.sections:[];
+    DAY.blocks=Array.isArray(d.blocks)?d.blocks.map(dayNorm):[];
+    DAY.overrides=d.overrides||{}; DAY.completions=d.completions||{}; DAY.taskChecks=d.taskChecks||{};
+    const w=data.work||{}; WORK.data={company:Array.isArray(w.company)?w.company:[], client:Array.isArray(w.client)?w.client:[]};
+    const f=data.fin||{}; FIN.banks=f.banks||[]; FIN.gold=f.gold||[]; FIN.salary=f.salary||[]; FIN.expenses=f.expenses||[]; FIN.subscriptions=f.subscriptions||[]; FIN.debts=f.debts||[]; FIN.increases=f.increases||[];
+    const g=data.goals||{}; GOALS.items=Array.isArray(g.items)?g.items:[]; GOALS.sections=Array.isArray(g.sections)?g.sections:[];
     if(!GOALS.sections.length) GOALS.sections=[{id:'personal',name:'شخصي',icon:'🌟',color:'#f472b6'},{id:'work',name:'مهني',icon:'💼',color:'#818cf8'},{id:'health',name:'صحي',icon:'💪',color:'#34d399'}];
-    const rate=data.settings?.usdRate;
-    if(rate && document.getElementById('usdRate')) document.getElementById('usdRate').value=rate;
+    if(data.settings?.usdRate && document.getElementById('usdRate')) document.getElementById('usdRate').value=data.settings.usdRate;
     saveAllLocalRaw();
-  } finally { applyingRemote = false; }
+  } finally { applyingRemote=false; }
 }
 function hasLocalPayload() {
-  try{ return !!(localStorage.getItem('ms_day_blocks') || localStorage.getItem('ms_work') || localStorage.getItem('ms_fin') || localStorage.getItem('ms_goals')); }
-  catch(_){ return false; }
+  try { return !!(localStorage.getItem('ms_day_blocks') || localStorage.getItem('ms_work') || localStorage.getItem('ms_fin') || localStorage.getItem('ms_goals')); }
+  catch(_) { return false; }
 }
-function queueCloudSave() {
-  if(applyingRemote || !cloudReady || !cloudSb) return;
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(()=>saveStateToCloud('auto'), 600);
-}
-async function saveStateToCloud(mode='auto') {
-  if(applyingRemote || !cloudReady || !cloudSb) return false;
-  const payload = stateSnapshot();
-  const ts = new Date().toISOString();
-  try{
+async function pushCloud(mode='auto') {
+  if(!cloudReady || applyingRemote) return false;
+  const row={system_id:SYSTEM_ID,data:stateSnapshot(),client_id:clientId,updated_at:new Date().toISOString()};
+  try {
     setSyncStatus('loading','جاري الحفظ...');
-    const {data,error} = await cloudSb.from(STATE_TABLE)
-      .upsert({system_id:SYSTEM_ID,data:payload,client_id:CLIENT_ID,updated_at:ts},{onConflict:'system_id'})
-      .select('updated_at')
-      .single();
-    if(error) throw error;
-    lastCloudUpdated = data?.updated_at || ts;
-    localStorage.setItem('ms_last_cloud_updated', lastCloudUpdated);
+    const res=await fetch(apiBase()+'?on_conflict=system_id', { method:'POST', headers:apiHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}), body:JSON.stringify(row), cache:'no-store' });
+    const txt=await res.text();
+    if(!res.ok) throw new Error(parsePayloadError(res.status,txt));
+    const arr=txt?JSON.parse(txt):[];
+    lastCloudUpdated=arr?.[0]?.updated_at || row.updated_at;
+    localStorage.setItem('ms_ready_last_cloud_updated',lastCloudUpdated);
     setSyncStatus('ok','متصل ✓');
     if(mode==='manual') toast('تم رفع بيانات هذا الجهاز للسحابة ✅');
     return true;
-  }catch(e){
-    console.error('cloud save error', e);
-    setSyncStatus('err','خطأ حفظ');
+  } catch(e) {
+    console.error('cloud save error',e); setSyncStatus('err','خطأ حفظ');
     if(mode==='manual') toast('فشل الرفع: '+dbErrText(e));
     return false;
   }
 }
-async function loadStateFromCloud(force=false, silent=false) {
-  if(!cloudReady || !cloudSb) return false;
-  const {data,error} = await cloudSb.from(STATE_TABLE).select('data,updated_at,client_id').eq('system_id',SYSTEM_ID).maybeSingle();
-  if(error) throw error;
-  if(!data) {
-    if(hasLocalPayload()) await saveStateToCloud('auto');
-    return false;
-  }
-  if(!force && data.client_id===CLIENT_ID) {
-    lastCloudUpdated = data.updated_at || lastCloudUpdated;
-    localStorage.setItem('ms_last_cloud_updated', lastCloudUpdated);
-    return false;
-  }
-  if(!force && lastCloudUpdated && data.updated_at <= lastCloudUpdated) return false;
-  if(!force && Date.now()-lastLocalEdit < 1200) return false;
-  applyRemoteState(data.data);
-  lastCloudUpdated = data.updated_at || new Date().toISOString();
-  localStorage.setItem('ms_last_cloud_updated', lastCloudUpdated);
-  renderAll(); syncPulse(silent);
-  return true;
+async function pullCloud(force=false, silent=false) {
+  if(!cloudReady) return false;
+  if(!force && Date.now()-lastLocalEdit<1100) return false;
+  try {
+    const res=await fetch(apiBase()+`?select=data,updated_at,client_id&system_id=eq.${encodeURIComponent(SYSTEM_ID)}&limit=1`, { headers:apiHeaders({Accept:'application/json'}), cache:'no-store' });
+    const txt=await res.text();
+    if(!res.ok) throw new Error(parsePayloadError(res.status,txt));
+    const arr=txt?JSON.parse(txt):[];
+    const row=arr[0];
+    if(!row) { if(hasLocalPayload()) await pushCloud('auto'); return false; }
+    if(!force && row.client_id===clientId) { lastCloudUpdated=row.updated_at||lastCloudUpdated; localStorage.setItem('ms_ready_last_cloud_updated',lastCloudUpdated); return false; }
+    if(!force && lastCloudUpdated && row.updated_at<=lastCloudUpdated) return false;
+    applyRemoteState(row.data);
+    lastCloudUpdated=row.updated_at || new Date().toISOString();
+    localStorage.setItem('ms_ready_last_cloud_updated',lastCloudUpdated);
+    renderAll(); syncPulse(silent); setSyncStatus('ok','متصل ✓');
+    return true;
+  } catch(e) { console.error('cloud pull error',e); setSyncStatus('err','خطأ اتصال'); if(!silent) toast('فشل السحب: '+dbErrText(e)); return false; }
 }
-async function forceSyncNow() {
-  if(!cloudReady) return toast('اربط Supabase الأول');
-  setSyncStatus('loading','جاري السحب...');
-  const ok = await loadStateFromCloud(true, false);
-  setSyncStatus('ok','متصل ✓');
-  toast(ok?'تم سحب آخر نسخة من السحابة ✅':'لا توجد نسخة مختلفة على السحابة');
-}
-async function pushLocalToCloud() {
-  if(!cloudReady) return toast('اربط Supabase الأول');
-  await saveStateToCloud('manual');
-}
+async function forceSyncNow() { if(!cloudReady) return toast('اربط Supabase الأول'); setSyncStatus('loading','جاري السحب...'); const ok=await pullCloud(true,false); setSyncStatus('ok','متصل ✓'); toast(ok?'تم سحب آخر نسخة من السحابة ✅':'لا توجد نسخة مختلفة على السحابة'); }
+async function pushLocalToCloud() { if(!cloudReady) return toast('اربط Supabase الأول'); await pushCloud('manual'); }
 
 /* ===== LOAD ALL ===== */
 
@@ -1205,7 +1167,7 @@ async function loadLocal() {
   ];
 }
 
-async function loadAll() { if(cloudReady) return loadStateFromCloud(true, false); return false; }
+async function loadAll() { if(cloudReady) return pullCloud(true, false); await Promise.all([dayLoad(),workLoad(),finLoad(),goalsLoad()]); }
 
 /* ===== THEME ===== */
 function toggleTheme() { isDark=!isDark; applyTheme(); localStorage.setItem('sys_theme',isDark?'dark':'light'); }
@@ -2230,7 +2192,7 @@ window.addEventListener('resize',checkMobile); checkMobile();
 document.addEventListener('visibilitychange',()=>{
   if(!cloudReady)return;
   if(document.hidden){stopPoll();}
-  else{startPoll();}
+  else{startPoll(); pullCloud(true,true);}
 });
 
 /* ===== BOOT ===== */
@@ -2241,11 +2203,11 @@ async function boot() {
   await loadLocal();
   renderHub();
   updateBadges();
-  // Step 2: Connect to Supabase in background (don't block UI)
-  const url=localStorage.getItem('sb_url')||'', key=localStorage.getItem('sb_key')||'';
-  if(url && key) connect(url, key).then(() => {
-    if (cloudReady) {
-      loadAll().then(() => {
+  // Step 2: Connect to Supabase single-table sync in background (no old tables)
+  const url=localStorage.getItem('ms_ready_sb_url')||SB_URL, key=localStorage.getItem('ms_ready_sb_key')||SB_KEY;
+  connect(url, key).then((ok) => {
+    if (ok) {
+      pullCloud(true, true).then(() => {
         renderHub();
         if(cur==='day') renderDay();
         if(cur==='work') renderWork();
