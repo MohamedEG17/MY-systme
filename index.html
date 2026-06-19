@@ -733,9 +733,15 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
       <div style="margin-top:8px;font-size:11px;color:var(--text-d)">الحالة: <span id="connStatus">—</span></div>
     </div>
     <div class="settings-section">
-      <h3>🗄️ SQL Setup</h3>
-      <pre class="sql-box" id="sqlBox" style="max-height:160px"></pre>
-      <button class="btn btn-ghost" style="margin-top:8px" onclick="copySql()">نسخ SQL</button>
+      <h3>☁️ أدوات المزامنة</h3>
+      <div style="font-size:12px;color:var(--text-m);line-height:1.7;margin-bottom:10px">
+        شغّل ملف <b>mysystem_supabase_setup.sql</b> مرة واحدة من Supabase SQL Editor، وبعدها استخدم نفس رابط Supabase والـ Anon Key على الموبايل والكمبيوتر.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="forceSyncNow()">سحب آخر نسخة من السحابة</button>
+        <button class="btn btn-success" onclick="pushLocalToCloud()">رفع بيانات هذا الجهاز للسحابة</button>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-d)">لو البيانات مش ظاهرة على جهاز تاني، اضغط “رفع بيانات هذا الجهاز” من الجهاز اللي عليه البيانات.</div>
     </div>
   </div>
 </div>
@@ -843,10 +849,14 @@ let sb = null;
 let cur = 'hub';
 let isDark = true;
 let pollTimer = null;
+let syncChannel = null;
 let lastSeen = { day: new Date(0).toISOString(), work: new Date(0).toISOString(), fin: new Date(0).toISOString(), goals: new Date(0).toISOString() };
 let localWriteTs = { day:0, work:0, fin:0, goals:0 };
 
 const uid = () => crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+let CLIENT_ID = localStorage.getItem('ms_client_id');
+if(!CLIENT_ID){ CLIENT_ID = uid(); localStorage.setItem('ms_client_id', CLIENT_ID); }
+const SYNC_GROUPS = ['day','work','fin','goals'];
 const esc = s => (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dateKey = (d=new Date()) => { const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; };
 const daysUntil = s => { if(!s)return null; const a=new Date(s); a.setHours(0,0,0,0); const b=new Date(); b.setHours(0,0,0,0); return Math.round((a-b)/86400000); };
@@ -923,62 +933,7 @@ function toggleNotifCenter() {
 }
 
 /* ===== SETTINGS ===== */
-const SQL_SETUP = `-- MY System — Full DB Setup (شغّله مرة واحدة)
-do $$ begin create type block_status as enum ('pending','done','missed'); exception when duplicate_object then null; end $$;
-
-create table if not exists public.recurring_blocks (id uuid primary key default gen_random_uuid(), user_id uuid not null, title text not null, notes text default '', start_time time not null, end_time time not null, days_of_week smallint[] not null default array[0,1,2,3,4,5,6], color text not null default '#6366f1', sort_order integer default 0, is_active boolean not null default true, repeat_mode text not null default 'everyday', block_date date, tasks jsonb not null default '[]'::jsonb, links jsonb default '[]'::jsonb, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.block_overrides (id uuid primary key default gen_random_uuid(), user_id uuid not null, recurring_block_id uuid not null references public.recurring_blocks(id) on delete cascade, override_date date not null, title text, notes text, start_time time, end_time time, color text, tasks jsonb, links jsonb, is_deleted boolean not null default false, created_at timestamptz default now(), updated_at timestamptz default now(), unique(recurring_block_id, override_date));
-create table if not exists public.block_completions (id uuid primary key default gen_random_uuid(), user_id uuid not null, recurring_block_id uuid not null references public.recurring_blocks(id) on delete cascade, completion_date date not null, status block_status not null default 'pending', created_at timestamptz default now(), updated_at timestamptz default now(), unique(recurring_block_id, completion_date));
-create table if not exists public.task_checks (id uuid primary key default gen_random_uuid(), user_id uuid not null, recurring_block_id uuid not null references public.recurring_blocks(id) on delete cascade, task_id text not null, check_date date not null, is_checked boolean not null default false, updated_at timestamptz default now(), unique(recurring_block_id, task_id, check_date));
-create table if not exists public.entities (id uuid primary key default gen_random_uuid(), name text not null, type text not null check(type in('company','client')), color text, logo text, created_at timestamptz default now());
-create table if not exists public.tasks (id uuid primary key default gen_random_uuid(), entity_id uuid references public.entities(id) on delete cascade, title text not null, description text, deadline date, priority text default 'medium', price numeric, links jsonb default '[]'::jsonb, completed boolean default false, completed_at timestamptz, day_synced boolean default false, created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.banks (id uuid primary key default gen_random_uuid(), user_id uuid, name text not null default 'بنك', balance numeric not null default 0, note text default '', created_at timestamptz default now());
-create table if not exists public.gold_items (id uuid primary key default gen_random_uuid(), user_id uuid, name text not null default 'ذهب', grams numeric not null default 0, price_per_gram numeric not null default 0, created_at timestamptz default now());
-create table if not exists public.salary_items (id uuid primary key default gen_random_uuid(), user_id uuid, name text not null default 'مرتب', amount numeric not null default 0, paid boolean default false, created_at timestamptz default now());
-create table if not exists public.expenses (id uuid primary key default gen_random_uuid(), user_id uuid, name text not null default 'مصروف', amount numeric not null default 0, paid_amount numeric default 0, paid boolean default false, created_at timestamptz default now());
-create table if not exists public.subscriptions (id uuid primary key default gen_random_uuid(), user_id uuid, name text not null default 'اشتراك', usd numeric not null default 0, paid boolean default false, created_at timestamptz default now());
-create table if not exists public.debts (id uuid primary key default gen_random_uuid(), user_id uuid, name text not null default 'دين', amount numeric not null default 0, paid boolean default false, created_at timestamptz default now());
-create table if not exists public.monthly_increases (id uuid primary key default gen_random_uuid(), user_id uuid, name text not null default 'زيادة', amount numeric not null default 0, note text default '', paid boolean default false, created_at timestamptz default now());
-create table if not exists public.goals (id uuid primary key default gen_random_uuid(), user_id uuid, title text not null default 'هدف جديد', description text default '', color text default '#f472b6', icon text default '🎯', start_date date, end_date date, completed boolean default false, steps jsonb default '[]'::jsonb, section_id text default 'personal', created_at timestamptz default now(), updated_at timestamptz default now());
-create table if not exists public.hub_sections (id uuid primary key default gen_random_uuid(), user_id uuid, name text not null, icon text default '📌', color text default '#6366f1', sort_order int default 0, created_at timestamptz default now());
-
-alter table public.recurring_blocks enable row level security;
-alter table public.block_overrides enable row level security;
-alter table public.block_completions enable row level security;
-alter table public.task_checks enable row level security;
-alter table public.entities enable row level security;
-alter table public.tasks enable row level security;
-alter table public.banks enable row level security;
-alter table public.gold_items enable row level security;
-alter table public.salary_items enable row level security;
-alter table public.expenses enable row level security;
-alter table public.subscriptions enable row level security;
-alter table public.debts enable row level security;
-alter table public.monthly_increases enable row level security;
-alter table public.goals enable row level security;
-alter table public.hub_sections enable row level security;
-
-drop policy if exists "open_rb" on public.recurring_blocks; create policy "open_rb" on public.recurring_blocks for all using(true) with check(true);
-drop policy if exists "open_bo" on public.block_overrides; create policy "open_bo" on public.block_overrides for all using(true) with check(true);
-drop policy if exists "open_bc" on public.block_completions; create policy "open_bc" on public.block_completions for all using(true) with check(true);
-drop policy if exists "open_tc" on public.task_checks; create policy "open_tc" on public.task_checks for all using(true) with check(true);
-drop policy if exists "open_ent" on public.entities; create policy "open_ent" on public.entities for all using(true) with check(true);
-drop policy if exists "open_tasks" on public.tasks; create policy "open_tasks" on public.tasks for all using(true) with check(true);
-drop policy if exists "open_banks" on public.banks; create policy "open_banks" on public.banks for all using(true) with check(true);
-drop policy if exists "open_gold" on public.gold_items; create policy "open_gold" on public.gold_items for all using(true) with check(true);
-drop policy if exists "open_sal" on public.salary_items; create policy "open_sal" on public.salary_items for all using(true) with check(true);
-drop policy if exists "open_exp" on public.expenses; create policy "open_exp" on public.expenses for all using(true) with check(true);
-drop policy if exists "open_sub" on public.subscriptions; create policy "open_sub" on public.subscriptions for all using(true) with check(true);
-drop policy if exists "open_deb" on public.debts; create policy "open_deb" on public.debts for all using(true) with check(true);
-drop policy if exists "open_inc" on public.monthly_increases; create policy "open_inc" on public.monthly_increases for all using(true) with check(true);
-drop policy if exists "open_goals" on public.goals; create policy "open_goals" on public.goals for all using(true) with check(true);
-drop policy if exists "open_sec" on public.hub_sections; create policy "open_sec" on public.hub_sections for all using(true) with check(true);
-
-grant usage on schema public to anon, authenticated;
-grant all on all tables in schema public to anon, authenticated;`;
-
-document.getElementById('sqlBox').textContent = SQL_SETUP;
-
+function connStatus(text) { const el=document.getElementById('connStatus'); if(el) el.textContent=text; }
 function openSettings() {
   document.getElementById('cfgUrl').value = localStorage.getItem('sb_url')||SB_URL;
   document.getElementById('cfgKey').value = localStorage.getItem('sb_key')||SB_KEY;
@@ -990,80 +945,196 @@ async function saveConfig() {
   if(!url||!key)return toast('أدخل URL وال key');
   localStorage.setItem('sb_url',url); localStorage.setItem('sb_key',key);
   await connect(url,key);
-  if(sb){toast('تم الربط ✅'); closeSettings(); await loadAll(); renderAll();}
-  else toast('فشل الاتصال ❌');
+  if(sb){toast('تم الربط والمزامنة ✅'); closeSettings(); await loadAll(); renderAll();}
+  else toast('فشل الاتصال — شغّل ملف SQL الخارجي أولاً ❌');
 }
-function clearConfig() { localStorage.removeItem('sb_url'); localStorage.removeItem('sb_key'); sb=null; setSyncStatus('err','Local Mode'); toast('Local Mode'); }
-function copySql() { navigator.clipboard.writeText(SQL_SETUP).then(()=>toast('تم نسخ SQL ✅')); }
+function clearConfig() {
+  localStorage.removeItem('sb_url'); localStorage.removeItem('sb_key');
+  stopPoll();
+  try{ if(syncChannel && sb) sb.removeChannel(syncChannel); }catch(_){}
+  syncChannel=null; sb=null; setSyncStatus('err','Local Mode'); connStatus('Local Mode'); toast('Local Mode');
+}
 function setSyncStatus(state, text) { document.getElementById('syncDot').className='sync-dot '+state; document.getElementById('syncText').textContent=text; }
+function renderAll() {
+  renderHub();
+  if(cur==='day') renderDay();
+  if(cur==='work') renderWork();
+  if(cur==='finance') renderFin();
+  if(cur==='goals') renderGoals();
+  updateBadges();
+}
 
 /* ===== SUPABASE CONNECT & POLLING ===== */
-async function connect(url, key) {
-  setSyncStatus('loading','جاري الاتصال...');
-  // Wait up to 15s for CDN to load (mobile can be slow)
+async function waitForSupabaseLib(timeout=15000) {
   let waited = 0;
-  while (!window.supabase && waited < 15000) {
+  while (!window.supabase && waited < timeout) {
     await new Promise(r => setTimeout(r, 300));
     waited += 300;
   }
-  if (!window.supabase) {
-    setSyncStatus('err','Local Mode');
-    document.getElementById('connStatus').textContent = 'لم يتحمل Supabase — تأكد من الإنترنت ثم أعد تحميل الصفحة';
-    // Retry after 10 seconds automatically
+  return !!window.supabase;
+}
+function dbErrText(e) { return e?.message || e?.details || e?.hint || String(e||'Unknown error'); }
+
+async function checkDbSchema() {
+  const checks = [
+    ['sync_meta','user_id,group_name,updated_at,client_id'],
+    ['recurring_blocks','id,user_id,updated_at'],
+    ['block_completions','id,user_id,updated_at'],
+    ['task_checks','id,user_id,updated_at'],
+    ['entities','id,user_id,updated_at'],
+    ['tasks','id,user_id,updated_at'],
+    ['banks','id,user_id,updated_at'],
+    ['goals','id,user_id,updated_at'],
+  ];
+  for(const [tbl, cols] of checks) {
+    const {error} = await sb.from(tbl).select(cols).limit(1);
+    if(error) throw new Error(`مشكلة في جدول ${tbl}: ${dbErrText(error)}`);
+  }
+}
+
+async function connect(url, key) {
+  setSyncStatus('loading','جاري الاتصال...'); connStatus('جاري الاتصال...');
+  const loaded = await waitForSupabaseLib();
+  if (!loaded) {
+    sb=null; setSyncStatus('err','لم يتم تحميل Supabase');
+    connStatus('لم يتحمل Supabase CDN — تأكد من الإنترنت ثم أعد تحميل الصفحة');
     setTimeout(() => connect(url, key), 10000);
     return;
   }
   try {
-    sb = window.supabase.createClient(url, key);
-    const {data, error} = await sb.from('recurring_blocks').select('id').limit(1);
-    if(error && !['PGRST116','42P01','406'].includes(error.code)) throw error;
-    setSyncStatus('ok','متصل ✓');
-    document.getElementById('connStatus').textContent='متصل ✅';
+    sb = window.supabase.createClient(url, key, { auth: { persistSession:false, autoRefreshToken:false } });
+    await checkDbSchema();
+    setSyncStatus('ok','متصل ✓'); connStatus('متصل ✅');
+    startRealtime();
     startPoll();
   } catch(e) {
-    sb=null;
-    setSyncStatus('err','Local Mode');
-    document.getElementById('connStatus').textContent='خطأ: '+(e.message||e);
-    // Auto retry
-    setTimeout(() => connect(url, key), 10000);
+    console.error('Supabase connection/schema error:', e);
+    sb=null; stopPoll();
+    setSyncStatus('err','SQL مطلوب');
+    connStatus('شغّل ملف mysystem_supabase_setup.sql الأول — '+dbErrText(e));
   }
 }
-function startPoll() { if(pollTimer)clearInterval(pollTimer); poll(); pollTimer=setInterval(poll,3000); }
+
+function startPoll() { if(pollTimer)clearInterval(pollTimer); poll(); pollTimer=setInterval(poll,2000); }
 function stopPoll() { if(pollTimer){clearInterval(pollTimer);pollTimer=null;} }
+function startRealtime() {
+  if(!sb || !sb.channel) return;
+  try{
+    if(syncChannel) sb.removeChannel(syncChannel);
+    syncChannel = sb.channel('mysystem_sync_'+OWNER)
+      .on('postgres_changes',{event:'*',schema:'public',table:'sync_meta',filter:'user_id=eq.'+OWNER}, payload => {
+        const r = payload.new || payload.old;
+        if(r?.group_name) handleRemoteChange(r.group_name, r.updated_at, r.client_id);
+      })
+      .subscribe();
+  }catch(e){ console.warn('Realtime unavailable, polling will continue', e); }
+}
+
 async function poll() {
   if(!sb)return;
   try {
-    // Day
-    if((Date.now()-localWriteTs.day)>3000) {
-      const [{data:rb},{data:bc}]=await Promise.all([
-        sb.from('recurring_blocks').select('updated_at').order('updated_at',{ascending:false}).limit(1),
-        sb.from('block_completions').select('updated_at').order('updated_at',{ascending:false}).limit(1),
-      ]);
-      const lat=[rb?.[0]?.updated_at,bc?.[0]?.updated_at].filter(Boolean).sort().pop()||new Date(0).toISOString();
-      if(lat>lastSeen.day){lastSeen.day=lat; await dayLoad(); if(cur==='day')renderDay(); if(cur==='hub')renderHub(); updateBadges(); syncPulse();}
-    }
-    // Work
-    if((Date.now()-localWriteTs.work)>3000) {
-      const [{data:ts}]=await Promise.all([sb.from('tasks').select('created_at,updated_at').order('updated_at',{ascending:false}).limit(1)]);
-      const lat=ts?.[0]?.updated_at||new Date(0).toISOString();
-      if(lat>lastSeen.work){lastSeen.work=lat; await workLoad(); if(cur==='work')renderWork(); if(cur==='hub')renderHub(); updateBadges(); syncPulse();}
-    }
-    // Finance
-    if((Date.now()-localWriteTs.fin)>3000) {
-      const [{data:bk}]=await Promise.all([sb.from('banks').select('created_at').order('created_at',{ascending:false}).limit(1)]);
-      const lat=bk?.[0]?.created_at||new Date(0).toISOString();
-      if(lat>lastSeen.fin){lastSeen.fin=lat; await finLoad(); if(cur==='finance')renderFin(); if(cur==='hub')renderHub(); syncPulse();}
-    }
-    // Goals
-    if((Date.now()-localWriteTs.goals)>3000) {
-      const [{data:gl}]=await Promise.all([sb.from('goals').select('updated_at').order('updated_at',{ascending:false}).limit(1)]);
-      const lat=gl?.[0]?.updated_at||new Date(0).toISOString();
-      if(lat>lastSeen.goals){lastSeen.goals=lat; await goalsLoad(); if(cur==='goals')renderGoals(); if(cur==='hub')renderHub(); syncPulse();}
-    }
+    const {data, error} = await sb.from('sync_meta').select('group_name,updated_at,client_id').eq('user_id',OWNER);
+    if(error) throw error;
+    for(const r of (data||[])) await handleRemoteChange(r.group_name, r.updated_at, r.client_id, true);
     setSyncStatus('ok','متصل ✓');
-  } catch(_){ setSyncStatus('err','خطأ في الاتصال'); }
+  } catch(e){ console.error('poll error', e); setSyncStatus('err','خطأ في الاتصال'); }
 }
-function syncPulse() { const d=document.getElementById('syncDot'); d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900); toast('🔄 تم المزامنة'); }
+
+async function handleRemoteChange(group, updatedAt, clientId, silent=false) {
+  if(!SYNC_GROUPS.includes(group) || !updatedAt) return;
+  if(clientId===CLIENT_ID) { if(updatedAt>lastSeen[group]) lastSeen[group]=updatedAt; return; }
+  if(updatedAt <= lastSeen[group]) return;
+  lastSeen[group]=updatedAt;
+  try{
+    await loadGroup(group);
+    renderAll();
+    syncPulse(silent);
+  }catch(e){ console.error('remote load error', group, e); }
+}
+async function loadGroup(group) {
+  if(group==='day') return dayLoad();
+  if(group==='work') return workLoad();
+  if(group==='fin') return finLoad();
+  if(group==='goals') return goalsLoad();
+}
+async function touchRemote(group) {
+  if(!sb || !SYNC_GROUPS.includes(group)) return false;
+  const ts = new Date().toISOString();
+  const {error} = await sb.from('sync_meta').upsert({user_id:OWNER,group_name:group,updated_at:ts,client_id:CLIENT_ID},{onConflict:'user_id,group_name'});
+  if(error) throw error;
+  lastSeen[group]=ts;
+  return true;
+}
+async function sbWrite(group, op, label='حفظ البيانات') {
+  if(!sb) return false;
+  try{
+    const res = await op();
+    if(res?.error) throw res.error;
+    await touchRemote(group);
+    setSyncStatus('ok','متصل ✓');
+    return res;
+  }catch(e){
+    console.error('Supabase write error:', label, e);
+    setSyncStatus('err','خطأ حفظ');
+    toast('⚠️ لم يتم الحفظ على السحابة: '+dbErrText(e));
+    return false;
+  }
+}
+function syncPulse(silent=false) { const d=document.getElementById('syncDot'); d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900); if(!silent) toast('🔄 تم المزامنة'); }
+
+async function forceSyncNow() {
+  if(!sb) return toast('اربط Supabase الأول');
+  setSyncStatus('loading','جاري السحب...');
+  await loadAll(); renderAll(); setSyncStatus('ok','متصل ✓'); toast('تم سحب آخر نسخة من السحابة ✅');
+}
+
+async function pushLocalToCloud() {
+  if(!sb) return toast('اربط Supabase الأول');
+  setSyncStatus('loading','جاري الرفع...');
+  try{
+    await pushDayLocal();
+    await pushWorkLocal();
+    await pushFinLocal();
+    await pushGoalsLocal();
+    setSyncStatus('ok','متصل ✓'); toast('تم رفع بيانات هذا الجهاز للسحابة ✅');
+  }catch(e){ console.error('pushLocalToCloud error', e); setSyncStatus('err','خطأ رفع'); toast('فشل الرفع: '+dbErrText(e)); }
+}
+async function pushDayLocal() {
+  const now=new Date().toISOString();
+  const blocks=(DAY.blocks||[]).map(b=>({...dayNorm(b),user_id:OWNER,updated_at:now}));
+  if(blocks.length){ const {error}=await sb.from('recurring_blocks').upsert(blocks); if(error) throw error; }
+  const comps=Object.entries(DAY.completions||{}).map(([k,status])=>{ const m=k.match(/^(.+)_(\d{4}-\d{2}-\d{2})$/); return m?{user_id:OWNER,recurring_block_id:m[1],completion_date:m[2],status,updated_at:now}:null; }).filter(Boolean);
+  if(comps.length){ const {error}=await sb.from('block_completions').upsert(comps,{onConflict:'recurring_block_id,completion_date'}); if(error) throw error; }
+  const checks=Object.entries(DAY.taskChecks||{}).map(([k,is_checked])=>{ const m=k.match(/^(.+)_(\d{4}-\d{2}-\d{2})_(.+)$/); return m?{user_id:OWNER,recurring_block_id:m[1],check_date:m[2],task_id:m[3],is_checked,updated_at:now}:null; }).filter(Boolean);
+  if(checks.length){ const {error}=await sb.from('task_checks').upsert(checks,{onConflict:'recurring_block_id,task_id,check_date'}); if(error) throw error; }
+  await touchRemote('day');
+}
+async function pushWorkLocal() {
+  const now=new Date().toISOString();
+  const entities=[...(WORK.data.company||[]),...(WORK.data.client||[])];
+  const entRows=entities.map(e=>({id:e.id,user_id:OWNER,name:e.name,type:e.type,color:e.color,updated_at:now}));
+  if(entRows.length){ const {error}=await sb.from('entities').upsert(entRows); if(error) throw error; }
+  const taskRows=[];
+  entities.forEach(e=>(e.tasks||[]).forEach(t=>taskRows.push({id:t.id,user_id:OWNER,entity_id:e.id,title:t.title,description:t.description||null,deadline:t.deadline||null,priority:t.priority||'medium',price:t.price||null,links:t.links||[],completed:!!t.completed,completed_at:t.completed_at||null,day_synced:!!t.day_synced,updated_at:now})));
+  if(taskRows.length){ const {error}=await sb.from('tasks').upsert(taskRows); if(error) throw error; }
+  await touchRemote('work');
+}
+async function pushFinLocal() {
+  const now=new Date().toISOString();
+  for(const key of Object.keys(FIN_TBL_MAP)){
+    const sk=FIN_STATE_KEY[key]; const rows=(FIN[sk]||[]).map(r=>({...r,user_id:OWNER,updated_at:now}));
+    if(rows.length){ const {error}=await sb.from(FIN_TBL_MAP[key]).upsert(rows); if(error) throw error; }
+  }
+  await touchRemote('fin');
+}
+async function pushGoalsLocal() {
+  const now=new Date().toISOString();
+  const goals=(GOALS.items||[]).map(g=>({...g,user_id:OWNER,updated_at:g.updated_at||now}));
+  if(goals.length){ const {error}=await sb.from('goals').upsert(goals); if(error) throw error; }
+  const secs=(GOALS.sections||[]).map((s,i)=>({...s,user_id:OWNER,sort_order:s.sort_order??i}));
+  if(secs.length){ const {error}=await sb.from('hub_sections').upsert(secs); if(error) throw error; }
+  await touchRemote('goals');
+}
 
 /* ===== LOAD ALL ===== */
 
@@ -1415,12 +1486,12 @@ function applyScale(v) {
 
 async function setDayStatus(bid, status) {
   const d=dateKey(DAY.date); DAY.completions[`${bid}_${d}`]=status; daySaveLocal(); markWrite('day');
-  if(sb) try { await sb.from('block_completions').upsert({user_id:OWNER,recurring_block_id:bid,completion_date:d,status,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,completion_date'}); } catch(_){}
+  await sbWrite('day', () => sb.from('block_completions').upsert({user_id:OWNER,recurring_block_id:bid,completion_date:d,status,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,completion_date'}), 'حفظ حالة البلوك');
   renderDay(); if(cur==='hub') renderHub();
 }
 async function toggleTask(bid, tid, checked) {
   const d=dateKey(DAY.date); DAY.taskChecks[`${bid}_${d}_${tid}`]=checked; daySaveLocal();
-  if(sb) try { await sb.from('task_checks').upsert({user_id:OWNER,recurring_block_id:bid,task_id:tid,check_date:d,is_checked:checked,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,task_id,check_date'}); } catch(_){}
+  await sbWrite('day', () => sb.from('task_checks').upsert({user_id:OWNER,recurring_block_id:bid,task_id:tid,check_date:d,is_checked:checked,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,task_id,check_date'}), 'حفظ حالة التاسك');
   renderDay();
 }
 
@@ -1509,24 +1580,32 @@ async function saveDayBlock(e) {
     links:bLinks.filter(l=>l.url.trim()),
     days_of_week:internalMode==='custom'?selDays:[0,1,2,3,4,5,6],
   });
+  let editScope=null;
   if(editingBlockId) {
-    const scope=getScope();
+    editScope=getScope();
     const idx=DAY.blocks.findIndex(t=>t.id===editingBlockId);
-    if(scope==='today') { DAY.overrides[`${block.id}_${dateKey(DAY.date)}`]={...block}; }
+    if(editScope==='today') { DAY.overrides[`${block.id}_${dateKey(DAY.date)}`]={...block,recurring_block_id:block.id,override_date:dateKey(DAY.date)}; }
     else { if(idx>=0) DAY.blocks[idx]=block; else DAY.blocks.push(block); }
-    if(idx<0&&scope!=='today') DAY.blocks.push(block);
+    if(idx<0&&editScope!=='today') DAY.blocks.push(block);
   } else {
     DAY.blocks.push(block);
     notif({icon:'📅',title:'بلوك جديد',sub:`"${title}" أُضيف لجدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
   }
   daySaveLocal(); markWrite('day');
-  if(sb) try { await sb.from('recurring_blocks').upsert({...block,user_id:OWNER,updated_at:new Date().toISOString()}); } catch(_){}
+  const now=new Date().toISOString();
+  if(editingBlockId && editScope==='today') {
+    const overrideRow={user_id:OWNER,recurring_block_id:block.id,override_date:dateKey(DAY.date),title:block.title,notes:block.notes,start_time:block.start_time,end_time:block.end_time,color:block.color,tasks:block.tasks,links:block.links,is_deleted:false,updated_at:now};
+    await sbWrite('day', () => sb.from('block_overrides').upsert(overrideRow,{onConflict:'recurring_block_id,override_date'}), 'حفظ تعديل اليوم');
+  } else {
+    await sbWrite('day', () => sb.from('recurring_blocks').upsert({...block,user_id:OWNER,updated_at:now}), 'حفظ البلوك');
+  }
   closeDayModal(); renderDay(); toast(editingBlockId?'تم التعديل ✅':'تم الإضافة ✅');
 }
 async function deleteDayBlock() {
   if(!editingBlockId)return;
   DAY.blocks=DAY.blocks.filter(t=>t.id!==editingBlockId);
-  daySaveLocal(); if(sb) try { await sb.from('recurring_blocks').delete().eq('id',editingBlockId); } catch(_){}
+  daySaveLocal(); markWrite('day');
+  await sbWrite('day', () => sb.from('recurring_blocks').delete().eq('id',editingBlockId), 'حذف البلوك');
   closeDayModal(); renderDay(); toast('تم الحذف');
 }
 
@@ -1703,18 +1782,18 @@ async function workSaveEnt(type, existId) {
   const kind=type==='company'?'company':'client';
   if(existId) {
     const e=WORK.data[kind].find(x=>x.id===existId); if(e){e.name=name;e.color=color;}
-    if(sb) try{await sb.from('entities').update({name,color}).eq('id',existId);}catch(_){}
+    await sbWrite('work', () => sb.from('entities').update({name,color,updated_at:new Date().toISOString()}).eq('id',existId), 'تعديل شركة/عميل');
   } else {
-    const ne={id:uid(),name,type,color,tasks:[]};
+    const ne={id:uid(),user_id:OWNER,name,type,color,tasks:[]};
     WORK.data[kind].push(ne);
-    if(sb) try{await sb.from('entities').insert({name,type,color});}catch(_){}
+    await sbWrite('work', () => sb.from('entities').insert({id:ne.id,user_id:OWNER,name,type,color,updated_at:new Date().toISOString()}), 'إضافة شركة/عميل');
   }
   workSaveLocal(); markWrite('work'); closeEntityModal(); renderWork(); toast(existId?'تم الحفظ ✅':'تم الإضافة ✅');
 }
 async function workDelEnt(id) {
   if(!confirm('هتحذف الشركة/العميل وكل تاسكاته؟'))return;
   ['company','client'].forEach(k=>{WORK.data[k]=WORK.data[k].filter(e=>e.id!==id);});
-  workSaveLocal(); if(sb)try{await sb.from('entities').delete().eq('id',id);}catch(_){}
+  workSaveLocal(); markWrite('work'); await sbWrite('work', () => sb.from('entities').delete().eq('id',id), 'حذف شركة/عميل');
   renderWork(); toast('تم الحذف');
 }
 function closeEntityModal() { document.getElementById('entityModal').classList.add('hidden'); }
@@ -1783,11 +1862,10 @@ async function saveTask() {
     notif({icon:'💼',title:`تاسك جديد: "${title}"`,sub:`في ${ent.name}`,actions:[{label:'عرض',cls:'primary',fn:()=>go('work')}]});
   }
   workSaveLocal(); markWrite('work');
-  if(sb) {
-    try {
-      if(editingTaskId) await sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links}).eq('id',editingTaskId);
-      else { const {data:ins}=await sb.from('tasks').insert({entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,day_synced:false}).select().single(); if(ins){tData.id=ins.id;} }
-    } catch(_){}
+  if(editingTaskId) {
+    await sbWrite('work', () => sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,updated_at:new Date().toISOString()}).eq('id',editingTaskId), 'تعديل التاسك');
+  } else {
+    await sbWrite('work', () => sb.from('tasks').insert({id:tData.id,user_id:OWNER,entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,completed:false,day_synced:false,updated_at:new Date().toISOString()}), 'إضافة التاسك');
   }
   closeTaskModal(); renderWork(); updateBadges(); toast(editingTaskId?'تم الحفظ ✅':'تم إضافة التاسك ✅');
 }
@@ -1824,7 +1902,7 @@ function autoSyncTaskToDay(task, ent) {
     // No overlapping block — add as standalone once-block for today
     const newBlock=dayNorm({id:uid(),title:task.title,notes:`من شغلي — ${ent.name}`,start_time:'09:00',end_time:'10:00',color:ent.color||'#a855f7',repeat_mode:'once',block_date:today,tasks:[],links:[]});
     DAY.blocks.push(newBlock); daySaveLocal();
-    if(sb) sb.from('recurring_blocks').upsert({...newBlock,user_id:OWNER,updated_at:new Date().toISOString()}).then(()=>{}).catch(()=>{});
+    sbWrite('day', () => sb.from('recurring_blocks').upsert({...newBlock,user_id:OWNER,updated_at:new Date().toISOString()}), 'إضافة تاسك اليوم');
     notif({icon:'📅',title:'تاسك جديد أُضيف لليوم',sub:`"${task.title}" ظهر في جدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
   }
   markWrite('day');
@@ -1834,12 +1912,12 @@ async function workToggleTask(tid, eid) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); const task=ent?.tasks?.find(t=>t.id===tid); if(!task)return;
   task.completed=!task.completed; task.completed_at=task.completed?new Date().toISOString():null;
   workSaveLocal(); markWrite('work');
-  if(sb)try{await sb.from('tasks').update({completed:task.completed,completed_at:task.completed_at,updated_at:new Date().toISOString()}).eq('id',tid);}catch(_){}
+  await sbWrite('work', () => sb.from('tasks').update({completed:task.completed,completed_at:task.completed_at,updated_at:new Date().toISOString()}).eq('id',tid), 'تحديث حالة التاسك');
   renderWork(); updateBadges(); toast(task.completed?'✅ منجز!':'تم إلغاء الإنجاز');
 }
 async function workDelTask(tid, eid) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); if(ent)ent.tasks=ent.tasks.filter(t=>t.id!==tid);
-  workSaveLocal(); if(sb)try{await sb.from('tasks').delete().eq('id',tid);}catch(_){}
+  workSaveLocal(); markWrite('work'); await sbWrite('work', () => sb.from('tasks').delete().eq('id',tid), 'حذف التاسك');
   renderWork(); updateBadges();
 }
 
@@ -1936,17 +2014,17 @@ async function finAdd(key) {
   const id=uid(); const sk=FIN_STATE_KEY[key];
   const defs={banks:{id,user_id:OWNER,name:'بنك جديد',balance:0,note:''},gold:{id,user_id:OWNER,name:'ذهب',grams:0,price_per_gram:0},salary:{id,user_id:OWNER,name:'مرتب',amount:0,paid:false},expenses:{id,user_id:OWNER,name:'مصروف جديد',amount:0,paid_amount:0,paid:false},subscriptions:{id,user_id:OWNER,name:'اشتراك جديد',usd:0,paid:false},debts:{id,user_id:OWNER,name:'دين جديد',amount:0,paid:false},increases:{id,user_id:OWNER,name:'زيادة جديدة',amount:0,note:'',paid:false}};
   FIN[sk].push(defs[key]); finSaveLocal(); markWrite('fin');
-  if(sb)try{await sb.from(FIN_TBL_MAP[key]).insert(defs[key]);}catch(_){}
+  await sbWrite('fin', () => sb.from(FIN_TBL_MAP[key]).insert({...defs[key],updated_at:new Date().toISOString()}), 'إضافة عنصر مالي');
   finRender();
 }
 async function finUpd(key, id, patch) {
   const sk=FIN_STATE_KEY[key]; const row=FIN[sk].find(r=>r.id===id); if(row)Object.assign(row,patch);
   finSaveLocal(); markWrite('fin');
-  if(sb)try{await sb.from(FIN_TBL_MAP[key]).update(patch).eq('id',id);}catch(_){}
+  await sbWrite('fin', () => sb.from(FIN_TBL_MAP[key]).update({...patch,updated_at:new Date().toISOString()}).eq('id',id), 'تعديل عنصر مالي');
 }
 async function finDel(key, id) {
   const sk=FIN_STATE_KEY[key]; FIN[sk]=FIN[sk].filter(r=>r.id!==id); finSaveLocal(); markWrite('fin');
-  if(sb)try{await sb.from(FIN_TBL_MAP[key]).delete().eq('id',id);}catch(_){}
+  await sbWrite('fin', () => sb.from(FIN_TBL_MAP[key]).delete().eq('id',id), 'حذف عنصر مالي');
   finRender();
 }
 
@@ -2018,7 +2096,7 @@ function renderGoalCard(g) {
 async function toggleGoal(gid) {
   const g=GOALS.items.find(x=>x.id===gid); if(!g)return;
   g.completed=!g.completed; g.updated_at=new Date().toISOString(); goalsSaveLocal(); markWrite('goals');
-  if(sb)try{await sb.from('goals').update({completed:g.completed,updated_at:g.updated_at}).eq('id',gid);}catch(_){}
+  await sbWrite('goals', () => sb.from('goals').update({completed:g.completed,updated_at:g.updated_at}).eq('id',gid), 'تحديث الهدف');
   if(g.completed) toast('🎉 مبروك! تم تحقيق الهدف!');
   renderGoals(); updateBadges();
 }
@@ -2027,7 +2105,7 @@ async function toggleGoalStep(gid, idx, val) {
   g.steps=Array.isArray(g.steps)?g.steps:[];
   if(g.steps[idx]) g.steps[idx].done=val;
   g.updated_at=new Date().toISOString(); goalsSaveLocal(); markWrite('goals');
-  if(sb)try{await sb.from('goals').update({steps:g.steps,updated_at:g.updated_at}).eq('id',gid);}catch(_){}
+  await sbWrite('goals', () => sb.from('goals').update({steps:g.steps,updated_at:g.updated_at}).eq('id',gid), 'تحديث خطوات الهدف');
   renderGoals();
 }
 
@@ -2084,12 +2162,12 @@ async function saveGoal() {
   if(editingGoalId) { const idx=GOALS.items.findIndex(x=>x.id===editingGoalId); if(idx>=0)GOALS.items[idx]=g; else GOALS.items.push(g); }
   else { GOALS.items.push(g); notif({icon:'🎯',title:`هدف جديد: "${title}"`,sub:'تمت الإضافة لقائمة أهدافك',color:g.color,persist:true}); }
   goalsSaveLocal(); markWrite('goals');
-  if(sb)try{await sb.from('goals').upsert({...g,user_id:OWNER});}catch(_){}
+  await sbWrite('goals', () => sb.from('goals').upsert({...g,user_id:OWNER,updated_at:g.updated_at||new Date().toISOString()}), 'حفظ الهدف');
   closeGoalModal(); renderGoals(); updateBadges(); toast(editingGoalId?'تم التعديل ✅':'تم إضافة الهدف ✅');
 }
 async function delGoal(gid) {
   GOALS.items=GOALS.items.filter(x=>x.id!==gid); goalsSaveLocal(); markWrite('goals');
-  if(sb)try{await sb.from('goals').delete().eq('id',gid);}catch(_){}
+  await sbWrite('goals', () => sb.from('goals').delete().eq('id',gid), 'حذف الهدف');
   closeGoalModal(); renderGoals(); updateBadges(); toast('تم الحذف');
 }
 
@@ -2099,7 +2177,7 @@ async function saveSection() {
   const name=document.getElementById('secName').value.trim(); if(!name)return toast('اكتب اسم القسم');
   const sec={id:uid(),name,icon:document.getElementById('secIcon').value||'📌',color:document.getElementById('secColor').value,sort_order:GOALS.sections.length,user_id:OWNER};
   GOALS.sections.push(sec); goalsSaveLocal();
-  if(sb)try{await sb.from('hub_sections').insert(sec);}catch(_){}
+  await sbWrite('goals', () => sb.from('hub_sections').upsert(sec), 'حفظ القسم');
   closeSectionModal(); renderGoals(); toast('تم إضافة القسم ✅');
 }
 
@@ -2133,14 +2211,7 @@ async function boot() {
   const url=localStorage.getItem('sb_url')||SB_URL, key=localStorage.getItem('sb_key')||SB_KEY;
   connect(url, key).then(() => {
     if (sb) {
-      loadAll().then(() => {
-        renderHub();
-        if(cur==='day') renderDay();
-        if(cur==='work') renderWork();
-        if(cur==='finance') renderFin();
-        if(cur==='goals') renderGoals();
-        updateBadges();
-      });
+      loadAll().then(() => { renderAll(); });
     }
   });
   // Init layout controls from localStorage
