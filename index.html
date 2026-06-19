@@ -8,7 +8,26 @@
 <meta name="theme-color" content="#080c18">
 <title>MY System — نظامك الكامل</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
+<script>
+/* Supabase CDN with mobile-friendly fallback loading */
+(function() {
+  var CDNS = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/supabase/2.39.3/umd/supabase.js'
+  ];
+  function load(i) {
+    if (i >= CDNS.length) return;
+    var s = document.createElement('script');
+    s.src = CDNS[i];
+    s.async = false; // Keep synchronous-ish loading order
+    s.onload = function() { window.__sbLoaded = true; };
+    s.onerror = function() { load(i + 1); };
+    document.head.appendChild(s);
+  }
+  load(0);
+})();
+</script>
 <style>
 /* ===== RESET ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -134,6 +153,13 @@ body[data-theme="light"] .bottom-nav{background:rgba(248,250,255,.92)}
 .bnav-item.active{color:var(--text)}
 .bnav-item.active .bnav-icon{transform:scale(1.18) translateY(-2px)}
 .bnav-badge{position:absolute;top:4px;right:15%;width:15px;height:15px;border-radius:99px;background:var(--danger);color:#fff;font-size:8px;font-weight:900;display:grid;place-items:center}
+
+
+/* ===== MOBILE THEME TOGGLE ===== */
+.mobile-theme-btn{display:none;position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:130;min-width:74px;height:42px;padding:0 12px;border-radius:14px;background:rgba(10,14,26,.88);border:1px solid var(--border2);color:var(--text);font-size:12px;font-weight:900;align-items:center;justify-content:center;gap:6px;box-shadow:var(--shadow-sm);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.mobile-theme-btn:active{transform:scale(.96)}
+body[data-theme="light"] .mobile-theme-btn{background:rgba(255,255,255,.92);color:var(--text);border-color:var(--border2)}
+@media(max-width:960px){.mobile-theme-btn{display:flex}}
 
 /* ===== TOAST ===== */
 #toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(12,18,36,.94);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:var(--r-md);font-size:13px;font-weight:700;z-index:999;max-width:90vw;text-align:center;box-shadow:var(--shadow-sm);backdrop-filter:blur(20px);display:none;animation:toastIn .25s var(--ease)}
@@ -691,6 +717,10 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
     </section>
   </main>
 </div>
+
+<!-- MOBILE LIGHT / DARK TOGGLE -->
+<button class="mobile-theme-btn" id="mobileThemeBtn" onclick="toggleTheme()" title="تغيير الإضاءة" aria-label="تغيير الإضاءة">☀ نهار</button>
+
 <!-- MOBILE BOTTOM NAV -->
 <nav class="bottom-nav" id="bottomNav">
   <div class="bnav-item active" data-mod="hub" onclick="go('hub')"><span class="bnav-icon">🏠</span><span>الرئيسية</span></div>
@@ -910,15 +940,15 @@ function toggleNotifCenter() {
 const STATE_TABLE = 'mysystem_state';
 const DEFAULT_SYSTEM_ID = OWNER;
 let cloudReady = false;
-let cloudUrl = localStorage.getItem('ms_ready_sb_url') || SB_URL;
-let cloudKey = localStorage.getItem('ms_ready_sb_key') || SB_KEY;
+let cloudUrl = localStorage.getItem('sb_url') || SB_URL;
+let cloudKey = localStorage.getItem('sb_key') || SB_KEY;
 let cloudSaveTimer = null;
 let applyingRemote = false;
 let lastLocalEdit = 0;
-let lastCloudUpdated = localStorage.getItem('ms_ready_last_cloud_updated') || '';
-let clientId = localStorage.getItem('ms_ready_client_id') || uid();
-let SYSTEM_ID = normalizeSystemId(localStorage.getItem('ms_ready_system_id') || DEFAULT_SYSTEM_ID);
-localStorage.setItem('ms_ready_client_id', clientId);
+let lastCloudUpdated = localStorage.getItem('ms_last_cloud_updated') || '';
+let clientId = localStorage.getItem('ms_client_id') || uid();
+let SYSTEM_ID = normalizeSystemId(localStorage.getItem('ms_system_id') || DEFAULT_SYSTEM_ID);
+localStorage.setItem('ms_client_id', clientId);
 
 const SQL_SETUP = `-- MY System — Stable Single Table Setup
 -- شغّل الملف ده مرة واحدة فقط داخل Supabase SQL Editor
@@ -1006,8 +1036,8 @@ function parsePayloadError(status, txt) {
 }
 
 function openSettings() {
-  document.getElementById('cfgUrl').value = localStorage.getItem('ms_ready_sb_url') || SB_URL;
-  document.getElementById('cfgKey').value = localStorage.getItem('ms_ready_sb_key') || SB_KEY;
+  document.getElementById('cfgUrl').value = localStorage.getItem('sb_url') || SB_URL;
+  document.getElementById('cfgKey').value = localStorage.getItem('sb_key') || SB_KEY;
   const sid=document.getElementById('cfgSystemId'); if(sid) sid.value = SYSTEM_ID;
   document.getElementById('settingsModal').classList.remove('hidden');
 }
@@ -1019,13 +1049,13 @@ async function saveConfig() {
   if(!url) return toast('Supabase URL غير صحيح');
   if(!key || key.split('.').length<3) return toast('Anon Key غير صحيح');
   cloudUrl=url; cloudKey=key; SYSTEM_ID=sid;
-  localStorage.setItem('ms_ready_sb_url',cloudUrl); localStorage.setItem('ms_ready_sb_key',cloudKey); localStorage.setItem('ms_ready_system_id',SYSTEM_ID);
+  localStorage.setItem('sb_url',cloudUrl); localStorage.setItem('sb_key',cloudKey); localStorage.setItem('ms_system_id',SYSTEM_ID);
   const ok=await connect(cloudUrl,cloudKey);
   if(ok){ toast('تم الربط ✅'); closeSettings(); await pullCloud(true,false); renderAll(); }
   else toast('فشل الربط — شغّل SQL أو راجع بيانات Supabase');
 }
 function clearConfig() {
-  localStorage.removeItem('ms_ready_sb_url'); localStorage.removeItem('ms_ready_sb_key');
+  localStorage.removeItem('sb_url'); localStorage.removeItem('sb_key');
   cloudReady=false; sb=null; stopPoll();
   setSyncStatus('err','Local Mode'); connStatus('Local Mode'); toast('Local Mode');
 }
@@ -1041,7 +1071,7 @@ async function connect(rawUrl, rawKey) {
     const txt = await res.text();
     if(!res.ok) throw new Error(parsePayloadError(res.status, txt));
     cloudReady=true;
-    localStorage.setItem('ms_ready_sb_url',cloudUrl); localStorage.setItem('ms_ready_sb_key',cloudKey); localStorage.setItem('ms_ready_system_id',SYSTEM_ID);
+    localStorage.setItem('sb_url',cloudUrl); localStorage.setItem('sb_key',cloudKey); localStorage.setItem('ms_system_id',SYSTEM_ID);
     setSyncStatus('ok','متصل ✓'); connStatus('متصل ✅ — جدول واحد ثابت');
     startPoll();
     return true;
@@ -1106,7 +1136,7 @@ async function pushCloud(mode='auto') {
     if(!res.ok) throw new Error(parsePayloadError(res.status,txt));
     const arr=txt?JSON.parse(txt):[];
     lastCloudUpdated=arr?.[0]?.updated_at || row.updated_at;
-    localStorage.setItem('ms_ready_last_cloud_updated',lastCloudUpdated);
+    localStorage.setItem('ms_last_cloud_updated',lastCloudUpdated);
     setSyncStatus('ok','متصل ✓');
     if(mode==='manual') toast('تم رفع بيانات هذا الجهاز للسحابة ✅');
     return true;
@@ -1126,11 +1156,11 @@ async function pullCloud(force=false, silent=false) {
     const arr=txt?JSON.parse(txt):[];
     const row=arr[0];
     if(!row) { if(hasLocalPayload()) await pushCloud('auto'); return false; }
-    if(!force && row.client_id===clientId) { lastCloudUpdated=row.updated_at||lastCloudUpdated; localStorage.setItem('ms_ready_last_cloud_updated',lastCloudUpdated); return false; }
+    if(!force && row.client_id===clientId) { lastCloudUpdated=row.updated_at||lastCloudUpdated; localStorage.setItem('ms_last_cloud_updated',lastCloudUpdated); return false; }
     if(!force && lastCloudUpdated && row.updated_at<=lastCloudUpdated) return false;
     applyRemoteState(row.data);
     lastCloudUpdated=row.updated_at || new Date().toISOString();
-    localStorage.setItem('ms_ready_last_cloud_updated',lastCloudUpdated);
+    localStorage.setItem('ms_last_cloud_updated',lastCloudUpdated);
     renderAll(); syncPulse(silent); setSyncStatus('ok','متصل ✓');
     return true;
   } catch(e) { console.error('cloud pull error',e); setSyncStatus('err','خطأ اتصال'); if(!silent) toast('فشل السحب: '+dbErrText(e)); return false; }
@@ -1173,8 +1203,19 @@ async function loadAll() { if(cloudReady) return pullCloud(true, false); await P
 function toggleTheme() { isDark=!isDark; applyTheme(); localStorage.setItem('sys_theme',isDark?'dark':'light'); }
 function applyTheme() {
   const b=document.getElementById('themeBtn');
-  if(isDark){ document.body.removeAttribute('data-theme'); document.querySelector('meta[name="theme-color"]').content='#080c18'; b.textContent='☾'; }
-  else { document.body.setAttribute('data-theme','light'); document.querySelector('meta[name="theme-color"]').content='#f0f4ff'; b.textContent='☀'; }
+  const mb=document.getElementById('mobileThemeBtn');
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(isDark){
+    document.body.removeAttribute('data-theme');
+    if(meta) meta.content='#080c18';
+    if(b) b.textContent='☾';
+    if(mb){ mb.textContent='☀ نهار'; mb.title='تغيير إلى نهار'; mb.setAttribute('aria-label','تغيير إلى نهار'); }
+  } else {
+    document.body.setAttribute('data-theme','light');
+    if(meta) meta.content='#f0f4ff';
+    if(b) b.textContent='☀';
+    if(mb){ mb.textContent='☾ ليل'; mb.title='تغيير إلى ليل'; mb.setAttribute('aria-label','تغيير إلى ليل'); }
+  }
 }
 
 /* ===== CLOCK ===== */
@@ -2204,7 +2245,7 @@ async function boot() {
   renderHub();
   updateBadges();
   // Step 2: Connect to Supabase single-table sync in background (no old tables)
-  const url=localStorage.getItem('ms_ready_sb_url')||SB_URL, key=localStorage.getItem('ms_ready_sb_key')||SB_KEY;
+  const url=localStorage.getItem('sb_url')||SB_URL, key=localStorage.getItem('sb_key')||SB_KEY;
   connect(url, key).then((ok) => {
     if (ok) {
       pullCloud(true, true).then(() => {
