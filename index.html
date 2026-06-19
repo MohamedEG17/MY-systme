@@ -544,11 +544,123 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
 }
 
 
+
+
+/* ===== UI POLISH PATCH — layout only, sync code untouched ===== */
+.fin-table{table-layout:fixed;border-spacing:0;font-variant-numeric:tabular-nums}
+.fin-table thead th,.fin-table td{padding:7px 9px;text-align:center;vertical-align:middle;white-space:normal}
+.fin-table thead th:first-child,.fin-table td:first-child{text-align:right}
+.fin-table td{line-height:1.35}
+.fin-inp{text-align:center;direction:ltr;font-variant-numeric:tabular-nums}
+.fin-table td:first-child .fin-inp{text-align:right;direction:rtl}
+.fin-row-highlight{border-right:4px solid var(--row-color,#38bdf8)!important;background:color-mix(in srgb,var(--row-color,#38bdf8) 7%,transparent)!important}
+.fin-table-wrap{overflow:hidden}
+.fin-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;align-items:stretch;margin-bottom:13px}
+.fin-card-grid.bank-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.fin-card{border-radius:18px;background:color-mix(in srgb,var(--row-color,#38bdf8) 8%,var(--panel));border:1px solid color-mix(in srgb,var(--row-color,#38bdf8) 26%,var(--border));border-right:5px solid var(--row-color,#38bdf8);padding:13px;box-shadow:var(--shadow-sm);min-height:100%;animation:fadeUp .2s var(--ease)}
+.fin-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px}
+.fin-card-title{font-size:15px;font-weight:900;color:var(--row-color,#38bdf8);line-height:1.35;word-break:break-word}
+.fin-card-total{font-size:18px;font-weight:900;direction:ltr;margin:4px 0 10px;color:var(--text)}
+.fin-card-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fin-field{background:var(--field);border:1px solid var(--border);border-radius:12px;padding:8px;min-width:0}
+.fin-field.full{grid-column:1/-1}
+.fin-field label{display:block;font-size:10px;font-weight:900;color:var(--text-d);margin-bottom:5px}
+.fin-field input,.fin-field .fin-read{width:100%;background:transparent;border:0;outline:0;color:var(--text);font-size:13px;font-weight:900;direction:ltr;text-align:center;font-family:var(--font);font-variant-numeric:tabular-nums}
+.fin-field.name input,.fin-field.note input{text-align:right;direction:rtl}
+.fin-read.success{color:var(--success)}
+.fin-read.warn{color:var(--warning)}
+.fin-read.danger{color:var(--danger)}
+.fin-compact-add{border-radius:14px!important;margin-top:6px}
+@media(max-width:640px){
+  .fin-wrap{padding:14px 10px}
+  .fin-hero{padding:16px 12px;margin-bottom:12px}
+  .fin-hero-val{font-size:34px;letter-spacing:-1px}
+  .fin-summary{gap:8px;margin-bottom:10px}
+  .fin-sum-card{padding:10px 11px;border-radius:14px}
+  .fin-sum-val{font-size:15px}
+  .fin-table-wrap{border-radius:16px;margin-bottom:10px}
+  .fin-table thead{display:none}
+  .fin-table,.fin-table tbody,.fin-table tr,.fin-table td{display:block;width:100%}
+  .fin-table tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:9px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--row-color,#38bdf8) 6%,var(--panel));border-right:4px solid var(--row-color,#38bdf8)}
+  .fin-table tbody tr:last-child{border-bottom:0}
+  .fin-table td{border:0!important;padding:5px 6px;text-align:right;background:transparent!important}
+  .fin-table td::before{content:attr(data-label);display:block;font-size:9px;font-weight:900;color:var(--text-d);margin-bottom:3px}
+  .fin-table td.del-cell::before{content:'';display:none}
+  .fin-table td.del-cell{position:absolute;left:8px;top:8px;width:auto;padding:0}
+  .fin-table tbody tr{position:relative;border-radius:12px;margin:7px;background:color-mix(in srgb,var(--row-color,#38bdf8) 8%,transparent)}
+  .fin-inp,.fin-table td:first-child .fin-inp{text-align:right;direction:rtl}
+  .fin-table td[data-num] .fin-inp,.fin-table td[data-num]{direction:ltr;text-align:left}
+  .fin-card-grid,.fin-card-grid.bank-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .fin-card{padding:10px;border-radius:15px}
+  .fin-card-fields{grid-template-columns:1fr;gap:6px}
+  .fin-card-total{font-size:14px;margin-bottom:7px}
+  .fin-field{padding:7px;border-radius:10px}
+}
+@media(max-width:420px){.fin-card-grid,.fin-card-grid.bank-grid{grid-template-columns:1fr}}
+
 /* ===== MOBILE THEME TOGGLE — SAFE UI ONLY ===== */
 .mobile-theme-btn{display:none;position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:130;min-width:74px;height:40px;padding:0 12px;border-radius:14px;background:rgba(10,14,26,.88);border:1px solid var(--border2);color:var(--text);font-size:12px;font-weight:900;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
 .mobile-theme-btn:active{transform:scale(.96)}
 body[data-theme="light"] .mobile-theme-btn{background:rgba(255,255,255,.92);color:var(--text);border-color:var(--border2)}
 @media(max-width:960px){.mobile-theme-btn{display:flex}}
+
+
+/* ===== ITEM COLOR CONTROLS ===== */
+.color-picker-mini{width:30px;height:30px;min-width:30px;border:0;border-radius:9px;background:transparent;padding:0;cursor:pointer;overflow:hidden}
+.color-picker-mini::-webkit-color-swatch-wrapper{padding:0}
+.color-picker-mini::-webkit-color-swatch{border:2px solid var(--border2);border-radius:9px}
+.row-color-holder{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.fin-table td.has-color-control{display:flex;align-items:center;gap:8px;min-height:40px}
+.fin-table td.has-color-control .fin-inp{flex:1;min-width:0}
+.fin-card-color{display:flex;align-items:center;justify-content:center;margin-inline-start:auto}
+.task-color-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;background:var(--entity-color,#6366f1)}
+
+
+
+/* ===== UI VISUAL V3 — icons, gradients, readable font scale (UI only) ===== */
+:root{--app-font-scale:1}
+.sys-font-small{--app-font-scale:.92}.sys-font-normal{--app-font-scale:1}.sys-font-large{--app-font-scale:1.12}.sys-font-xlarge{--app-font-scale:1.24}
+body{font-size:calc(15px * var(--app-font-scale))}
+:is(.nav-item,.work-tab,.vt-btn,.btn,.add-btn,.mf-inp,.mf-row label,.sync-text,.sec-title p,.hub-greeting p,.entity-name,.entity-meta,.task-title-w,.task-desc-w,.block-notes,.goal-desc,.fin-nav-item,.fin-sum-label,.fin-dist-label,.fin-field label,.fin-table td,.fin-table thead th,.fin-inp,.notif-title,.notif-sub){font-size:calc(1em * var(--app-font-scale))!important}
+.sec-title h2{font-size:calc(26px * var(--app-font-scale))!important}.hub-greeting h2{font-size:calc(30px * var(--app-font-scale))!important}.block-title{font-size:calc(19px * var(--app-font-scale))!important}.goal-title{font-size:calc(18px * var(--app-font-scale))!important}.fin-card-title{font-size:calc(16px * var(--app-font-scale))!important}.fin-card-total{font-size:calc(20px * var(--app-font-scale))!important}.stat-val{font-size:calc(26px * var(--app-font-scale))!important}
+.font-size-control{display:grid;gap:8px}.font-size-row{display:flex;align-items:center;gap:10px}.font-size-row input{flex:1;accent-color:#8b5cf6}.font-size-value{min-width:54px;text-align:center;font-weight:900;color:var(--accent-hub);direction:ltr}.quick-fonts{display:flex;gap:7px;flex-wrap:wrap}.quick-fonts button{padding:7px 11px;border-radius:10px;background:var(--field);border:1px solid var(--border);font-weight:800;color:var(--text-m)}.quick-fonts button.active{background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;border-color:transparent}
+.fin-card{position:relative;overflow:hidden;background:linear-gradient(135deg,color-mix(in srgb,var(--row-color,#38bdf8) 16%,var(--panel)),color-mix(in srgb,var(--row-color,#38bdf8) 5%,var(--panel2)))!important;isolation:isolate}
+.fin-card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 12% 0%,color-mix(in srgb,var(--row-color,#38bdf8) 24%,transparent),transparent 42%);z-index:-1;opacity:.95}
+.fin-card::after{content:var(--card-icon, "");position:absolute;left:16px;bottom:-24px;font-size:86px;font-weight:900;line-height:1;color:#fff;opacity:.075;z-index:-1;pointer-events:none;filter:drop-shadow(0 12px 32px rgba(0,0,0,.35))}
+body[data-theme="light"] .fin-card::after{color:#0f172a;opacity:.055}
+.fin-card .fin-card-total,.fin-row-highlight b,.fin-read.success{color:var(--row-color,#38bdf8)!important}.fin-row-highlight{background:linear-gradient(90deg,color-mix(in srgb,var(--row-color,#38bdf8) 8%,transparent),transparent 58%)!important}.fin-row-highlight .fin-inp{color:var(--text)!important}.fin-row-highlight td:first-child .fin-inp{color:var(--row-color,#38bdf8)!important;font-weight:900!important}
+.fin-title-wrap{display:inline-flex;align-items:center;gap:8px;min-width:0}.fin-item-icon{width:30px;height:30px;border-radius:10px;display:inline-grid;place-items:center;flex-shrink:0;background:linear-gradient(135deg,var(--row-color,#38bdf8),color-mix(in srgb,var(--row-color,#38bdf8) 55%,#ffffff));color:#fff;font-size:16px;box-shadow:0 8px 22px color-mix(in srgb,var(--row-color,#38bdf8) 34%,transparent)}.fin-table .fin-item-icon{width:25px;height:25px;border-radius:8px;font-size:13px}.fin-card-title{display:flex;align-items:center;gap:8px;min-width:0}.fin-card-title span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.style-btn{width:27px;height:27px;border-radius:8px;background:var(--field);border:1px solid var(--border);display:grid;place-items:center;font-size:13px;cursor:pointer;transition:.15s;flex-shrink:0}.style-btn:hover{background:var(--panel2);transform:translateY(-1px)}
+.row-visual-holder,.fin-card-visual{display:flex;align-items:center;gap:5px;margin-inline-start:auto}.row-color-holder,.fin-card-color{display:none!important}.color-picker-mini{display:none!important}
+.visual-modal-note{font-size:12px;color:var(--text-d);font-weight:700;margin-top:-4px;margin-bottom:10px}.icon-picker-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:7px;max-height:230px;overflow:auto;padding:8px;border-radius:14px;background:var(--field);border:1px solid var(--border)}.icon-chip{height:36px;border-radius:11px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;font-size:18px;cursor:pointer;transition:.14s;color:#fff}.icon-chip.no-icon{font-size:12px;font-weight:900;color:var(--text-m)}.icon-chip.active{background:linear-gradient(135deg,var(--picked-color,#6366f1),color-mix(in srgb,var(--picked-color,#6366f1) 60%,#fff));border-color:#fff;box-shadow:0 0 0 2px color-mix(in srgb,var(--picked-color,#6366f1) 35%,transparent)}.visual-preview-card{display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;border:1px solid color-mix(in srgb,var(--preview-color,#6366f1) 35%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--preview-color,#6366f1) 18%,var(--panel)),color-mix(in srgb,var(--preview-color,#6366f1) 5%,var(--panel2)));margin-bottom:12px}.visual-preview-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,var(--preview-color,#6366f1),color-mix(in srgb,var(--preview-color,#6366f1) 60%,#fff));color:#fff;font-size:23px;font-weight:900}.visual-preview-title{font-weight:900;color:var(--preview-color,#6366f1);font-size:16px}.visual-preview-sub{font-size:12px;color:var(--text-d);margin-top:2px}
+.block-title .block-icon-inline,.task-title-w .task-icon-inline,.entity-avatar-icon{display:inline-grid;place-items:center;margin-inline-end:6px}.block-icon-badge{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--block-color,#6366f1),color-mix(in srgb,var(--block-color,#6366f1) 55%,#fff));color:#fff;display:inline-grid;place-items:center;margin-inline-end:8px;box-shadow:0 10px 24px color-mix(in srgb,var(--block-color,#6366f1) 28%,transparent)}.task-icon-dot{width:25px;height:25px;border-radius:8px;display:inline-grid;place-items:center;background:linear-gradient(135deg,var(--entity-color,#6366f1),color-mix(in srgb,var(--entity-color,#6366f1) 55%,#fff));color:#fff;font-size:12px;flex-shrink:0}.entity-avatar{font-size:20px!important}.optional-icon-row{display:flex;gap:7px;align-items:center}.optional-icon-row .mf-inp{flex:1}.icon-clear-btn{padding:10px 12px;border-radius:10px;background:var(--field);border:1px solid var(--border);font-weight:800;color:var(--text-m)}
+@media(max-width:640px){.icon-picker-grid{grid-template-columns:repeat(6,1fr)}.fin-card-grid,.fin-card-grid.bank-grid{grid-template-columns:1fr!important}.fin-table td{padding:8px 10px!important}.fin-card::after{font-size:66px}}
+
+
+/* ===== TITLE/ACTION POLISH PATCH — UI ONLY, sync untouched ===== */
+.fin-card-head{align-items:flex-start;gap:12px}
+.fin-card-title{font-size:18px!important;font-weight:950!important;line-height:1.25;color:var(--row-color,#38bdf8)!important;letter-spacing:-.2px;flex:1;min-width:0}
+.bank-grid .fin-card-title{font-size:20px!important}
+#expensesView .fin-card-title,#subsView .fin-card-title{font-size:19px!important}
+.fin-card-title span:last-child{font-weight:950!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+.fin-card-total{font-size:20px!important;font-weight:950!important;color:var(--row-color,#38bdf8)!important}
+.bank-grid .fin-card-total{font-size:22px!important}
+.fin-card-actions,.fin-row-actions{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
+.style-btn{width:22px!important;height:22px!important;min-width:22px!important;border-radius:7px!important;font-size:10px!important;background:color-mix(in srgb,var(--row-color,#38bdf8) 16%,var(--field))!important;border:1px solid color-mix(in srgb,var(--row-color,#38bdf8) 38%,var(--border))!important;color:var(--row-color,#38bdf8)!important;box-shadow:none!important;padding:0!important;line-height:1!important}
+.style-btn:hover{background:color-mix(in srgb,var(--row-color,#38bdf8) 26%,var(--panel2))!important;transform:translateY(-1px)}
+.del-btn{width:22px!important;height:22px!important;min-width:22px!important;border-radius:7px!important;font-size:13px!important}
+.fin-actions-cell{white-space:nowrap;text-align:center!important;width:58px!important;padding-inline:4px!important}
+.fin-name-cell{min-width:170px}.fin-name-inner{display:flex;align-items:center;gap:8px;min-width:0;width:100%}.fin-name-inner .fin-item-icon{flex-shrink:0}.fin-name-inner .fin-inp{font-size:15.5px!important;font-weight:950!important;letter-spacing:-.15px;min-width:0;color:var(--row-color,#38bdf8)!important}
+.fin-row-highlight[data-fin-key="banks"] .fin-name-inner .fin-inp{font-size:17px!important}
+.fin-row-highlight[data-fin-key="expenses"] .fin-name-inner .fin-inp{font-size:17px!important}
+.fin-row-highlight[data-fin-key="subscriptions"] .fin-name-inner .fin-inp{font-size:16px!important}
+.fin-title-wrap{gap:9px!important}.fin-item-icon{width:28px!important;height:28px!important;border-radius:10px!important;font-size:15px!important}.fin-table .fin-item-icon{width:24px!important;height:24px!important;border-radius:8px!important;font-size:12px!important}
+.row-visual-holder{display:none!important}.row-color-holder,.fin-card-color{display:none!important}.color-picker-mini{display:none!important}
+.fin-table thead th{font-weight:950!important;font-size:11px!important;color:var(--text-m)!important}.fin-table td{padding:8px 8px!important}.fin-table td[data-num],.fin-table td[data-num] input{font-weight:850!important;font-size:13px!important}
+@media(max-width:640px){
+  .fin-name-inner .fin-inp{font-size:16px!important}.fin-row-highlight[data-fin-key="banks"] .fin-name-inner .fin-inp,.fin-row-highlight[data-fin-key="expenses"] .fin-name-inner .fin-inp{font-size:18px!important}
+  .fin-actions-cell{position:absolute!important;left:8px!important;top:8px!important;width:auto!important;padding:0!important}.fin-row-actions{gap:4px}.style-btn,.del-btn{width:21px!important;height:21px!important;min-width:21px!important}
+  .fin-card-title{font-size:18px!important}.bank-grid .fin-card-title,#expensesView .fin-card-title,#subsView .fin-card-title{font-size:19px!important}.fin-card-total{font-size:18px!important}
+}
 
 </style>
 </head>
@@ -746,6 +858,25 @@ body[data-theme="light"] .mobile-theme-btn{background:rgba(255,255,255,.92);colo
       </div>
       <div style="margin-top:8px;font-size:11px;color:var(--text-d);line-height:1.7">الحالة: <span id="connStatus">—</span><br>النظام هنا لا يستخدم الجداول القديمة نهائياً؛ كل الداتا في جدول واحد: <b>mysystem_state</b>.</div>
     </div>
+
+    <div class="settings-section">
+      <h3>🔠 حجم الخط والواجهة</h3>
+      <div class="font-size-control">
+        <div class="font-size-row">
+          <label style="font-size:12px;color:var(--text-m);font-weight:800">صغير</label>
+          <input type="range" min="90" max="130" step="1" id="sysFontRange" oninput="setSystemFontScale(this.value,true)">
+          <label style="font-size:12px;color:var(--text-m);font-weight:800">كبير</label>
+          <span class="font-size-value" id="sysFontVal">100%</span>
+        </div>
+        <div class="quick-fonts">
+          <button type="button" data-fs="95" onclick="setSystemFontScale(95,true)">هادئ</button>
+          <button type="button" data-fs="105" onclick="setSystemFontScale(105,true)">مريح</button>
+          <button type="button" data-fs="115" onclick="setSystemFontScale(115,true)">كبير</button>
+          <button type="button" data-fs="125" onclick="setSystemFontScale(125,true)">كبير جدًا</button>
+        </div>
+      </div>
+    </div>
+
     <div class="settings-section">
       <h3>🗄️ SQL Setup</h3>
       <pre class="sql-box" id="sqlBox" style="max-height:160px"></pre>
@@ -766,6 +897,7 @@ body[data-theme="light"] .mobile-theme-btn{background:rgba(255,255,255,.92);colo
       <div class="mf-row"><label>ملاحظات</label><textarea class="mf-inp" id="bNotes" placeholder="تفاصيل..."></textarea></div>
       <div class="mg2">
         <div class="mf-row"><label>اللون</label><input class="mf-inp" id="bColor" type="color" value="#6366f1"></div>
+        <div class="mf-row"><label>الأيقونة اختياري</label><div class="optional-icon-row"><input class="mf-inp" id="bIcon" maxlength="2" placeholder="مثلاً ⚡ أو سيبه فاضي"><button type="button" class="icon-clear-btn" onclick="document.getElementById('bIcon').value=''">بدون</button></div></div>
         <div class="mf-row"><label>التكرار</label>
           <select class="mf-inp" id="bRepeat" onchange="onRepeatChange()">
             <option value="once">اليوم فقط</option>
@@ -820,6 +952,15 @@ body[data-theme="light"] .mobile-theme-btn{background:rgba(255,255,255,.92);colo
     <div id="taskModalBody"></div>
   </div>
 </div>
+
+<!-- FINANCE VISUAL ADD/EDIT MODAL -->
+<div id="financeItemModal" class="modal-backdrop hidden">
+  <div class="modal-box">
+    <div class="modal-head"><h2 id="financeItemModalTitle">إضافة عنصر</h2><button class="modal-close" onclick="closeFinanceItemModal()">✕</button></div>
+    <div id="financeItemModalBody"></div>
+  </div>
+</div>
+
 <!-- GOAL MODAL -->
 <div id="goalModal" class="modal-backdrop hidden">
   <div class="modal-box">
@@ -876,6 +1017,41 @@ const WORK = { data:{company:[],client:[]}, tab:'dash', layout:'list' };
 const FIN = { banks:[], gold:[], salary:[], expenses:[], subscriptions:[], debts:[], increases:[], tab:'banks', layout:'list' };
 const GOALS = { items:[], sections:[], activeSection:'all', layout:'list' };
 const NOTIFS = { items:[] };
+
+
+/* ===== UI helpers — no database/connection changes ===== */
+const UI_ROW_PAL = ['#38bdf8','#818cf8','#34d399','#f472b6','#fb923c','#a78bfa','#22d3ee','#86efac','#f87171','#fbbf24','#06b6d4','#c084fc'];
+const uiColor = i => UI_ROW_PAL[(+i||0) % UI_ROW_PAL.length];
+const normalizeHexColor = (v, fb='#6366f1') => /^#[0-9a-f]{6}$/i.test(String(v||'')) ? String(v) : fb;
+function itemColor(item, fallbackIndex=0){
+  const fb = uiColor(fallbackIndex);
+  if(!item || typeof item !== 'object') return fb;
+  item.color = normalizeHexColor(item.color, fb);
+  return item.color;
+}
+function finColorInput(key,id,color){
+  return `<input class="color-picker-mini" type="color" value="${normalizeHexColor(color)}" title="تغيير لون العنصر" onchange="finUpd('${key}','${id}',{color:this.value});finRender()">`;
+}
+const numVal = v => { const n=Number(v); return Number.isFinite(n)?n:0; };
+const getUsdRate = () => numVal(document.getElementById('usdRate')?.value) || 50;
+const fmtUSD = n => fmtNum(n) + ' USD';
+function bankUsd(b){ return numVal(b?.usd); }
+function bankEgp(b){ return b && b.egp !== undefined ? numVal(b.egp) : numVal(b?.balance); }
+function bankTotalEGP(b, rate=getUsdRate()){ return bankEgp(b) + bankUsd(b) * rate; }
+function normalizeFinanceData(){
+  FIN.banks = (FIN.banks||[]).map((b,i)=>{ b=b||{}; if(b.egp===undefined) b.egp=numVal(b.balance); if(b.usd===undefined) b.usd=0; b.balance=bankTotalEGP(b); if(!b.id) b.id=uid(); itemColor(b,i); return b; });
+  ['gold','salary','expenses','subscriptions','debts','increases'].forEach(k=>{ FIN[k]=(FIN[k]||[]).map((r,i)=>{ r=r||{}; if(!r.id) r.id=uid(); itemColor(r,i); return r; }); });
+}
+function td(label, html, extra=''){ return `<td data-label="${esc(label)}" ${extra}>${html}</td>`; }
+function finCardField(label, html, cls=''){ return `<div class="fin-field ${cls}"><label>${label}</label>${html}</div>`; }
+function finDelBtn(key,id){ return `<button class="del-btn" onclick="finDel('${key}','${id}')">×</button>`; }
+function finBankUpd(id, patch){
+  const row=FIN.banks.find(b=>b.id===id) || {};
+  const next=Object.assign({}, row, patch);
+  const clean={...patch, usd:bankUsd(next), egp:bankEgp(next)};
+  clean.balance=bankTotalEGP(clean);
+  finUpd('banks',id,clean);
+}
 
 /* ===== NAVIGATION ===== */
 function go(mod) {
@@ -1296,7 +1472,8 @@ function renderHub() {
   const allT=WORK.data.company.concat(WORK.data.client).flatMap(e=>e.tasks||[]);
   const pending=allT.filter(t=>!t.completed).length;
   const overdue=allT.filter(t=>!t.completed&&t.deadline&&daysUntil(t.deadline)<0).length;
-  const banks=FIN.banks.reduce((s,b)=>s+(+b.balance||0),0);
+  normalizeFinanceData();
+  const banks=FIN.banks.reduce((s,b)=>s+bankTotalEGP(b),0);
   const gold=FIN.gold.reduce((s,g)=>s+((+g.grams||0)*(+g.price_per_gram||0)),0);
   const total=banks+gold;
   const goalsActive=GOALS.items.filter(g=>!g.completed).length;
@@ -1481,7 +1658,7 @@ function renderBlock(b) {
   return `<div class="block-card ${stCls}" style="--block-color:${b.color||'#6366f1'}">
     <div class="block-card-head">
       <div>
-        <div class="block-title" style="color:${b.color||'#6366f1'}">${esc(b.title)}</div>
+        <div class="block-title" style="color:${b.color||'#6366f1'}">${b.icon?`<span class="block-icon-badge" style="--block-color:${b.color||'#6366f1'}">${esc(b.icon)}</span>`:''}${esc(b.title)}</div>
         ${b.notes?`<div class="block-notes">${esc(b.notes)}</div>`:''}
       </div>
       <div class="block-card-actions">
@@ -1577,6 +1754,7 @@ function openDayModal(editId=null) {
       document.getElementById('bEnd').value=b.end_time;
       document.getElementById('bNotes').value=b.notes||'';
       document.getElementById('bColor').value=b.color||'#6366f1';
+      const bi=document.getElementById('bIcon'); if(bi) bi.value=b.icon||'';
       const rm=b.repeat_mode||'everyday';
       const days=b.days_of_week||[0,1,2,3,4,5,6];
       let sv=rm;
@@ -1590,6 +1768,8 @@ function openDayModal(editId=null) {
   } else {
     document.getElementById('dayModalTitle').textContent='بلوك جديد';
     document.getElementById('bDelBtn').classList.add('hidden');
+    document.getElementById('bColor').value=uiColor(DAY.blocks.length);
+    const bi=document.getElementById('bIcon'); if(bi) bi.value='';
     setWdPicker([0,1,2,3,4,5,6]);
   }
   renderBTasks(); renderBLinks();
@@ -1638,6 +1818,7 @@ async function saveDayBlock(e) {
     end_time:document.getElementById('bEnd').value,
     notes:document.getElementById('bNotes').value.trim(),
     color:document.getElementById('bColor').value,
+    icon:document.getElementById('bIcon')?.value.trim()||'',
     repeat_mode:internalMode,
     block_date:internalMode==='once'?dateKey(DAY.date):null,
     tasks:bTasks.filter(t=>t.text.trim()),
@@ -1724,13 +1905,13 @@ function workDashHtml() {
 }
 
 function workTaskItemHtml(t, showActions=false) {
-  const ent=t._ent; const color=ent?.color||'#6366f1';
+  const ent=t._ent; const color=t.color||ent?.color||'#6366f1';
   const ov=!t.completed&&t.deadline&&daysUntil(t.deadline)<0;
   const td=!t.completed&&t.deadline&&daysUntil(t.deadline)===0;
   return `<div class="task-item-w ${t.completed?'done':''} ${ov?'overdue':''}" style="--entity-color:${color}">
     <div class="task-chk ${t.completed?'done':''}" onclick="workToggleTask('${t.id}','${ent?.id||''}')">${t.completed?'✓':''}</div>
     <div style="flex:1;min-width:0">
-      <div class="task-title-w">${esc(t.title)}</div>
+      <div class="task-title-w">${t.icon?`<span class="task-icon-dot" style="--entity-color:${rowColor}">${esc(t.icon)}</span>`:''}${esc(t.title)}</div>
       <div style="display:flex;gap:5px;margin-top:3px;flex-wrap:wrap;align-items:center">
         <span style="font-size:9px;background:color-mix(in srgb,${color} 14%,transparent);color:${color};padding:2px 6px;border-radius:99px;font-weight:800">${ent?.type==='company'?'🏢':'💼'} ${esc(ent?.name||'')}</span>
         ${t.deadline?`<span class="deadline-badge ${ov?'db-red':td?'db-yellow':'db-gray'}">${ov?'متأخر':td?'اليوم':daysUntil(t.deadline)+'y'}</span>`:''}
@@ -1753,7 +1934,7 @@ function renderWorkEntities(kind, container) {
     const total=(e.tasks||[]).length, done=(e.tasks||[]).filter(t=>t.completed).length;
     const ov=(e.tasks||[]).filter(t=>!t.completed&&t.deadline&&daysUntil(t.deadline)<0).length;
     const pct=total?Math.round(done/total*100):0;
-    const color=e.color||WORK_PAL[0]; const init=(e.name||'?')[0].toUpperCase();
+    const color=e.color||WORK_PAL[0]; const init=e.icon||((e.name||'?')[0].toUpperCase());
     const open=e._expanded!==false;
     return `<div class="entity-card ${open?'open':''}" data-eid="${e.id}">
       <div class="entity-hdr" onclick="workToggleEnt('${e.id}')">
@@ -1784,16 +1965,17 @@ function renderWorkEntities(kind, container) {
 }
 
 function workTaskFullHtml(t, eid, isFreelance, entColor='#6366f1') {
+  const rowColor=t.color||entColor||'#6366f1';
   const ov=!t.completed&&t.deadline&&daysUntil(t.deadline)<0;
   const td=!t.completed&&t.deadline&&daysUntil(t.deadline)===0;
   const soon=!t.completed&&t.deadline&&daysUntil(t.deadline)>0&&daysUntil(t.deadline)<=3;
   const dCls=ov?'db-red':td||soon?'db-yellow':'db-gray';
   const dTxt=t.deadline?(ov?`متأخر ${Math.abs(daysUntil(t.deadline))}y`:td?'اليوم 🔥':daysUntil(t.deadline)+'y'):'';
   const links=(Array.isArray(t.links)?t.links:[]).slice(0,3);
-  return `<div class="task-item-w ${t.completed?'done':''} ${ov?'overdue':''}" style="--entity-color:${entColor}">
+  return `<div class="task-item-w ${t.completed?'done':''} ${ov?'overdue':''}" style="--entity-color:${rowColor}">
     <div class="task-chk ${t.completed?'done':''}" onclick="workToggleTask('${t.id}','${eid}')">${t.completed?'✓':''}</div>
     <div style="flex:1;min-width:0">
-      <div class="task-title-w">${esc(t.title)}</div>
+      <div class="task-title-w">${t.icon?`<span class="task-icon-dot" style="--entity-color:${rowColor}">${esc(t.icon)}</span>`:''}${esc(t.title)}</div>
       ${t.description?`<div class="task-desc-w">${esc(t.description)}</div>`:''}
       ${links.map(l=>`<a class="link-chip" href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.name||l.url)}</a>`).join('')}
       <div style="display:flex;gap:5px;margin-top:3px;flex-wrap:wrap;align-items:center">
@@ -1818,7 +2000,8 @@ function workAddEntity(type) {
   document.getElementById('entityModalTitle').textContent=type==='company'?'🏢 شركة جديدة':'👤 عميل جديد';
   document.getElementById('entityModalBody').innerHTML=`
     <div class="mf-row"><label>الاسم *</label><input class="mf-inp" id="eName" placeholder="${type==='company'?'شركة XYZ':'أحمد محمد'}" autofocus></div>
-    <div class="mf-row"><label>اللون</label><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px">${WORK_PAL.map(c=>`<div onclick="document.getElementById('eColor').value='${c}';this.parentElement.querySelectorAll('div').forEach(d=>d.style.outline='');this.style.outline='2px solid #fff'" style="width:26px;height:26px;border-radius:7px;background:${c};cursor:pointer"></div>`).join('')}</div><input class="mf-inp" id="eColor" value="${WORK_PAL[0]}"></div>
+    <div class="mf-row"><label>الأيقونة اختياري</label><div class="optional-icon-row"><input class="mf-inp" id="eIcon" maxlength="2" value="${type==='company'?'🏢':'👤'}"><button class="icon-clear-btn" onclick="document.getElementById('eIcon').value=''">بدون</button></div></div>
+    <div class="mf-row"><label>اللون</label><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px">${WORK_PAL.map(c=>`<div onclick="document.getElementById('eColor').value='${c}';this.parentElement.querySelectorAll('div').forEach(d=>d.style.outline='');this.style.outline='2px solid #fff'" style="width:26px;height:26px;border-radius:7px;background:${c};cursor:pointer"></div>`).join('')}</div><input class="mf-inp" id="eColor" type="color" value="${WORK_PAL[(WORK.data[type]||[]).length%WORK_PAL.length]}"></div>
     <div class="modal-actions"><button class="btn btn-primary" onclick="workSaveEnt('${type}',null)">إضافة</button><button class="btn btn-ghost" onclick="closeEntityModal()">إلغاء</button></div>`;
   document.getElementById('entityModal').classList.remove('hidden');
   setTimeout(()=>document.getElementById('eName')?.focus(),60);
@@ -1828,21 +2011,23 @@ function workEditEnt(id) {
   document.getElementById('entityModalTitle').textContent='تعديل';
   document.getElementById('entityModalBody').innerHTML=`
     <div class="mf-row"><label>الاسم *</label><input class="mf-inp" id="eName" value="${esc(e.name)}" autofocus></div>
-    <div class="mf-row"><label>اللون</label><input class="mf-inp" id="eColor" value="${e.color||WORK_PAL[0]}"></div>
+    <div class="mf-row"><label>الأيقونة اختياري</label><div class="optional-icon-row"><input class="mf-inp" id="eIcon" maxlength="2" value="${esc(e.icon||'')}"><button class="icon-clear-btn" onclick="document.getElementById('eIcon').value=''">بدون</button></div></div>
+    <div class="mf-row"><label>اللون</label><input class="mf-inp" id="eColor" type="color" value="${e.color||WORK_PAL[0]}"></div>
     <div class="modal-actions"><button class="btn btn-primary" onclick="workSaveEnt('${e.type}','${e.id}')">حفظ</button><button class="btn btn-ghost" onclick="closeEntityModal()">إلغاء</button></div>`;
   document.getElementById('entityModal').classList.remove('hidden');
 }
 async function workSaveEnt(type, existId) {
   const name=document.getElementById('eName').value.trim(); if(!name)return toast('اكتب الاسم');
   const color=document.getElementById('eColor').value;
+  const icon=document.getElementById('eIcon')?.value.trim()||'';
   const kind=type==='company'?'company':'client';
   if(existId) {
-    const e=WORK.data[kind].find(x=>x.id===existId); if(e){e.name=name;e.color=color;}
-    if(sb) try{await sb.from('entities').update({name,color}).eq('id',existId);}catch(_){}
+    const e=WORK.data[kind].find(x=>x.id===existId); if(e){e.name=name;e.color=color;e.icon=icon;}
+    if(sb) try{await sb.from('entities').update({name,color,icon}).eq('id',existId);}catch(_){}
   } else {
-    const ne={id:uid(),name,type,color,tasks:[]};
+    const ne={id:uid(),name,type,color,icon,tasks:[]};
     WORK.data[kind].push(ne);
-    if(sb) try{await sb.from('entities').insert({name,type,color});}catch(_){}
+    if(sb) try{await sb.from('entities').insert({name,type,color,icon});}catch(_){}
   }
   workSaveLocal(); markWrite('work'); closeEntityModal(); renderWork(); toast(existId?'تم الحفظ ✅':'تم الإضافة ✅');
 }
@@ -1865,6 +2050,7 @@ function openTaskModal(taskId, entId, isFreelance=false) {
   tLinks=Array.isArray(task?.links)?task.links.map(l=>({...l})):[];
   document.getElementById('taskModalBody').innerHTML=`
     <div class="mf-row"><label>اسم التاسك *</label><input class="mf-inp" id="tTitle" value="${esc(task?.title||'')}" placeholder="مثلاً: مونتاج فيديو" autofocus></div>
+    <div class="mf-row"><label>الأيقونة اختياري</label><div class="optional-icon-row"><input class="mf-inp" id="tIcon" maxlength="2" value="${esc(task?.icon||'')}" placeholder="مثلاً 🎬"><button class="icon-clear-btn" onclick="document.getElementById('tIcon').value=''">بدون</button></div></div>
     <div class="mf-row"><label>الوصف</label><textarea class="mf-inp" id="tDesc" placeholder="تفاصيل...">${esc(task?.description||'')}</textarea></div>
     <div class="mg2">
       <div class="mf-row"><label>الديدلاين</label><input class="mf-inp" id="tDeadline" type="date" value="${task?.deadline?.slice(0,10)||''}"></div>
@@ -1874,6 +2060,7 @@ function openTaskModal(taskId, entId, isFreelance=false) {
         <option value="high" ${task?.priority==='high'?'selected':''}>عاجل 🔥</option>
       </select></div>
     </div>
+    <div class="mf-row"><label>لون التاسك</label><input class="mf-inp" id="tColor" type="color" value="${task?.color||ent?.color||WORK_PAL[0]}"></div>
     ${isFreelance?`<div class="mf-row"><label>السعر (EGP)</label><input class="mf-inp" id="tPrice" type="number" value="${task?.price||''}" dir="ltr"></div>`:''}
     <div class="mf-row"><label>روابط</label><div id="tLinksBox">${tLinks.map((_,i)=>tLinkHtml(i)).join('')}</div><button type="button" class="add-task-row" onclick="addTLink()">+ رابط</button></div>
     <div class="modal-actions">
@@ -1904,6 +2091,8 @@ async function saveTask() {
     id:editingTaskId||uid(), title, description:document.getElementById('tDesc').value.trim()||null,
     deadline:document.getElementById('tDeadline').value||null, priority:document.getElementById('tPriority').value,
     price:isFreelanceTask?(+document.getElementById('tPrice')?.value||null):null,
+    color:document.getElementById('tColor')?.value || '#6366f1',
+    icon:document.getElementById('tIcon')?.value.trim()||'',
     links, completed:false, day_synced:false,
   };
   const all=WORK.data.company.concat(WORK.data.client);
@@ -1920,8 +2109,8 @@ async function saveTask() {
   workSaveLocal(); markWrite('work');
   if(sb) {
     try {
-      if(editingTaskId) await sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links}).eq('id',editingTaskId);
-      else { const {data:ins}=await sb.from('tasks').insert({entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,day_synced:false}).select().single(); if(ins){tData.id=ins.id;} }
+      if(editingTaskId) await sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,color:tData.color,icon:tData.icon}).eq('id',editingTaskId);
+      else { const {data:ins}=await sb.from('tasks').insert({entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,color:tData.color,icon:tData.icon,day_synced:false}).select().single(); if(ins){tData.id=ins.id;} }
     } catch(_){}
   }
   closeTaskModal(); renderWork(); updateBadges(); toast(editingTaskId?'تم الحفظ ✅':'تم إضافة التاسك ✅');
@@ -1957,7 +2146,7 @@ function autoSyncTaskToDay(task, ent) {
     }
   } else {
     // No overlapping block — add as standalone once-block for today
-    const newBlock=dayNorm({id:uid(),title:task.title,notes:`من شغلي — ${ent.name}`,start_time:'09:00',end_time:'10:00',color:ent.color||'#a855f7',repeat_mode:'once',block_date:today,tasks:[],links:[]});
+    const newBlock=dayNorm({id:uid(),title:task.title,notes:`من شغلي — ${ent.name}`,start_time:'09:00',end_time:'10:00',color:task.color||ent.color||'#a855f7',repeat_mode:'once',block_date:today,tasks:[],links:[]});
     DAY.blocks.push(newBlock); daySaveLocal();
     if(sb) sb.from('recurring_blocks').upsert({...newBlock,user_id:OWNER,updated_at:new Date().toISOString()}).then(()=>{}).catch(()=>{});
     notif({icon:'📅',title:'تاسك جديد أُضيف لليوم',sub:`"${task.title}" ظهر في جدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
@@ -1981,28 +2170,27 @@ async function workDelTask(tid, eid) {
 /* =====================================================
    FINANCE
    ===================================================== */
-function finSaveLocal() { localStorage.setItem('ms_fin',JSON.stringify({banks:FIN.banks,gold:FIN.gold,salary:FIN.salary,expenses:FIN.expenses,subscriptions:FIN.subscriptions,debts:FIN.debts,increases:FIN.increases})); touchCloud(); }
+function finSaveLocal() { normalizeFinanceData(); localStorage.setItem('ms_fin',JSON.stringify({banks:FIN.banks,gold:FIN.gold,salary:FIN.salary,expenses:FIN.expenses,subscriptions:FIN.subscriptions,debts:FIN.debts,increases:FIN.increases})); touchCloud(); }
 async function finLoad() {
   const c=JSON.parse(localStorage.getItem('ms_fin')||'null'); if(c) Object.assign(FIN,c);
-  if(sb){try{const tables=['banks','gold_items','salary_items','expenses','subscriptions','debts','monthly_increases'];const res=await Promise.all(tables.map(t=>sb.from(t).select('*')));FIN.banks=res[0].data||FIN.banks;FIN.gold=res[1].data||FIN.gold;FIN.salary=res[2].data||FIN.salary;FIN.expenses=res[3].data||FIN.expenses;FIN.subscriptions=res[4].data||FIN.subscriptions;FIN.debts=res[5].data||FIN.debts;FIN.increases=res[6].data||FIN.increases;finSaveLocal();}catch(_){}}
+  normalizeFinanceData();
+  if(sb){try{const tables=['banks','gold_items','salary_items','expenses','subscriptions','debts','monthly_increases'];const res=await Promise.all(tables.map(t=>sb.from(t).select('*')));FIN.banks=res[0].data||FIN.banks;FIN.gold=res[1].data||FIN.gold;FIN.salary=res[2].data||FIN.salary;FIN.expenses=res[3].data||FIN.expenses;FIN.subscriptions=res[4].data||FIN.subscriptions;FIN.debts=res[5].data||FIN.debts;FIN.increases=res[6].data||FIN.increases;normalizeFinanceData();finSaveLocal();}catch(_){} }
 }
 const FIN_TABS=[['banks','🏦','بنوك','linear-gradient(135deg,#2563eb,#7c3aed)'],['gold','🥇','ذهب','linear-gradient(135deg,#b45309,#f59e0b)'],['salary','💵','مرتبات','linear-gradient(135deg,#047857,#10b981)'],['expenses','📊','مصاريف','linear-gradient(135deg,#7c3aed,#a855f7)'],['debts','💳','ديون','linear-gradient(135deg,#b91c1c,#ef4444)'],['increases','📈','زيادات','linear-gradient(135deg,#0f766e,#06b6d4)']];
 const FIN_TBL_MAP={banks:'banks',gold:'gold_items',salary:'salary_items',expenses:'expenses',subscriptions:'subscriptions',debts:'debts',increases:'monthly_increases'};
 const FIN_STATE_KEY={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',subscriptions:'subscriptions',debts:'debts',increases:'increases'};
 
 function renderFin() {
-  // Nav
+  normalizeFinanceData();
   document.getElementById('finNav').innerHTML=FIN_TABS.map(([k,ic,lb,gr])=>`<div class="fin-nav-item ${FIN.tab===k?'active':''}" data-ftab="${k}" onclick="finTab('${k}')"><div class="fin-nav-icon" style="background:${gr}">${ic}</div>${lb}</div>`).join('');
-  // Hero
-  const rate=+document.getElementById('usdRate')?.value||50;
-  const banks=FIN.banks.reduce((s,b)=>s+(+b.balance||0),0);
+  const rate=getUsdRate();
+  const banks=FIN.banks.reduce((s,b)=>s+bankTotalEGP(b,rate),0);
   const gold=FIN.gold.reduce((s,g)=>s+((+g.grams||0)*(+g.price_per_gram||0)),0);
   const total=banks+gold;
   document.getElementById('finTotal').textContent=fmtEGP(total);
   document.getElementById('finRateTag').textContent=`1 USD = ${rate} EGP`;
   const mx=total||1;
   document.getElementById('finDist').innerHTML=[['البنوك',banks,'linear-gradient(90deg,#0ea5e9,#6366f1)'],['الذهب',gold,'linear-gradient(90deg,#f59e0b,#fcd34d)']].map(([l,v,g])=>`<div class="fin-dist-item"><div class="fin-dist-label">${l}</div><div class="fin-dist-val">${fmtEGP(v)}</div><div class="fin-dist-bar"><div class="fin-dist-fill" style="width:${Math.round(v/mx*100)}%;background:${g}"></div></div></div>`).join('');
-  // Sections
   const secEl=document.getElementById('finSections');
   secEl.innerHTML='';
   FIN_TABS.forEach(([k])=>{ const d=document.createElement('div'); d.className='fin-section'+(FIN.tab===k?' active':''); d.id='fsec-'+k; secEl.appendChild(d); });
@@ -2012,71 +2200,127 @@ function finTab(k) { FIN.tab=k; renderFin(); }
 function finSetLayout(l) { FIN.layout=l; document.querySelectorAll('#finLayoutToggle .vt-btn').forEach((b,i)=>b.classList.toggle('active',['list','grid'][i]===l)); finRender(); }
 
 function finRender() {
-  const rate=+document.getElementById('usdRate')?.value||50;
-  const banks=FIN.banks.reduce((s,b)=>s+(+b.balance||0),0), gold=FIN.gold.reduce((s,g)=>s+((+g.grams||0)*(+g.price_per_gram||0)),0), total=banks+gold;
+  normalizeFinanceData();
+  const rate=getUsdRate();
+  const banks=FIN.banks.reduce((s,b)=>s+bankTotalEGP(b,rate),0), gold=FIN.gold.reduce((s,g)=>s+((+g.grams||0)*(+g.price_per_gram||0)),0), total=banks+gold;
   if(document.getElementById('finTotal')) document.getElementById('finTotal').textContent=fmtEGP(total);
+  if(document.getElementById('finDist')){
+    const mx=total||1;
+    document.getElementById('finDist').innerHTML=[['البنوك',banks,'linear-gradient(90deg,#0ea5e9,#6366f1)'],['الذهب',gold,'linear-gradient(90deg,#f59e0b,#fcd34d)']].map(([l,v,g])=>`<div class="fin-dist-item"><div class="fin-dist-label">${l}</div><div class="fin-dist-val">${fmtEGP(v)}</div><div class="fin-dist-bar"><div class="fin-dist-fill" style="width:${Math.round(v/mx*100)}%;background:${g}"></div></div></div>`).join('');
+  }
   finRenderSection(rate);
+  setTimeout(attachFinanceColorControls,0);
 }
 
 function finRenderSection(rate=50) {
   const el=document.getElementById('fsec-'+FIN.tab); if(!el)return;
-  const BK=BK_PAL; const layout=FIN.layout;
-  const wrapStart=layout==='grid'?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">':'<div>';
-  const wrapEnd='</div>';
+  normalizeFinanceData();
+  const layout=FIN.layout;
 
   if(FIN.tab==='banks') {
-    const tot=FIN.banks.reduce((s,b)=>s+(+b.balance||0),0);
+    const tot=FIN.banks.reduce((s,b)=>s+bankTotalEGP(b,rate),0);
+    const usdTot=FIN.banks.reduce((s,b)=>s+bankUsd(b),0);
     el.innerHTML=`<div class="fin-summary">
       <div class="fin-sum-card"><div class="fin-sum-label">عدد البنوك</div><div class="fin-sum-val">${FIN.banks.length}</div></div>
-      <div class="fin-sum-card"><div class="fin-sum-label">الإجمالي</div><div class="fin-sum-val" style="color:var(--fin-accent)">${fmtEGP(tot)}</div></div>
-      <div class="fin-sum-card"><div class="fin-sum-label">المتوسط</div><div class="fin-sum-val">${fmtEGP(FIN.banks.length?tot/FIN.banks.length:0)}</div></div>
-    </div>${wrapStart}<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>البنك</th><th>الرصيد</th><th>ملاحظة</th><th></th></tr></thead><tbody id="banksBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('banks')">+ إضافة بنك</button></div>${wrapEnd}`;
-    document.getElementById('banksBody').innerHTML=FIN.banks.map((b,i)=>{const c=BK[i%BK.length];return `<tr class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(b.name)}" style="color:${c};font-weight:800" onchange="finUpd('banks','${b.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+b.balance||0}" style="font-weight:800" onchange="finUpd('banks','${b.id}',{balance:+this.value});finRender()" dir="ltr"></td><td><input class="fin-inp" value="${esc(b.note||'')}" placeholder="ملاحظة..." onchange="finUpd('banks','${b.id}',{note:this.value})"></td><td class="del-cell"><button class="del-btn" onclick="finDel('banks','${b.id}')">×</button></td></tr>`;}).join('');
+      <div class="fin-sum-card"><div class="fin-sum-label">إجمالي الدولار</div><div class="fin-sum-val" style="color:#38bdf8">${fmtUSD(usdTot)}</div></div>
+      <div class="fin-sum-card"><div class="fin-sum-label">إجمالي البنوك بالجنيه</div><div class="fin-sum-val" style="color:var(--fin-accent)">${fmtEGP(tot)}</div></div>
+    </div><div id="banksView"></div>`;
+    const host=document.getElementById('banksView');
+    if(layout==='grid'){
+      host.innerHTML=`<div class="fin-card-grid bank-grid">${FIN.banks.map((b,i)=>{const c=itemColor(b,i),total=bankTotalEGP(b,rate);return `<div class="fin-card" style="--row-color:${c}"><div class="fin-card-head"><div class="fin-card-title">${esc(b.name||'بنك جديد')}</div>${finDelBtn('banks',b.id)}</div><div class="fin-card-total">${fmtEGP(total)}</div><div class="fin-card-fields">${finCardField('اسم البنك',`<input value="${esc(b.name||'')}" onchange="finBankUpd('${b.id}',{name:this.value})">`,'name full')}${finCardField('USD',`<input type="number" value="${bankUsd(b)}" onchange="finBankUpd('${b.id}',{usd:+this.value});finRender()">`)}${finCardField('EGP',`<input type="number" value="${bankEgp(b)}" onchange="finBankUpd('${b.id}',{egp:+this.value});finRender()">`)}${finCardField('الإجمالي بالجنيه',`<div class="fin-read success">${fmtEGP(total)}</div>`,'full')}${finCardField('ملاحظة',`<input value="${esc(b.note||'')}" placeholder="ملاحظة..." onchange="finBankUpd('${b.id}',{note:this.value})">`,'note full')}</div></div>`;}).join('')}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('banks')">+ إضافة بنك</button>`;
+    } else {
+      host.innerHTML=`<div class="fin-table-wrap"><table class="fin-table"><colgroup><col style="width:22%"><col style="width:16%"><col style="width:16%"><col style="width:20%"><col style="width:22%"><col style="width:4%"></colgroup><thead><tr><th>البنك</th><th>USD</th><th>EGP</th><th>الإجمالي بالجنيه</th><th>ملاحظة</th><th></th></tr></thead><tbody id="banksBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('banks')">+ إضافة بنك</button></div>`;
+      document.getElementById('banksBody').innerHTML=FIN.banks.map((b,i)=>{const c=itemColor(b,i),total=bankTotalEGP(b,rate);return `<tr class="fin-row-highlight" style="--row-color:${c}">${td('البنك',`<input class="fin-inp" value="${esc(b.name||'')}" style="color:${c};font-weight:900" onchange="finBankUpd('${b.id}',{name:this.value})">`)}${td('USD',`<input class="fin-inp" type="number" value="${bankUsd(b)}" onchange="finBankUpd('${b.id}',{usd:+this.value});finRender()">`,'data-num')}${td('EGP',`<input class="fin-inp" type="number" value="${bankEgp(b)}" onchange="finBankUpd('${b.id}',{egp:+this.value});finRender()">`,'data-num')}${td('الإجمالي بالجنيه',`<b style="direction:ltr;color:${c}">${fmtEGP(total)}</b>`,'data-num')}${td('ملاحظة',`<input class="fin-inp" value="${esc(b.note||'')}" placeholder="ملاحظة..." onchange="finBankUpd('${b.id}',{note:this.value})">`)}${td('',finDelBtn('banks',b.id),'class="del-cell"')}</tr>`;}).join('');
+    }
   }
   else if(FIN.tab==='gold') {
     const tot=FIN.gold.reduce((s,g)=>s+((+g.grams||0)*(+g.price_per_gram||0)),0), totG=FIN.gold.reduce((s,g)=>s+(+g.grams||0),0);
-    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الجرامات</div><div class="fin-sum-val">${fmtGrams(totG)} جم</div></div><div class="fin-sum-card"><div class="fin-sum-label">القيمة الإجمالية</div><div class="fin-sum-val" style="color:#fbbf24">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متوسط سعر الجرام</div><div class="fin-sum-val">${fmtEGP(totG?tot/totG:0)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الصنف</th><th>الوزن (جم)</th><th>سعر الجرام</th><th>الإجمالي</th><th></th></tr></thead><tbody id="goldBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('gold')">+ إضافة ذهب</button></div>`;
-    document.getElementById('goldBody').innerHTML=FIN.gold.map((g,i)=>{const c=['#fbbf24','#f59e0b','#fcd34d','#d97706'][i%4];const v=(+g.grams||0)*(+g.price_per_gram||0);return `<tr class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(g.name)}" style="color:${c};font-weight:800" onchange="finUpd('gold','${g.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+g.grams||0}" dir="ltr" onchange="finUpd('gold','${g.id}',{grams:+this.value});finRender()"></td><td><input class="fin-inp" type="number" value="${+g.price_per_gram||0}" dir="ltr" onchange="finUpd('gold','${g.id}',{price_per_gram:+this.value});finRender()"></td><td style="font-weight:800;color:${c};direction:ltr">${fmtEGP(v)}</td><td class="del-cell"><button class="del-btn" onclick="finDel('gold','${g.id}')">×</button></td></tr>`;}).join('');
+    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الجرامات</div><div class="fin-sum-val">${fmtGrams(totG)} جم</div></div><div class="fin-sum-card"><div class="fin-sum-label">القيمة الإجمالية</div><div class="fin-sum-val" style="color:#fbbf24">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متوسط سعر الجرام</div><div class="fin-sum-val">${fmtEGP(totG?tot/totG:0)}</div></div></div><div id="goldView"></div>`;
+    const host=document.getElementById('goldView');
+    if(layout==='grid') host.innerHTML=`<div class="fin-card-grid">${FIN.gold.map((g,i)=>{const c=itemColor(g,i),v=(+g.grams||0)*(+g.price_per_gram||0);return `<div class="fin-card" style="--row-color:${c}"><div class="fin-card-head"><div class="fin-card-title">${esc(g.name||'ذهب')}</div>${finDelBtn('gold',g.id)}</div><div class="fin-card-total">${fmtEGP(v)}</div><div class="fin-card-fields">${finCardField('الصنف',`<input value="${esc(g.name||'')}" onchange="finUpd('gold','${g.id}',{name:this.value})">`,'name full')}${finCardField('الوزن',`<input type="number" value="${+g.grams||0}" onchange="finUpd('gold','${g.id}',{grams:+this.value});finRender()">`)}${finCardField('سعر الجرام',`<input type="number" value="${+g.price_per_gram||0}" onchange="finUpd('gold','${g.id}',{price_per_gram:+this.value});finRender()">`)}</div></div>`;}).join('')}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('gold')">+ إضافة ذهب</button>`;
+    else {host.innerHTML=`<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الصنف</th><th>الوزن</th><th>سعر الجرام</th><th>الإجمالي</th><th></th></tr></thead><tbody id="goldBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('gold')">+ إضافة ذهب</button></div>`;document.getElementById('goldBody').innerHTML=FIN.gold.map((g,i)=>{const c=itemColor(g,i),v=(+g.grams||0)*(+g.price_per_gram||0);return `<tr class="fin-row-highlight" style="--row-color:${c}">${td('الصنف',`<input class="fin-inp" value="${esc(g.name||'')}" style="color:${c};font-weight:900" onchange="finUpd('gold','${g.id}',{name:this.value})">`)}${td('الوزن',`<input class="fin-inp" type="number" value="${+g.grams||0}" onchange="finUpd('gold','${g.id}',{grams:+this.value});finRender()">`,'data-num')}${td('سعر الجرام',`<input class="fin-inp" type="number" value="${+g.price_per_gram||0}" onchange="finUpd('gold','${g.id}',{price_per_gram:+this.value});finRender()">`,'data-num')}${td('الإجمالي',`<b style="direction:ltr;color:${c}">${fmtEGP(v)}</b>`,'data-num')}${td('',finDelBtn('gold',g.id),'class="del-cell"')}</tr>`;}).join('');}
   }
   else if(FIN.tab==='salary') {
     const tot=FIN.salary.reduce((s,r)=>s+(+r.amount||0),0),paid=FIN.salary.filter(r=>r.paid).reduce((s,r)=>s+(+r.amount||0),0);
-    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">الإجمالي</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصدر</th><th>المبلغ</th><th>استلمت؟</th><th></th></tr></thead><tbody id="salBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('salary')">+ إضافة مرتب</button></div>`;
-    document.getElementById('salBody').innerHTML=FIN.salary.map((r,i)=>{const c=['#34d399','#10b981','#6ee7b7'][i%3];return `<tr ${r.paid?'class="paid-row"':''} style="${r.paid?'':''}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('salary','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('salary','${r.id}',{amount:+this.value});finRender()"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('salary','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('salary','${r.id}')">×</button></td></tr>`;}).join('');
+    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">الإجمالي</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div><div id="salaryView"></div>`;
+    const host=document.getElementById('salaryView');
+    if(layout==='grid') host.innerHTML=`<div class="fin-card-grid">${FIN.salary.map((r,i)=>{const c=itemColor(r,i);return `<div class="fin-card" style="--row-color:${c}"><div class="fin-card-head"><div class="fin-card-title">${esc(r.name||'مرتب')}</div>${finDelBtn('salary',r.id)}</div><div class="fin-card-total">${fmtEGP(r.amount)}</div><div class="fin-card-fields">${finCardField('المصدر',`<input value="${esc(r.name||'')}" onchange="finUpd('salary','${r.id}',{name:this.value})">`,'name full')}${finCardField('المبلغ',`<input type="number" value="${+r.amount||0}" onchange="finUpd('salary','${r.id}',{amount:+this.value});finRender()">`)}${finCardField('استلمت؟',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('salary','${r.id}',{paid:this.checked});finRender()" style="width:19px;height:19px;accent-color:var(--success)">`)}</div></div>`;}).join('')}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('salary')">+ إضافة مرتب</button>`;
+    else {host.innerHTML=`<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصدر</th><th>المبلغ</th><th>استلمت؟</th><th></th></tr></thead><tbody id="salBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('salary')">+ إضافة مرتب</button></div>`;document.getElementById('salBody').innerHTML=FIN.salary.map((r,i)=>{const c=itemColor(r,i);return `<tr class="${r.paid?'paid-row ':''}fin-row-highlight" style="--row-color:${c}">${td('المصدر',`<input class="fin-inp" value="${esc(r.name||'')}" style="color:${c};font-weight:900" onchange="finUpd('salary','${r.id}',{name:this.value})">`)}${td('المبلغ',`<input class="fin-inp" type="number" value="${+r.amount||0}" onchange="finUpd('salary','${r.id}',{amount:+this.value});finRender()">`,'data-num')}${td('استلمت؟',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('salary','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px">`)}${td('',finDelBtn('salary',r.id),'class="del-cell"')}</tr>`;}).join('');}
   }
   else if(FIN.tab==='expenses') {
     const expTot=FIN.expenses.reduce((s,e)=>s+(+e.amount||0),0),expPaid=FIN.expenses.reduce((s,e)=>s+(+e.paid_amount||0),0),subUSD=FIN.subscriptions.reduce((s,r)=>s+(+r.usd||0),0),subEGP=subUSD*rate,grandTot=expTot+subEGP,grandPaid=expPaid+FIN.subscriptions.filter(r=>r.paid).reduce((s,r)=>s+(+r.usd*rate||0),0);
-    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">مصاريف</div><div class="fin-sum-val">${fmtEGP(expTot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">اشتراكات</div><div class="fin-sum-val">${fmtEGP(subEGP)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--danger)">${fmtEGP(grandTot-grandPaid)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصروف</th><th>المبلغ</th><th>مدفوع</th><th>متبقي</th><th>✓</th><th></th></tr></thead><tbody id="expBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('expenses')">+ إضافة مصروف</button></div>
-    <div style="font-size:13px;font-weight:800;margin:14px 0 10px;color:var(--text-m)">الاشتراكات الشهرية</div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاشتراك</th><th>USD</th><th>EGP</th><th>✓</th><th></th></tr></thead><tbody id="subBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('subscriptions')">+ إضافة اشتراك</button></div>`;
-    document.getElementById('expBody').innerHTML=FIN.expenses.map((r,i)=>{const c=['#a78bfa','#818cf8','#c4b5fd'][i%3];const rem=Math.max(0,(+r.amount||0)-(+r.paid_amount||0));const done=r.paid||(+r.paid_amount>=(+r.amount)&&+r.amount>0);return `<tr ${done?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('expenses','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('expenses','${r.id}',{amount:+this.value});finRender()"></td><td><input class="fin-inp" type="number" value="${+r.paid_amount||0}" dir="ltr" onchange="finUpd('expenses','${r.id}',{paid_amount:+this.value});finRender()"></td><td style="direction:ltr;font-weight:800;color:${rem>0?'var(--warning)':'var(--success)'}">${fmtEGP(rem)}</td><td><input type="checkbox" ${done?'checked':''} onchange="finUpd('expenses','${r.id}',{paid:this.checked,paid_amount:this.checked?${+r.amount||0}:0});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('expenses','${r.id}')">×</button></td></tr>`;}).join('');
-    document.getElementById('subBody').innerHTML=FIN.subscriptions.map((r,i)=>{const c=['#38bdf8','#0ea5e9','#22d3ee'][i%3];const egp=(+r.usd||0)*rate;return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('subscriptions','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.usd||0}" dir="ltr" onchange="finUpd('subscriptions','${r.id}',{usd:+this.value});finRender()"></td><td style="direction:ltr;font-weight:800;color:${c}">${fmtEGP(egp)}</td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('subscriptions','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('subscriptions','${r.id}')">×</button></td></tr>`;}).join('');
+    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">مصاريف</div><div class="fin-sum-val">${fmtEGP(expTot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">اشتراكات</div><div class="fin-sum-val">${fmtEGP(subEGP)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--danger)">${fmtEGP(grandTot-grandPaid)}</div></div></div><div id="expensesView"></div><div style="font-size:13px;font-weight:800;margin:14px 0 10px;color:var(--text-m)">الاشتراكات الشهرية</div><div id="subsView"></div>`;
+    const expHost=document.getElementById('expensesView'), subHost=document.getElementById('subsView');
+    if(layout==='grid'){
+      expHost.innerHTML=`<div class="fin-card-grid">${FIN.expenses.map((r,i)=>{const c=itemColor(r,i),rem=Math.max(0,(+r.amount||0)-(+r.paid_amount||0)),done=r.paid||(+r.paid_amount>=(+r.amount)&&+r.amount>0);return `<div class="fin-card ${done?'paid-row':''}" style="--row-color:${c}"><div class="fin-card-head"><div class="fin-card-title">${esc(r.name||'مصروف جديد')}</div>${finDelBtn('expenses',r.id)}</div><div class="fin-card-total">${fmtEGP(r.amount)}</div><div class="fin-card-fields">${finCardField('المصروف',`<input value="${esc(r.name||'')}" onchange="finUpd('expenses','${r.id}',{name:this.value})">`,'name full')}${finCardField('المبلغ',`<input type="number" value="${+r.amount||0}" onchange="finUpd('expenses','${r.id}',{amount:+this.value});finRender()">`)}${finCardField('مدفوع',`<input type="number" value="${+r.paid_amount||0}" onchange="finUpd('expenses','${r.id}',{paid_amount:+this.value});finRender()">`)}${finCardField('متبقي',`<div class="fin-read ${rem>0?'warn':'success'}">${fmtEGP(rem)}</div>`)}${finCardField('خلص؟',`<input type="checkbox" ${done?'checked':''} onchange="finUpd('expenses','${r.id}',{paid:this.checked,paid_amount:this.checked?${+r.amount||0}:0});finRender()" style="width:19px;height:19px;accent-color:var(--success)">`)}</div></div>`;}).join('')}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('expenses')">+ إضافة مصروف</button>`;
+      subHost.innerHTML=`<div class="fin-card-grid">${FIN.subscriptions.map((r,i)=>{const c=itemColor(r,i+FIN.expenses.length),egp=(+r.usd||0)*rate;return `<div class="fin-card ${r.paid?'paid-row':''}" style="--row-color:${c}"><div class="fin-card-head"><div class="fin-card-title">${esc(r.name||'اشتراك جديد')}</div>${finDelBtn('subscriptions',r.id)}</div><div class="fin-card-total">${fmtEGP(egp)}</div><div class="fin-card-fields">${finCardField('الاشتراك',`<input value="${esc(r.name||'')}" onchange="finUpd('subscriptions','${r.id}',{name:this.value})">`,'name full')}${finCardField('USD',`<input type="number" value="${+r.usd||0}" onchange="finUpd('subscriptions','${r.id}',{usd:+this.value});finRender()">`)}${finCardField('EGP',`<div class="fin-read">${fmtEGP(egp)}</div>`)}${finCardField('دفع؟',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('subscriptions','${r.id}',{paid:this.checked});finRender()" style="width:19px;height:19px;accent-color:var(--success)">`)}</div></div>`;}).join('')}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('subscriptions')">+ إضافة اشتراك</button>`;
+    } else {
+      expHost.innerHTML=`<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصروف</th><th>المبلغ</th><th>مدفوع</th><th>متبقي</th><th>✓</th><th></th></tr></thead><tbody id="expBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('expenses')">+ إضافة مصروف</button></div>`;
+      document.getElementById('expBody').innerHTML=FIN.expenses.map((r,i)=>{const c=itemColor(r,i),rem=Math.max(0,(+r.amount||0)-(+r.paid_amount||0)),done=r.paid||(+r.paid_amount>=(+r.amount)&&+r.amount>0);return `<tr class="${done?'paid-row ':''}fin-row-highlight" style="--row-color:${c}">${td('المصروف',`<input class="fin-inp" value="${esc(r.name||'')}" style="color:${c};font-weight:900" onchange="finUpd('expenses','${r.id}',{name:this.value})">`)}${td('المبلغ',`<input class="fin-inp" type="number" value="${+r.amount||0}" onchange="finUpd('expenses','${r.id}',{amount:+this.value});finRender()">`,'data-num')}${td('مدفوع',`<input class="fin-inp" type="number" value="${+r.paid_amount||0}" onchange="finUpd('expenses','${r.id}',{paid_amount:+this.value});finRender()">`,'data-num')}${td('متبقي',`<b style="direction:ltr;color:${rem>0?'var(--warning)':'var(--success)'}">${fmtEGP(rem)}</b>`,'data-num')}${td('✓',`<input type="checkbox" ${done?'checked':''} onchange="finUpd('expenses','${r.id}',{paid:this.checked,paid_amount:this.checked?${+r.amount||0}:0});finRender()" style="accent-color:var(--success);width:17px;height:17px">`)}${td('',finDelBtn('expenses',r.id),'class="del-cell"')}</tr>`;}).join('');
+      subHost.innerHTML=`<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاشتراك</th><th>USD</th><th>EGP</th><th>✓</th><th></th></tr></thead><tbody id="subBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('subscriptions')">+ إضافة اشتراك</button></div>`;
+      document.getElementById('subBody').innerHTML=FIN.subscriptions.map((r,i)=>{const c=itemColor(r,i+FIN.expenses.length),egp=(+r.usd||0)*rate;return `<tr class="${r.paid?'paid-row ':''}fin-row-highlight" style="--row-color:${c}">${td('الاشتراك',`<input class="fin-inp" value="${esc(r.name||'')}" style="color:${c};font-weight:900" onchange="finUpd('subscriptions','${r.id}',{name:this.value})">`)}${td('USD',`<input class="fin-inp" type="number" value="${+r.usd||0}" onchange="finUpd('subscriptions','${r.id}',{usd:+this.value});finRender()">`,'data-num')}${td('EGP',`<b style="direction:ltr;color:${c}">${fmtEGP(egp)}</b>`,'data-num')}${td('✓',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('subscriptions','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px">`)}${td('',finDelBtn('subscriptions',r.id),'class="del-cell"')}</tr>`;}).join('');
+    }
   }
   else if(FIN.tab==='debts') {
     const tot=FIN.debts.filter(d=>!d.paid).reduce((s,d)=>s+(+d.amount||0),0);
-    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">ديون متبقية</div><div class="fin-sum-val" style="color:var(--danger)">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">عدد الديون</div><div class="fin-sum-val">${FIN.debts.filter(d=>!d.paid).length}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مسددة</div><div class="fin-sum-val" style="color:var(--success)">${FIN.debts.filter(d=>d.paid).length}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الدين</th><th>المبلغ</th><th>خلص؟</th><th></th></tr></thead><tbody id="debtsBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('debts')">+ إضافة دين</button></div>`;
-    document.getElementById('debtsBody').innerHTML=FIN.debts.map((r,i)=>{const c=['#f87171','#fb923c','#fca5a5'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('debts','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('debts','${r.id}',{amount:+this.value});finRender()"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('debts','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--danger);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('debts','${r.id}')">×</button></td></tr>`;}).join('');
+    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">ديون متبقية</div><div class="fin-sum-val" style="color:var(--danger)">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">عدد الديون</div><div class="fin-sum-val">${FIN.debts.filter(d=>!d.paid).length}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مسددة</div><div class="fin-sum-val" style="color:var(--success)">${FIN.debts.filter(d=>d.paid).length}</div></div></div><div id="debtsView"></div>`;
+    const host=document.getElementById('debtsView');
+    if(layout==='grid') host.innerHTML=`<div class="fin-card-grid">${FIN.debts.map((r,i)=>{const c=itemColor(r,i);return `<div class="fin-card ${r.paid?'paid-row':''}" style="--row-color:${c}"><div class="fin-card-head"><div class="fin-card-title">${esc(r.name||'دين جديد')}</div>${finDelBtn('debts',r.id)}</div><div class="fin-card-total">${fmtEGP(r.amount)}</div><div class="fin-card-fields">${finCardField('الدين',`<input value="${esc(r.name||'')}" onchange="finUpd('debts','${r.id}',{name:this.value})">`,'name full')}${finCardField('المبلغ',`<input type="number" value="${+r.amount||0}" onchange="finUpd('debts','${r.id}',{amount:+this.value});finRender()">`)}${finCardField('خلص؟',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('debts','${r.id}',{paid:this.checked});finRender()" style="width:19px;height:19px;accent-color:var(--danger)">`)}</div></div>`;}).join('')}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('debts')">+ إضافة دين</button>`;
+    else {host.innerHTML=`<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الدين</th><th>المبلغ</th><th>خلص؟</th><th></th></tr></thead><tbody id="debtsBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('debts')">+ إضافة دين</button></div>`;document.getElementById('debtsBody').innerHTML=FIN.debts.map((r,i)=>{const c=itemColor(r,i);return `<tr class="${r.paid?'paid-row ':''}fin-row-highlight" style="--row-color:${c}">${td('الدين',`<input class="fin-inp" value="${esc(r.name||'')}" style="color:${c};font-weight:900" onchange="finUpd('debts','${r.id}',{name:this.value})">`)}${td('المبلغ',`<input class="fin-inp" type="number" value="${+r.amount||0}" onchange="finUpd('debts','${r.id}',{amount:+this.value});finRender()">`,'data-num')}${td('خلص؟',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('debts','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--danger);width:17px;height:17px">`)}${td('',finDelBtn('debts',r.id),'class="del-cell"')}</tr>`;}).join('');}
   }
   else if(FIN.tab==='increases') {
     const tot=FIN.increases.reduce((s,r)=>s+(+r.amount||0),0),paid=FIN.increases.filter(r=>r.paid).reduce((s,r)=>s+(+r.amount||0),0);
-    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الزيادات</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاسم</th><th>المبلغ</th><th>السبب</th><th>✓</th><th></th></tr></thead><tbody id="incBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('increases')">+ إضافة زيادة</button></div>`;
-    document.getElementById('incBody').innerHTML=FIN.increases.map((r,i)=>{const c=['#06b6d4','#0ea5e9','#22d3ee'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('increases','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('increases','${r.id}',{amount:+this.value});finRender()"></td><td><input class="fin-inp" value="${esc(r.note||'')}" placeholder="السبب..." onchange="finUpd('increases','${r.id}',{note:this.value})"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('increases','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('increases','${r.id}')">×</button></td></tr>`;}).join('');
+    el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الزيادات</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div><div id="incView"></div>`;
+    const host=document.getElementById('incView');
+    if(layout==='grid') host.innerHTML=`<div class="fin-card-grid">${FIN.increases.map((r,i)=>{const c=itemColor(r,i);return `<div class="fin-card ${r.paid?'paid-row':''}" style="--row-color:${c}"><div class="fin-card-head"><div class="fin-card-title">${esc(r.name||'زيادة جديدة')}</div>${finDelBtn('increases',r.id)}</div><div class="fin-card-total">${fmtEGP(r.amount)}</div><div class="fin-card-fields">${finCardField('الاسم',`<input value="${esc(r.name||'')}" onchange="finUpd('increases','${r.id}',{name:this.value})">`,'name full')}${finCardField('المبلغ',`<input type="number" value="${+r.amount||0}" onchange="finUpd('increases','${r.id}',{amount:+this.value});finRender()">`)}${finCardField('السبب',`<input value="${esc(r.note||'')}" onchange="finUpd('increases','${r.id}',{note:this.value})">`,'note full')}${finCardField('استلمت؟',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('increases','${r.id}',{paid:this.checked});finRender()" style="width:19px;height:19px;accent-color:var(--success)">`)}</div></div>`;}).join('')}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('increases')">+ إضافة زيادة</button>`;
+    else {host.innerHTML=`<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاسم</th><th>المبلغ</th><th>السبب</th><th>✓</th><th></th></tr></thead><tbody id="incBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('increases')">+ إضافة زيادة</button></div>`;document.getElementById('incBody').innerHTML=FIN.increases.map((r,i)=>{const c=itemColor(r,i);return `<tr class="${r.paid?'paid-row ':''}fin-row-highlight" style="--row-color:${c}">${td('الاسم',`<input class="fin-inp" value="${esc(r.name||'')}" style="color:${c};font-weight:900" onchange="finUpd('increases','${r.id}',{name:this.value})">`)}${td('المبلغ',`<input class="fin-inp" type="number" value="${+r.amount||0}" onchange="finUpd('increases','${r.id}',{amount:+this.value});finRender()">`,'data-num')}${td('السبب',`<input class="fin-inp" value="${esc(r.note||'')}" placeholder="السبب..." onchange="finUpd('increases','${r.id}',{note:this.value})">`)}${td('✓',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('increases','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px">`)}${td('',finDelBtn('increases',r.id),'class="del-cell"')}</tr>`;}).join('');}
   }
 }
+function attachFinanceColorControls(){
+  const tab=FIN.tab, layout=FIN.layout;
+  const bindRows=(selector,key,rows)=>{
+    document.querySelectorAll(selector).forEach((el,i)=>{
+      const r=(rows||[])[i]; if(!r) return;
+      const c=itemColor(r,i);
+      if(el.tagName==='TR'){
+        const cell=el.querySelector('td'); if(!cell || cell.querySelector('.row-color-holder')) return;
+        cell.classList.add('has-color-control');
+        const holder=document.createElement('span');
+        holder.className='row-color-holder';
+        holder.innerHTML=finColorInput(key,r.id,c);
+        cell.prepend(holder);
+      } else {
+        const head=el.querySelector('.fin-card-head'); if(!head || head.querySelector('.fin-card-color')) return;
+        const holder=document.createElement('span');
+        holder.className='fin-card-color';
+        holder.innerHTML=finColorInput(key,r.id,c);
+        const del=head.querySelector('.del-btn');
+        if(del) head.insertBefore(holder, del); else head.appendChild(holder);
+      }
+    });
+  };
+  if(tab==='banks') bindRows(layout==='grid'?'#banksView .fin-card':'#banksBody tr','banks',FIN.banks);
+  else if(tab==='gold') bindRows(layout==='grid'?'#goldView .fin-card':'#goldBody tr','gold',FIN.gold);
+  else if(tab==='salary') bindRows(layout==='grid'?'#salaryView .fin-card':'#salBody tr','salary',FIN.salary);
+  else if(tab==='expenses'){
+    bindRows(layout==='grid'?'#expensesView .fin-card':'#expBody tr','expenses',FIN.expenses);
+    bindRows(layout==='grid'?'#subsView .fin-card':'#subBody tr','subscriptions',FIN.subscriptions);
+  }
+  else if(tab==='debts') bindRows(layout==='grid'?'#debtsView .fin-card':'#debtsBody tr','debts',FIN.debts);
+  else if(tab==='increases') bindRows(layout==='grid'?'#incView .fin-card':'#incBody tr','increases',FIN.increases);
+}
+
 async function finAdd(key) {
-  const id=uid(); const sk=FIN_STATE_KEY[key];
-  const defs={banks:{id,user_id:OWNER,name:'بنك جديد',balance:0,note:''},gold:{id,user_id:OWNER,name:'ذهب',grams:0,price_per_gram:0},salary:{id,user_id:OWNER,name:'مرتب',amount:0,paid:false},expenses:{id,user_id:OWNER,name:'مصروف جديد',amount:0,paid_amount:0,paid:false},subscriptions:{id,user_id:OWNER,name:'اشتراك جديد',usd:0,paid:false},debts:{id,user_id:OWNER,name:'دين جديد',amount:0,paid:false},increases:{id,user_id:OWNER,name:'زيادة جديدة',amount:0,note:'',paid:false}};
+  normalizeFinanceData();
+  const id=uid(); const sk=FIN_STATE_KEY[key]; const colorIndex=(FIN[sk]||[]).length;
+  const defs={banks:{id,user_id:OWNER,name:'بنك جديد',usd:0,egp:0,balance:0,note:'',color:uiColor(colorIndex)},gold:{id,user_id:OWNER,name:'ذهب',grams:0,price_per_gram:0,color:uiColor(colorIndex)},salary:{id,user_id:OWNER,name:'مرتب',amount:0,paid:false,color:uiColor(colorIndex)},expenses:{id,user_id:OWNER,name:'مصروف جديد',amount:0,paid_amount:0,paid:false,color:uiColor(colorIndex)},subscriptions:{id,user_id:OWNER,name:'اشتراك جديد',usd:0,paid:false,color:uiColor(colorIndex)},debts:{id,user_id:OWNER,name:'دين جديد',amount:0,paid:false,color:uiColor(colorIndex)},increases:{id,user_id:OWNER,name:'زيادة جديدة',amount:0,note:'',paid:false,color:uiColor(colorIndex)}};
   FIN[sk].push(defs[key]); finSaveLocal(); markWrite('fin');
   if(sb)try{await sb.from(FIN_TBL_MAP[key]).insert(defs[key]);}catch(_){}
   finRender();
 }
 async function finUpd(key, id, patch) {
   const sk=FIN_STATE_KEY[key]; const row=FIN[sk].find(r=>r.id===id); if(row)Object.assign(row,patch);
-  finSaveLocal(); markWrite('fin');
+  normalizeFinanceData(); finSaveLocal(); markWrite('fin');
   if(sb)try{await sb.from(FIN_TBL_MAP[key]).update(patch).eq('id',id);}catch(_){}
 }
 async function finDel(key, id) {
@@ -2176,7 +2420,7 @@ function openGoalModal(gid=null) {
   document.getElementById('goalModalBody').innerHTML=`
     <div class="mg2">
       <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="gIcon" value="${g?.icon||'🎯'}" maxlength="2" placeholder="🎯"></div>
-      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="gColor" type="color" value="${g?.color||GOAL_PALLETE[0]}"></div>
+      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="gColor" type="color" value="${g?.color||GOAL_PALLETE[GOALS.items.length%GOAL_PALLETE.length]}"></div>
     </div>
     <div class="mf-row"><label>اسم الهدف *</label><input class="mf-inp" id="gTitle" value="${esc(g?.title||'')}" placeholder="مثلاً: أتعلم Motion Design" autofocus></div>
     <div class="mf-row"><label>تفاصيل عن الهدف</label><textarea class="mf-inp" id="gDesc" placeholder="وصف الهدف وسبب أهميته...">${esc(g?.description||'')}</textarea></div>
@@ -2238,12 +2482,170 @@ async function saveSection() {
   closeSectionModal(); renderGoals(); toast('تم إضافة القسم ✅');
 }
 
+
+
+/* ===== UI VISUAL V3 JS — no connection/sync code touched ===== */
+const FIN_ICON_BANK=['🏦','💳','💰','💵','🏛️','📈','💼','🪙','💎','🔐'];
+const FIN_ICON_GOLD=['🥇','✨','🪙','💍','👑','💎','⭐','🏆','🔶','🟡'];
+const FIN_ICON_EXP=['🏠','🛒','🍽️','☕','🚗','⛽','📱','💡','💧','🌐','🏋️','💊','🩺','🎓','👕','🎁','✈️','🚌','🧾','🔧','🎬','🎮','🐾','🧴','🍔','🥗','🚕','🏥','🛍️','💸'];
+const FIN_ICON_ALL=['','🏦','💳','💰','💵','🏛️','🥇','✨','🪙','💍','👑','💎','💼','📊','📈','🏠','🛒','🍽️','☕','🚗','⛽','📱','💡','💧','🌐','🏋️','💊','🩺','🎓','👕','🎁','✈️','🚌','🧾','🔧','🎬','🎮','🐾','🧴','🍔','🥗','🚕','🏥','🛍️','💸','🧠','🛠️','📦','📝','⭐','🔥','✅','🎯','⚡','🔔','📌','🧳','🛡️','🚀','🖥️','🎨','📷','🎧','🏆'];
+const FIN_LABELS={banks:'بنك',gold:'ذهب',salary:'مرتب',expenses:'مصروف',subscriptions:'اشتراك',debts:'دين',increases:'زيادة'};
+const FIN_NAME_FIELD={banks:'name',gold:'name',salary:'name',expenses:'name',subscriptions:'name',debts:'name',increases:'name'};
+let financeModalKey=null, financeModalId=null, financePickedIcon='';
+function defaultIconForKey(key, idx=0){
+  const map={banks:'🏦',gold:'🥇',salary:'💼',expenses:'🧾',subscriptions:'🔁',debts:'💳',increases:'📈'};
+  return map[key]||'📌';
+}
+function itemIcon(item,key,idx=0){
+  if(item && Object.prototype.hasOwnProperty.call(item,'icon')) return item.icon||'';
+  return defaultIconForKey(key,idx);
+}
+function escapeForCssContent(v){ return JSON.stringify(String(v||'')); }
+function rowByKey(key,id){ const sk=FIN_STATE_KEY[key]; return (FIN[sk]||[]).find(r=>r.id===id); }
+function styleButton(key,id){ return `<button class="style-btn" title="تغيير الشكل واللون" onclick="event.stopPropagation();openFinanceItemModal('${key}','${id}',true)">✎</button>`; }
+function finNameTitle(row,key,idx,title){ const ic=itemIcon(row,key,idx); return `<span class="fin-title-wrap">${ic?`<span class="fin-item-icon">${esc(ic)}</span>`:''}<span>${esc(title||FIN_LABELS[key]||'عنصر')}</span></span>`; }
+function refreshFinancePreview(){
+  const color=document.getElementById('fiColor')?.value||'#6366f1';
+  const name=document.getElementById('fiName')?.value||'عنصر جديد';
+  const icon=financePickedIcon||'';
+  const prev=document.getElementById('financeVisualPreview'); if(!prev)return;
+  prev.style.setProperty('--preview-color',color);
+  prev.innerHTML=`<div class="visual-preview-icon">${icon?esc(icon):'•'}</div><div><div class="visual-preview-title">${esc(name)}</div><div class="visual-preview-sub">اللون هيأثر على الأيقونة، الاسم، القيمة، والهايلايت</div></div>`;
+  document.querySelectorAll('#financeIconGrid .icon-chip').forEach(ch=>ch.classList.toggle('active',(ch.dataset.icon||'')===icon));
+  document.getElementById('financeIconGrid')?.style.setProperty('--picked-color',color);
+}
+function iconGridHtml(selected='', key='expenses'){
+  const preferred=key==='banks'?FIN_ICON_BANK:key==='gold'?FIN_ICON_GOLD:key==='expenses'?FIN_ICON_EXP:FIN_ICON_ALL;
+  const icons=[...new Set(['',...preferred,...FIN_ICON_ALL])];
+  return `<div class="icon-picker-grid" id="financeIconGrid">${icons.map(ic=>`<button type="button" class="icon-chip ${ic===(selected||'')?'active':''} ${ic===''?'no-icon':''}" data-icon="${esc(ic)}" onclick="financePickedIcon=this.dataset.icon||'';refreshFinancePreview()">${ic===''?'بدون':esc(ic)}</button>`).join('')}</div>`;
+}
+function openFinanceItemModal(key,id=null,editVisual=false){
+  normalizeFinanceData(); financeModalKey=key; financeModalId=id;
+  const sk=FIN_STATE_KEY[key]; const arr=FIN[sk]||[]; const row=id?arr.find(r=>r.id===id):null;
+  const label=FIN_LABELS[key]||'عنصر';
+  const color=itemColor(row||{},arr.length);
+  financePickedIcon=itemIcon(row,key,arr.length);
+  const name=row?.name || (key==='banks'?'بنك جديد':key==='gold'?'ذهب':key==='salary'?'مرتب':key==='expenses'?'مصروف جديد':key==='subscriptions'?'اشتراك جديد':key==='debts'?'دين جديد':'زيادة جديدة');
+  document.getElementById('financeItemModalTitle').textContent=(id?'تعديل شكل/بيانات ':'إضافة ')+label;
+  let fields='';
+  if(key==='banks') fields=`<div class="mg2"><div class="mf-row"><label>USD</label><input class="mf-inp" id="fiUsd" type="number" value="${bankUsd(row||{})}" dir="ltr"></div><div class="mf-row"><label>EGP</label><input class="mf-inp" id="fiEgp" type="number" value="${bankEgp(row||{})}" dir="ltr"></div></div><div class="mf-row"><label>ملاحظة</label><input class="mf-inp" id="fiNote" value="${esc(row?.note||'')}"></div>`;
+  else if(key==='gold') fields=`<div class="mg2"><div class="mf-row"><label>الوزن بالجرام</label><input class="mf-inp" id="fiGrams" type="number" value="${+row?.grams||0}" dir="ltr"></div><div class="mf-row"><label>سعر الجرام</label><input class="mf-inp" id="fiPrice" type="number" value="${+row?.price_per_gram||0}" dir="ltr"></div></div>`;
+  else if(key==='subscriptions') fields=`<div class="mf-row"><label>القيمة بالدولار USD</label><input class="mf-inp" id="fiUsd" type="number" value="${+row?.usd||0}" dir="ltr"></div>`;
+  else if(key==='increases') fields=`<div class="mg2"><div class="mf-row"><label>المبلغ</label><input class="mf-inp" id="fiAmount" type="number" value="${+row?.amount||0}" dir="ltr"></div><div class="mf-row"><label>السبب</label><input class="mf-inp" id="fiNote" value="${esc(row?.note||'')}"></div></div>`;
+  else fields=`<div class="mf-row"><label>المبلغ</label><input class="mf-inp" id="fiAmount" type="number" value="${+row?.amount||0}" dir="ltr"></div>`;
+  document.getElementById('financeItemModalBody').innerHTML=`
+    <div id="financeVisualPreview" class="visual-preview-card"></div>
+    <div class="mf-row"><label>الاسم</label><input class="mf-inp" id="fiName" value="${esc(name)}" oninput="refreshFinancePreview()" autofocus></div>
+    <div class="mf-row"><label>اللون</label><input class="mf-inp" id="fiColor" type="color" value="${color}" oninput="refreshFinancePreview()"></div>
+    <div class="mf-row"><label>الأيقونة اختياري</label><div class="visual-modal-note">اختار أيقونة أو اضغط "بدون". اللون هيعمل تدرج على المربع/الهايلايت والأيقونة والقيمة.</div>${iconGridHtml(financePickedIcon,key)}</div>
+    ${fields}
+    <div class="modal-actions"><button class="btn btn-primary" onclick="saveFinanceItemModal()">${id?'حفظ':'إضافة'}</button><button class="btn btn-ghost" onclick="closeFinanceItemModal()">إلغاء</button></div>`;
+  document.getElementById('financeItemModal').classList.remove('hidden');
+  refreshFinancePreview(); setTimeout(()=>document.getElementById('fiName')?.focus(),60);
+}
+function closeFinanceItemModal(){ document.getElementById('financeItemModal')?.classList.add('hidden'); financeModalKey=null; financeModalId=null; }
+async function saveFinanceItemModal(){
+  const key=financeModalKey; if(!key)return;
+  const sk=FIN_STATE_KEY[key]; const id=financeModalId||uid(); const isEdit=!!financeModalId;
+  const color=document.getElementById('fiColor')?.value||uiColor((FIN[sk]||[]).length);
+  const name=document.getElementById('fiName')?.value.trim()||FIN_LABELS[key]||'عنصر';
+  let patch={id,user_id:OWNER,name,color,icon:financePickedIcon||''};
+  if(key==='banks') { patch.usd=+document.getElementById('fiUsd')?.value||0; patch.egp=+document.getElementById('fiEgp')?.value||0; patch.balance=patch.egp+patch.usd*getUsdRate(); patch.note=document.getElementById('fiNote')?.value||''; }
+  else if(key==='gold') { patch.grams=+document.getElementById('fiGrams')?.value||0; patch.price_per_gram=+document.getElementById('fiPrice')?.value||0; }
+  else if(key==='salary') { patch.amount=+document.getElementById('fiAmount')?.value||0; patch.paid=false; }
+  else if(key==='expenses') { patch.amount=+document.getElementById('fiAmount')?.value||0; patch.paid_amount=0; patch.paid=false; }
+  else if(key==='subscriptions') { patch.usd=+document.getElementById('fiUsd')?.value||0; patch.paid=false; }
+  else if(key==='debts') { patch.amount=+document.getElementById('fiAmount')?.value||0; patch.paid=false; }
+  else if(key==='increases') { patch.amount=+document.getElementById('fiAmount')?.value||0; patch.note=document.getElementById('fiNote')?.value||''; patch.paid=false; }
+  if(isEdit){ const row=(FIN[sk]||[]).find(r=>r.id===id); if(row) Object.assign(row,patch); }
+  else { FIN[sk].push(patch); }
+  normalizeFinanceData(); finSaveLocal(); markWrite('fin');
+  if(sb)try{ if(isEdit) await sb.from(FIN_TBL_MAP[key]).update(patch).eq('id',id); else await sb.from(FIN_TBL_MAP[key]).insert(patch); }catch(_){}
+  closeFinanceItemModal(); finRender(); toast(isEdit?'تم حفظ الشكل ✅':'تمت الإضافة ✅');
+}
+async function finAdd(key){ openFinanceItemModal(key,null,false); }
+function attachFinanceColorControls(){
+  const tab=FIN.tab, layout=FIN.layout;
+  const bindRows=(selector,key,rows)=>{
+    document.querySelectorAll(selector).forEach((el,i)=>{
+      const r=(rows||[])[i]; if(!r) return;
+      const c=itemColor(r,i), ic=itemIcon(r,key,i);
+      el.style.setProperty('--row-color',c); el.style.setProperty('--card-icon',escapeForCssContent(ic)); el.dataset.finKey=key;
+      if(el.tagName==='TR'){
+        const nameCell=el.querySelector('td');
+        if(nameCell){
+          nameCell.classList.add('fin-name-cell');
+          const input=nameCell.querySelector('input.fin-inp, input');
+          if(input && !nameCell.querySelector('.fin-name-inner')){
+            const inner=document.createElement('div'); inner.className='fin-name-inner';
+            if(ic){ const icon=document.createElement('span'); icon.className='fin-item-icon'; icon.textContent=ic; inner.appendChild(icon); }
+            input.style.color=c; input.style.fontWeight='950';
+            input.parentNode.removeChild(input); inner.appendChild(input); nameCell.appendChild(inner);
+          } else if(input){ input.style.color=c; input.style.fontWeight='950'; }
+        }
+        const actionCell=el.querySelector('td.del-cell') || el.querySelector('td:last-child');
+        if(actionCell){
+          actionCell.classList.add('fin-actions-cell');
+          let actions=actionCell.querySelector('.fin-row-actions');
+          if(!actions){
+            actions=document.createElement('span'); actions.className='fin-row-actions';
+            const del=actionCell.querySelector('.del-btn');
+            if(del) del.parentNode.removeChild(del);
+            actions.innerHTML=styleButton(key,r.id);
+            if(del) actions.appendChild(del);
+            actionCell.innerHTML=''; actionCell.appendChild(actions);
+          }
+        }
+      } else {
+        const title=el.querySelector('.fin-card-title'); const head=el.querySelector('.fin-card-head');
+        if(title && !title.querySelector('.fin-item-icon')) title.innerHTML=`${ic?`<span class="fin-item-icon">${esc(ic)}</span>`:''}<span>${title.textContent||''}</span>`;
+        if(head){
+          let actions=head.querySelector('.fin-card-actions');
+          if(!actions){
+            actions=document.createElement('span'); actions.className='fin-card-actions';
+            const del=head.querySelector('.del-btn');
+            if(del) del.parentNode.removeChild(del);
+            actions.innerHTML=styleButton(key,r.id);
+            if(del) actions.appendChild(del);
+            head.appendChild(actions);
+          }
+        }
+      }
+    });
+  };
+  if(tab==='banks') bindRows(layout==='grid'?'#banksView .fin-card':'#banksBody tr','banks',FIN.banks);
+  else if(tab==='gold') bindRows(layout==='grid'?'#goldView .fin-card':'#goldBody tr','gold',FIN.gold);
+  else if(tab==='salary') bindRows(layout==='grid'?'#salaryView .fin-card':'#salBody tr','salary',FIN.salary);
+  else if(tab==='expenses'){
+    bindRows(layout==='grid'?'#expensesView .fin-card':'#expBody tr','expenses',FIN.expenses);
+    bindRows(layout==='grid'?'#subsView .fin-card':'#subBody tr','subscriptions',FIN.subscriptions);
+  }
+  else if(tab==='debts') bindRows(layout==='grid'?'#debtsView .fin-card':'#debtsBody tr','debts',FIN.debts);
+  else if(tab==='increases') bindRows(layout==='grid'?'#incView .fin-card':'#incBody tr','increases',FIN.increases);
+}
+function setSystemFontScale(v,save=false){
+  const n=Math.max(90,Math.min(130,parseInt(v||100))); const scale=n/100;
+  document.documentElement.style.setProperty('--app-font-scale',scale);
+  localStorage.setItem('ms_font_scale',String(n));
+  const r=document.getElementById('sysFontRange'); if(r) r.value=n;
+  const val=document.getElementById('sysFontVal'); if(val) val.textContent=n+'%';
+  document.querySelectorAll('.quick-fonts button').forEach(b=>b.classList.toggle('active',String(b.dataset.fs)===String(n)));
+  if(save) toast('تم تغيير حجم الخط ✅');
+}
+(function initFontScale(){ setSystemFontScale(localStorage.getItem('ms_font_scale')||108,false); })();
+const _openSettingsVisual=openSettings;
+openSettings=function(){ _openSettingsVisual(); setSystemFontScale(localStorage.getItem('ms_font_scale')||108,false); };
+const _renderFinVisual=renderFin;
+renderFin=function(){ _renderFinVisual(); setTimeout(attachFinanceColorControls,0); };
+const _finRenderVisual=finRender;
+finRender=function(){ _finRenderVisual(); setTimeout(attachFinanceColorControls,0); };
+
 /* ===== KEYBOARD & MISC ===== */
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();const nc=document.getElementById('notifCenter');if(nc.classList.contains('open'))toggleNotifCenter();}
+  if(e.key==='Escape'){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();closeFinanceItemModal?.();closeFinanceItemModal?.();const nc=document.getElementById('notifCenter');if(nc.classList.contains('open'))toggleNotifCenter();}
 });
-['settingsModal','dayModal','taskModal','entityModal','goalModal','sectionModal'].forEach(id=>{
-  document.getElementById(id)?.addEventListener('click',function(e){if(e.target===this){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();}});
+['settingsModal','dayModal','taskModal','entityModal','goalModal','sectionModal','financeItemModal'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('click',function(e){if(e.target===this){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();closeFinanceItemModal?.();}});
 });
 document.getElementById('notifCenter').addEventListener('click',e=>{if(!e.target.closest('.notif-center')&&e.target.id!=='notifCenter')return;});
 
