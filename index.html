@@ -1034,7 +1034,7 @@ async function poll() {
   if(!sb)return;
   try {
     // Day
-    if((Date.now()-localWriteTs.day)>3000) {
+    if((Date.now()-localWriteTs.day)>15000) {
       const [{data:rb},{data:bc}]=await Promise.all([
         sb.from('recurring_blocks').select('updated_at').order('updated_at',{ascending:false}).limit(1),
         sb.from('block_completions').select('updated_at').order('updated_at',{ascending:false}).limit(1),
@@ -1043,19 +1043,19 @@ async function poll() {
       if(lat>lastSeen.day){lastSeen.day=lat; await dayLoad(); if(cur==='day')renderDay(); if(cur==='hub')renderHub(); updateBadges(); syncPulse();}
     }
     // Work
-    if((Date.now()-localWriteTs.work)>3000) {
+    if((Date.now()-localWriteTs.work)>15000) {
       const [{data:ts}]=await Promise.all([sb.from('tasks').select('created_at,updated_at').order('updated_at',{ascending:false}).limit(1)]);
       const lat=ts?.[0]?.updated_at||new Date(0).toISOString();
       if(lat>lastSeen.work){lastSeen.work=lat; await workLoad(); if(cur==='work')renderWork(); if(cur==='hub')renderHub(); updateBadges(); syncPulse();}
     }
     // Finance
-    if((Date.now()-localWriteTs.fin)>3000) {
+    if((Date.now()-localWriteTs.fin)>15000) {
       const [{data:bk}]=await Promise.all([sb.from('banks').select('created_at').order('created_at',{ascending:false}).limit(1)]);
       const lat=bk?.[0]?.created_at||new Date(0).toISOString();
       if(lat>lastSeen.fin){lastSeen.fin=lat; await finLoad(); if(cur==='finance')renderFin(); if(cur==='hub')renderHub(); syncPulse();}
     }
     // Goals
-    if((Date.now()-localWriteTs.goals)>3000) {
+    if((Date.now()-localWriteTs.goals)>15000) {
       const [{data:gl}]=await Promise.all([sb.from('goals').select('updated_at').order('updated_at',{ascending:false}).limit(1)]);
       const lat=gl?.[0]?.updated_at||new Date(0).toISOString();
       if(lat>lastSeen.goals){lastSeen.goals=lat; await goalsLoad(); if(cur==='goals')renderGoals(); if(cur==='hub')renderHub(); syncPulse();}
@@ -1063,7 +1063,7 @@ async function poll() {
     setSyncStatus('ok','متصل ✓');
   } catch(_){ setSyncStatus('err','خطأ في الاتصال'); }
 }
-function syncPulse() { const d=document.getElementById('syncDot'); d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900); toast('🔄 تم المزامنة'); }
+function syncPulse(label) { const d=document.getElementById('syncDot'); d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900); if(label) toast('🔄 مزامنة '+label); }
 
 /* ===== LOAD ALL ===== */
 async function loadAll() { await Promise.all([dayLoad(),workLoad(),finLoad(),goalsLoad()]); }
@@ -1386,14 +1386,28 @@ function applyScale(v) {
 }
 
 async function setDayStatus(bid, status) {
-  const d=dateKey(DAY.date); DAY.completions[`${bid}_${d}`]=status; daySaveLocal(); markWrite('day');
-  if(sb) try { await sb.from('block_completions').upsert({user_id:OWNER,recurring_block_id:bid,completion_date:d,status,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,completion_date'}); } catch(_){}
+  const d=dateKey(DAY.date);
+  DAY.completions[`${bid}_${d}`]=status;
+  markWrite('day'); daySaveLocal();
   renderDay(); if(cur==='hub') renderHub();
+  if(sb){
+    try{
+      await sb.from('block_completions').upsert({user_id:OWNER,recurring_block_id:bid,completion_date:d,status,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,completion_date'});
+      lastSeen.day=new Date().toISOString();
+    }catch(_){}
+  }
 }
 async function toggleTask(bid, tid, checked) {
-  const d=dateKey(DAY.date); DAY.taskChecks[`${bid}_${d}_${tid}`]=checked; daySaveLocal();
-  if(sb) try { await sb.from('task_checks').upsert({user_id:OWNER,recurring_block_id:bid,task_id:tid,check_date:d,is_checked:checked,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,task_id,check_date'}); } catch(_){}
+  const d=dateKey(DAY.date);
+  DAY.taskChecks[`${bid}_${d}_${tid}`]=checked;
+  markWrite('day'); daySaveLocal();
   renderDay();
+  if(sb){
+    try{
+      await sb.from('task_checks').upsert({user_id:OWNER,recurring_block_id:bid,task_id:tid,check_date:d,is_checked:checked,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,task_id,check_date'});
+      lastSeen.day=new Date().toISOString();
+    }catch(_){}
+  }
 }
 
 /* DAY MODAL */
@@ -1481,6 +1495,7 @@ async function saveDayBlock(e) {
     links:bLinks.filter(l=>l.url.trim()),
     days_of_week:internalMode==='custom'?selDays:[0,1,2,3,4,5,6],
   });
+  // 1. Update local state immediately
   if(editingBlockId) {
     const scope=getScope();
     const idx=DAY.blocks.findIndex(t=>t.id===editingBlockId);
@@ -1489,17 +1504,35 @@ async function saveDayBlock(e) {
     if(idx<0&&scope!=='today') DAY.blocks.push(block);
   } else {
     DAY.blocks.push(block);
-    notif({icon:'📅',title:'بلوك جديد',sub:`"${title}" أُضيف لجدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
   }
-  daySaveLocal(); markWrite('day');
-  if(sb) try { await sb.from('recurring_blocks').upsert({...block,user_id:OWNER,updated_at:new Date().toISOString()}); } catch(_){}
-  closeDayModal(); renderDay(); toast(editingBlockId?'تم التعديل ✅':'تم الإضافة ✅');
+  // 2. Save to localStorage and mark write time BEFORE any async ops
+  daySaveLocal();
+  markWrite('day');
+  // 3. Close modal and re-render immediately (optimistic UI)
+  closeDayModal();
+  renderDay();
+  toast(editingBlockId?'تم التعديل ✅':'تم الإضافة ✅');
+  if(!editingBlockId) notif({icon:'📅',title:'بلوك جديد',sub:`"${title}" أُضيف لجدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
+  // 4. Async save to Supabase - update lastSeen after to prevent poll overwrite
+  if(sb) {
+    try {
+      await sb.from('recurring_blocks').upsert({...block,user_id:OWNER,updated_at:new Date().toISOString()});
+      lastSeen.day=new Date().toISOString();
+    } catch(err){console.warn('day block save err',err);}
+  }
 }
 async function deleteDayBlock() {
   if(!editingBlockId)return;
-  DAY.blocks=DAY.blocks.filter(t=>t.id!==editingBlockId);
-  daySaveLocal(); if(sb) try { await sb.from('recurring_blocks').delete().eq('id',editingBlockId); } catch(_){}
+  const delId=editingBlockId;
+  DAY.blocks=DAY.blocks.filter(t=>t.id!==delId);
+  markWrite('day'); daySaveLocal();
   closeDayModal(); renderDay(); toast('تم الحذف');
+  if(sb){
+    try{
+      await sb.from('recurring_blocks').delete().eq('id',delId);
+      lastSeen.day=new Date().toISOString();
+    }catch(_){}
+  }
 }
 
 /* =====================================================
@@ -1681,7 +1714,19 @@ async function workSaveEnt(type, existId) {
     WORK.data[kind].push(ne);
     if(sb) try{await sb.from('entities').insert({name,type,color});}catch(_){}
   }
-  workSaveLocal(); markWrite('work'); closeEntityModal(); renderWork(); toast(existId?'تم الحفظ ✅':'تم الإضافة ✅');
+  // Optimistic local save
+  markWrite('work');
+  workSaveLocal();
+  closeEntityModal(); renderWork();
+  toast(existId?'تم الحفظ ✅':'تم الإضافة ✅');
+  // Async Supabase
+  if(sb){
+    try{
+      if(existId){ await sb.from('entities').update({name,color}).eq('id',existId); }
+      else { await sb.from('entities').insert(WORK.data[kind][WORK.data[kind].length-1]); }
+      lastSeen.work=new Date().toISOString();
+    }catch(err){console.warn('entity save err',err);}
+  }
 }
 async function workDelEnt(id) {
   if(!confirm('هتحذف الشركة/العميل وكل تاسكاته؟'))return;
@@ -1754,14 +1799,23 @@ async function saveTask() {
     autoSyncTaskToDay(tData, ent);
     notif({icon:'💼',title:`تاسك جديد: "${title}"`,sub:`في ${ent.name}`,actions:[{label:'عرض',cls:'primary',fn:()=>go('work')}]});
   }
-  workSaveLocal(); markWrite('work');
+  // Save local immediately (optimistic)
+  markWrite('work');
+  workSaveLocal();
+  closeTaskModal(); renderWork(); updateBadges();
+  toast(editingTaskId?'تم الحفظ ✅':'تم إضافة التاسك ✅');
+  // Async to Supabase
   if(sb) {
     try {
-      if(editingTaskId) await sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links}).eq('id',editingTaskId);
-      else { const {data:ins}=await sb.from('tasks').insert({entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,day_synced:false}).select().single(); if(ins){tData.id=ins.id;} }
-    } catch(_){}
+      if(editingTaskId){
+        await sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,updated_at:new Date().toISOString()}).eq('id',editingTaskId);
+      } else {
+        const {data:ins}=await sb.from('tasks').insert({entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,day_synced:false}).select().single();
+        if(ins&&ins.id){tData.id=ins.id; workSaveLocal();}
+      }
+      lastSeen.work=new Date().toISOString();
+    } catch(err){console.warn('task save err',err);}
   }
-  closeTaskModal(); renderWork(); updateBadges(); toast(editingTaskId?'تم الحفظ ✅':'تم إضافة التاسك ✅');
 }
 
 // AUTO-SYNC: add work task as a sub-task in the overlapping day block (today only, no repeat)
@@ -1805,9 +1859,18 @@ function autoSyncTaskToDay(task, ent) {
 async function workToggleTask(tid, eid) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); const task=ent?.tasks?.find(t=>t.id===tid); if(!task)return;
   task.completed=!task.completed; task.completed_at=task.completed?new Date().toISOString():null;
-  workSaveLocal(); markWrite('work');
-  if(sb)try{await sb.from('tasks').update({completed:task.completed,completed_at:task.completed_at,updated_at:new Date().toISOString()}).eq('id',tid);}catch(_){}
-  renderWork(); updateBadges(); toast(task.completed?'✅ منجز!':'تم إلغاء الإنجاز');
+  // Optimistic: save local and re-render immediately
+  markWrite('work');
+  workSaveLocal();
+  renderWork(); updateBadges();
+  toast(task.completed?'✅ منجز!':'تم إلغاء الإنجاز');
+  // Async Supabase
+  if(sb){
+    try{
+      await sb.from('tasks').update({completed:task.completed,completed_at:task.completed_at,updated_at:new Date().toISOString()}).eq('id',tid);
+      lastSeen.work=new Date().toISOString();
+    }catch(err){console.warn('toggle task err',err);}
+  }
 }
 async function workDelTask(tid, eid) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); if(ent)ent.tasks=ent.tasks.filter(t=>t.id!==tid);
@@ -2001,16 +2064,36 @@ async function saveFinEntry() {
   } else if(key==='increases'){
     row={name,amount:+document.getElementById('fm_amount')?.value||0,note:document.getElementById('fm_note')?.value?.trim()||'',paid:document.getElementById('fm_paid')?.checked||false};
   }
+  // 1. Update local state immediately (optimistic)
+  markWrite('fin');
   if(id) {
     const existing=FIN[sk].find(r=>r.id===id); if(existing)Object.assign(existing,row);
-    if(sb)try{await sb.from(FIN_TBL_MAP[key]).update({...row,user_id:OWNER}).eq('id',id);}catch(_){}
   } else {
     const newRow={id:uid(),user_id:OWNER,...row};
     FIN[sk].push(newRow);
-    if(sb)try{const{data}=await sb.from(FIN_TBL_MAP[key]).insert({...newRow}).select().single();if(data&&data.id)newRow.id=data.id;}catch(_){}
+    // Async save to Supabase - don't block UI
+    finSaveLocal();
+    closeFinModal(); finRender(); toast('تم الإضافة ✅');
+    if(sb){
+      try{
+        const dbRow={...newRow}; delete dbRow.balance_egp; delete dbRow.balance_usd;
+        if(key==='banks') dbRow.balance=newRow.balance;
+        const{data}=await sb.from(FIN_TBL_MAP[key]).insert({...newRow}).select().single();
+        if(data&&data.id){newRow.id=data.id;}
+        lastSeen.fin=new Date().toISOString();
+      }catch(e){console.warn('fin insert err',e);}
+    }
+    return;
   }
-  finSaveLocal(); markWrite('fin'); closeFinModal(); finRender();
-  toast(id?'تم التعديل ✅':'تم الإضافة ✅');
+  finSaveLocal();
+  closeFinModal(); finRender(); toast('تم التعديل ✅');
+  // Async update to Supabase
+  if(sb){
+    try{
+      await sb.from(FIN_TBL_MAP[key]).update({...row,user_id:OWNER}).eq('id',id);
+      lastSeen.fin=new Date().toISOString();
+    }catch(e){console.warn('fin update err',e);}
+  }
 }
 async function deleteFinEntry() {
   if(!finModalKey||!finModalId)return;
@@ -2099,18 +2182,30 @@ function renderGoalCard(g) {
 
 async function toggleGoal(gid) {
   const g=GOALS.items.find(x=>x.id===gid); if(!g)return;
-  g.completed=!g.completed; g.updated_at=new Date().toISOString(); goalsSaveLocal(); markWrite('goals');
-  if(sb)try{await sb.from('goals').update({completed:g.completed,updated_at:g.updated_at}).eq('id',gid);}catch(_){}
-  if(g.completed) toast('🎉 مبروك! تم تحقيق الهدف!');
+  g.completed=!g.completed; g.updated_at=new Date().toISOString();
+  markWrite('goals'); goalsSaveLocal();
   renderGoals(); updateBadges();
+  if(g.completed) toast('🎉 مبروك! تم تحقيق الهدف!');
+  if(sb){
+    try{
+      await sb.from('goals').update({completed:g.completed,updated_at:g.updated_at}).eq('id',gid);
+      lastSeen.goals=new Date().toISOString();
+    }catch(_){}
+  }
 }
 async function toggleGoalStep(gid, idx, val) {
   const g=GOALS.items.find(x=>x.id===gid); if(!g)return;
   g.steps=Array.isArray(g.steps)?g.steps:[];
   if(g.steps[idx]) g.steps[idx].done=val;
-  g.updated_at=new Date().toISOString(); goalsSaveLocal(); markWrite('goals');
-  if(sb)try{await sb.from('goals').update({steps:g.steps,updated_at:g.updated_at}).eq('id',gid);}catch(_){}
+  g.updated_at=new Date().toISOString();
+  markWrite('goals'); goalsSaveLocal();
   renderGoals();
+  if(sb){
+    try{
+      await sb.from('goals').update({steps:g.steps,updated_at:g.updated_at}).eq('id',gid);
+      lastSeen.goals=new Date().toISOString();
+    }catch(_){}
+  }
 }
 
 let editingGoalId=null, gSteps=[];
@@ -2165,9 +2260,18 @@ async function saveGoal() {
   };
   if(editingGoalId) { const idx=GOALS.items.findIndex(x=>x.id===editingGoalId); if(idx>=0)GOALS.items[idx]=g; else GOALS.items.push(g); }
   else { GOALS.items.push(g); notif({icon:'🎯',title:`هدف جديد: "${title}"`,sub:'تمت الإضافة لقائمة أهدافك',color:g.color,persist:true}); }
-  goalsSaveLocal(); markWrite('goals');
-  if(sb)try{await sb.from('goals').upsert({...g,user_id:OWNER});}catch(_){}
-  closeGoalModal(); renderGoals(); updateBadges(); toast(editingGoalId?'تم التعديل ✅':'تم إضافة الهدف ✅');
+  // Save local immediately (optimistic)
+  markWrite('goals');
+  goalsSaveLocal();
+  closeGoalModal(); renderGoals(); updateBadges();
+  toast(editingGoalId?'تم التعديل ✅':'تم إضافة الهدف ✅');
+  // Async to Supabase
+  if(sb){
+    try{
+      await sb.from('goals').upsert({...g,user_id:OWNER});
+      lastSeen.goals=new Date().toISOString();
+    }catch(err){console.warn('goal save err',err);}
+  }
 }
 async function delGoal(gid) {
   GOALS.items=GOALS.items.filter(x=>x.id!==gid); goalsSaveLocal(); markWrite('goals');
@@ -2199,7 +2303,17 @@ async function saveSection() {
     GOALS.sections.push(sec);
     if(sb)try{await sb.from('hub_sections').insert(sec);}catch(_){}
   }
-  goalsSaveLocal(); closeSectionModal(); renderGoals(); toast(editingSectionId?'تم تعديل القسم ✅':'تم إضافة القسم ✅');
+  markWrite('goals');
+  goalsSaveLocal();
+  closeSectionModal(); renderGoals();
+  toast(editingSectionId?'تم تعديل القسم ✅':'تم إضافة القسم ✅');
+  // Async Supabase (goals sections)
+  if(sb){
+    try{
+      if(editingSectionId){ await sb.from('hub_sections').update(data).eq('id',editingSectionId); }
+      else { const sec=GOALS.sections[GOALS.sections.length-1]; await sb.from('hub_sections').insert(sec); }
+    }catch(err){console.warn('section save err',err);}
+  }
 }
 async function deleteSection() {
   if(!editingSectionId)return;
