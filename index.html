@@ -8,26 +8,7 @@
 <meta name="theme-color" content="#080c18">
 <title>MY System — نظامك الكامل</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script>
-// Supabase loader with multiple CDN fallbacks
-(function() {
-  var cdns = [
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
-    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
-    'https://esm.run/@supabase/supabase-js'
-  ];
-  var loaded = false;
-  function tryLoad(i) {
-    if(i >= cdns.length || loaded) return;
-    var s = document.createElement('script');
-    s.src = cdns[i];
-    s.onload = function() { loaded = true; window.__sbReady = true; };
-    s.onerror = function() { tryLoad(i+1); };
-    document.head.appendChild(s);
-  }
-  tryLoad(0);
-})();
-</script>
+
 <style>
 /* ===== RESET ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -542,19 +523,6 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
   .week-grid{grid-template-columns:repeat(2,1fr)}
   .goal-dates{flex-direction:column;gap:6px}
 }
-
-/* ===== CUSTOM MODULES ===== */
-.nav-add-btn{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--r-md);font-size:13px;font-weight:700;color:var(--text-d);cursor:pointer;border:1.5px dashed var(--border);transition:all .18s;margin-top:6px;background:transparent}
-.nav-add-btn:hover{border-color:var(--border2);color:var(--text-m);background:var(--panel)}
-.cm-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.cm-section-header h3{font-size:15px;font-weight:800}
-.cm-field-card{border-radius:var(--r-lg);padding:13px;background:var(--panel);border:1px solid var(--border);margin-bottom:10px;position:relative}
-.cm-field-card .cm-field-label{font-size:11px;font-weight:800;color:var(--text-d);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
-.cm-custom-wrap{flex:1;overflow-y:auto;padding:20px}
-.cm-entry-card{border-radius:var(--r-xl);padding:16px;background:color-mix(in srgb,var(--cm-color,#6366f1) 7%,var(--panel));border:1px solid color-mix(in srgb,var(--cm-color,#6366f1) 22%,var(--border));border-right:4px solid var(--cm-color,#6366f1);margin-bottom:10px;animation:fadeUp .25s var(--ease);cursor:pointer;transition:transform .18s}
-.cm-entry-card:hover{transform:translateY(-2px)}
-.cm-entry-title{font-size:16px;font-weight:800;margin-bottom:6px}
-.cm-entry-field{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-m);margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -589,10 +557,8 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
       <div class="nav-item" data-mod="finance" onclick="go('finance')"><span class="nav-icon">🏦</span><span>ثروتي</span></div>
       <div class="nav-item" data-mod="goals" onclick="go('goals')"><span class="nav-icon">🎯</span><span>أهدافي</span><span class="nav-badge hidden" id="goalsBadge">0</span></div>
     </div>
-    <div id="customNavItems"></div>
-    <button class="nav-add-btn" onclick="openCMModal()"><span style="font-size:18px">＋</span>قسم رئيسي جديد</button>
     <div class="sync-bar">
-      <div class="sync-dot loading" id="syncDot" onclick="retryConnect()" style="cursor:pointer" title="اضغط لإعادة الاتصال"></div>
+      <div class="sync-dot loading" id="syncDot"></div>
       <span class="sync-text" id="syncText">جاري الاتصال...</span>
       <button class="notif-bell" onclick="toggleNotifCenter()" title="الإشعارات"><span>🔔</span><div class="notif-bell-dot" id="bellDot"></div></button>
       <button class="icon-btn" onclick="openSettings()" title="الإعدادات" style="font-size:16px">⚙️</button>
@@ -723,8 +689,7 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
         <div id="goalsBoard"></div>
       </div>
     </section>
-    <div id="customModules"></div>
-</main>
+  </main>
 </div>
 <!-- MOBILE BOTTOM NAV -->
 <nav class="bottom-nav" id="bottomNav">
@@ -736,26 +701,33 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
 </nav>
 <!-- SETTINGS MODAL -->
 <div id="settingsModal" class="modal-backdrop hidden">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:480px">
     <div class="modal-head"><h2>⚙️ الإعدادات</h2><button class="modal-close" onclick="closeSettings()">✕</button></div>
     <div class="settings-section">
-      <h3>🔗 ربط Supabase</h3>
-      <div class="mf-row"><label>Supabase URL</label><input class="mf-inp" id="cfgUrl" type="text" dir="ltr" placeholder="https://xxxx.supabase.co"></div>
-      <div class="mf-row"><label>Anon Key</label><textarea class="mf-inp" id="cfgKey" dir="ltr" style="min-height:60px;font-size:11px"></textarea></div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="saveConfig()">حفظ وربط</button>
-        <button class="btn btn-ghost" onclick="clearConfig()">Local Mode</button>
+      <h3>🌙 المظهر</h3>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-primary" onclick="isDark=true;applyTheme();localStorage.setItem('sys_theme','dark')">🌙 داكن</button>
+        <button class="btn btn-ghost" onclick="isDark=false;applyTheme();localStorage.setItem('sys_theme','light')">☀️ فاتح</button>
       </div>
-      <div style="margin-top:8px;font-size:11px;color:var(--text-d)">الحالة: <span id="connStatus">—</span></div>
     </div>
     <div class="settings-section">
-      <h3>🗄️ SQL Setup</h3>
-      <pre class="sql-box" id="sqlBox" style="max-height:160px"></pre>
-      <button class="btn btn-ghost" style="margin-top:8px" onclick="copySql()">نسخ SQL</button>
+      <h3>📤 تصدير البيانات (Backup)</h3>
+      <p style="font-size:12px;color:var(--text-m);margin-bottom:10px">احفظ نسخة من كل بياناتك كملف JSON — استخدمه لنقل البيانات لجهاز تاني</p>
+      <button class="btn btn-primary" onclick="exportData()">⬇️ تصدير الكل</button>
+    </div>
+    <div class="settings-section">
+      <h3>📥 استيراد البيانات (Restore)</h3>
+      <p style="font-size:12px;color:var(--text-m);margin-bottom:10px">استرجع بياناتك من ملف backup سابق</p>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+      <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆️ استيراد من ملف</button>
+    </div>
+    <div class="settings-section">
+      <h3>🗑️ حذف كل البيانات</h3>
+      <button class="btn btn-danger" onclick="clearAllData()">🗑️ حذف الكل</button>
     </div>
   </div>
 </div>
-<!-- DAY BLOCK MODAL -->
+<!-- DAY BLOCK MODAL<!-- DAY BLOCK MODAL -->
 <div id="dayModal" class="modal-backdrop hidden">
   <div class="modal-box">
     <div class="modal-head"><h2 id="dayModalTitle">بلوك جديد</h2><button class="modal-close" onclick="closeDayModal()">✕</button></div>
@@ -829,22 +801,6 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
     <div id="goalModalBody"></div>
   </div>
 </div>
-<!-- SECTION MODAL -->
-<div id="sectionModal" class="modal-backdrop hidden">
-  <div class="modal-box" style="max-width:420px">
-    <div class="modal-head"><h2 id="secModalTitle">📁 قسم جديد</h2><button class="modal-close" onclick="closeSectionModal()">✕</button></div>
-    <div class="mf-row"><label>اسم القسم</label><input class="mf-inp" id="secName" placeholder="مثلاً: أهداف مهنية"></div>
-    <div class="mg2">
-      <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="secIcon" value="📌" maxlength="2"></div>
-      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="secColor" type="color" value="#6366f1"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="saveSection()">حفظ</button>
-      <button class="btn btn-ghost" onclick="closeSectionModal()">إلغاء</button>
-      <button class="btn btn-danger hidden" id="secDelBtn" onclick="deleteSection()">حذف</button>
-    </div>
-  </div>
-</div>
 <!-- FINANCE ENTRY MODAL -->
 <div id="finEntryModal" class="modal-backdrop hidden">
   <div class="modal-box" style="max-width:480px">
@@ -857,20 +813,29 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
     </div>
   </div>
 </div>
-<!-- CUSTOM MODULE MODAL -->
-<div id="customModModal" class="modal-backdrop hidden">
-  <div class="modal-box" style="max-width:560px;max-height:82dvh;overflow-y:auto">
-    <div class="modal-head"><h2 id="cmModalTitle">قسم رئيسي جديد</h2><button class="modal-close" onclick="closeCMModal()">✕</button></div>
-    <div id="cmModalBody"></div>
+<!-- SECTION MODAL -->
+<div id="sectionModal" class="modal-backdrop hidden">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-head"><h2>📁 قسم جديد</h2><button class="modal-close" onclick="closeSectionModal()">✕</button></div>
+    <div class="mf-row"><label>اسم القسم</label><input class="mf-inp" id="secName" placeholder="مثلاً: أهداف مهنية"></div>
+    <div class="mg2">
+      <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="secIcon" value="📌" maxlength="2"></div>
+      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="secColor" type="color" value="#6366f1"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveSection()">إضافة</button>
+      <button class="btn btn-ghost" onclick="closeSectionModal()">إلغاء</button>
+    </div>
   </div>
 </div>
 <script>
 /* ============================================================
    MY SYSTEM — Complete JS Engine
    ============================================================ */
-const SB_URL = 'https://tepkuccwoinpgjfimnvo.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcGt1Y2N3b2lucGdqZmltbnZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NzA2ODcsImV4cCI6MjA5NzM0NjY4N30.RXnZ9m7BqxSuMN4TfhYNh8-XHD7IntVP9UCvwPcVKIQ';
-const OWNER = 'df0d8bf9-4474-4cb2-801b-a50679858740';
+// localStorage-only mode
+
+const OWNER = 'local';
+let sb = null; // localStorage only — no network needed
 const GOAL_PALLETE = ['#f472b6','#818cf8','#34d399','#fb923c','#38bdf8','#a78bfa','#fbbf24','#e879f9','#86efac','#f87171'];
 const WORK_PAL = ['#6366f1','#a855f7','#ec4899','#0ea5e9','#14b8a6','#22c55e','#f97316','#f59e0b'];
 const BK_PAL  = ['#38bdf8','#818cf8','#34d399','#f472b6','#fb923c','#a78bfa','#22d3ee','#86efac'];
@@ -878,9 +843,6 @@ const BK_PAL  = ['#38bdf8','#818cf8','#34d399','#f472b6','#fb923c','#a78bfa','#2
 let sb = null;
 let cur = 'hub';
 let isDark = true;
-let pollTimer = null;
-let lastSeen = { day: new Date(0).toISOString(), work: new Date(0).toISOString(), fin: new Date(0).toISOString(), goals: new Date(0).toISOString() };
-let localWriteTs = { day:0, work:0, fin:0, goals:0 };
 
 const uid = () => crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2);
 const esc = s => (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -890,7 +852,7 @@ const fmtNum = n => Math.round(+n||0).toLocaleString('en-US');
 const fmtEGP = (n,s=false) => { const v=Math.round(+n||0); return s&&Math.abs(v)>=1000?(v/1000).toFixed(1)+'k':(fmtNum(v)+' EGP'); };
 const fmtGrams = n => (+n||0).toFixed(2);
 const fmtTime = t => { if(!t)return''; const [h,m]=(t||'').split(':'); const hh=parseInt(h); const per=hh<12?'صباحاً':'مساءاً'; const h12=hh%12||12; return `${String(h12).padStart(2,'0')}:${m} ${per}`; };
-const markWrite = g => { localWriteTs[g] = Date.now(); };
+const markWrite = () => {}; };
 
 /* ===== STATE ===== */
 const DAY = { blocks:[], overrides:{}, completions:{}, taskChecks:{}, date:new Date(), view:'list', layout:'list', scale:100, editing:null, modalTasks:[], modalLinks:[] };
@@ -903,16 +865,14 @@ const NOTIFS = { items:[] };
 function go(mod) {
   cur = mod;
   document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-  const el=document.getElementById('mod-'+mod);
-  if(el){el.classList.add('active');}
+  document.getElementById('mod-'+mod).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.mod===mod));
   document.querySelectorAll('.bnav-item').forEach(n => n.classList.toggle('active', n.dataset.mod===mod));
   if(mod==='hub') renderHub();
-  else if(mod==='day') renderDay();
-  else if(mod==='work') renderWork();
-  else if(mod==='finance') renderFin();
-  else if(mod==='goals') renderGoals();
-  else if(cmGetMod(mod)) renderCMModule(mod);
+  if(mod==='day') renderDay();
+  if(mod==='work') renderWork();
+  if(mod==='finance') renderFin();
+  if(mod==='goals') renderGoals();
 }
 
 /* ===== TOAST ===== */
@@ -1017,148 +977,74 @@ grant all on all tables in schema public to anon, authenticated;`;
 
 document.getElementById('sqlBox').textContent = SQL_SETUP;
 
-function openSettings() {
-  document.getElementById('cfgUrl').value = localStorage.getItem('sb_url')||SB_URL;
-  document.getElementById('cfgKey').value = localStorage.getItem('sb_key')||SB_KEY;
-  document.getElementById('settingsModal').classList.remove('hidden');
-}
+function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
 function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
-async function saveConfig() {
-  const url=document.getElementById('cfgUrl').value.trim(), key=document.getElementById('cfgKey').value.trim();
-  if(!url||!key)return toast('أدخل URL وال key');
-  localStorage.setItem('sb_url',url); localStorage.setItem('sb_key',key);
-  await connect(url,key);
-  if(sb){toast('تم الربط ✅'); closeSettings(); await loadAll(); renderAll();}
-  else toast('فشل الاتصال ❌');
-}
-function clearConfig() { localStorage.removeItem('sb_url'); localStorage.removeItem('sb_key'); sb=null; setSyncStatus('err','Local Mode'); toast('Local Mode'); }
-function copySql() { navigator.clipboard.writeText(SQL_SETUP).then(()=>toast('تم نسخ SQL ✅')); }
-function setSyncStatus(state, text) { document.getElementById('syncDot').className='sync-dot '+state; document.getElementById('syncText').textContent=text; }
+function saveConfig() { toast('💾 النظام يحفظ محلياً تلقائياً'); closeSettings(); }
+function clearConfig() {}
 
-/* ===== SUPABASE CONNECT & POLLING ===== */
-// Wait for supabase library to be available (CDN might be slow on mobile)
-async function waitForSupabase(maxMs=12000) {
-  const start = Date.now();
-  while(Date.now()-start < maxMs) {
-    if(window.supabase && window.supabase.createClient) return true;
-    await new Promise(r=>setTimeout(r,200));
-  }
-  return false;
+/* ===== EXPORT / IMPORT / CLEAR ===== */
+function exportData() {
+  const mods = JSON.parse(localStorage.getItem('ms_custom_mods')||'[]');
+  const data = {v:2, exported:new Date().toISOString(),
+    day_blocks: localStorage.getItem('ms_day_blocks'),
+    day_ov: localStorage.getItem('ms_day_ov'),
+    day_comp: localStorage.getItem('ms_day_comp'),
+    day_tc: localStorage.getItem('ms_day_tc'),
+    work: localStorage.getItem('ms_work'),
+    fin: localStorage.getItem('ms_fin'),
+    goals: localStorage.getItem('ms_goals'),
+    custom_mods: localStorage.getItem('ms_custom_mods'),
+  };
+  mods.forEach(m=>{ data['cm_'+m.id]=localStorage.getItem('ms_cm_entries_'+m.id); });
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download='mysystem-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url); toast('✅ تم التصدير');
+}
+function importData(input) {
+  const file=input.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try {
+      const data=JSON.parse(e.target.result);
+      if(!data.v){toast('❌ ملف غير صحيح');return;}
+      if(!confirm('هتستبدل كل البيانات الحالية؟'))return;
+      ['day_blocks','day_ov','day_comp','day_tc','work','fin','goals','custom_mods'].forEach(k=>{
+        if(data[k]) localStorage.setItem('ms_'+k,data[k]);
+      });
+      const mods=JSON.parse(data.custom_mods||'[]');
+      mods.forEach(m=>{if(data['cm_'+m.id])localStorage.setItem('ms_cm_entries_'+m.id,data['cm_'+m.id]);});
+      loadAll().then(()=>{renderHub();renderCustomNav();updateBadges();closeSettings();toast('✅ تم الاستيراد');});
+    }catch(err){toast('❌ خطأ: '+err.message);}
+  };
+  reader.readAsText(file);
+}
+function clearAllData() {
+  if(!confirm('حذف كل البيانات نهائياً؟'))return;
+  if(!confirm('تأكيد؟'))return;
+  Object.keys(localStorage).filter(k=>k.startsWith('ms_')).forEach(k=>localStorage.removeItem(k));
+  location.reload();
 }
 
+function setSyncStatus(s, t) {
+  const dot=document.getElementById('syncDot');
+  const txt=document.getElementById('syncText');
+  if(dot) dot.className='sync-dot ok';
+  if(txt) txt.textContent='💾 محفوظ';
+}
+
+/* ===== STORAGE (localStorage only) ===== */
 async function connect(url, key) {
-  setSyncStatus('loading','جاري الاتصال...');
-  document.getElementById('syncText').textContent = 'تحميل المكتبة...';
-  
-  // Wait for supabase CDN to load
-  const ready = await waitForSupabase();
-  if(!ready) {
-    sb = null;
-    setSyncStatus('err','Local Mode');
-    document.getElementById('syncText').textContent = 'بدون اتصال (Local)';
-    document.getElementById('connStatus').textContent = 'مكتبة Supabase لم تُحمَّل — تأكد من الإنترنت';
-    return;
-  }
-
-  document.getElementById('syncText').textContent = 'جاري الاتصال بـ Supabase...';
-  try {
-    sb = window.supabase.createClient(url, key, {
-      auth: { persistSession: false },
-      global: { fetch: (...args) => fetch(...args) }
-    });
-    const {error} = await sb.from('recurring_blocks').select('id').limit(1);
-    if(error && !['PGRST116','42P01','406'].includes(error.code)) throw error;
-    setSyncStatus('ok','متصل ✓');
-    document.getElementById('connStatus').textContent = 'متصل ✅';
-    startPoll();
-  } catch(e) {
-    sb = null;
-    const msg = e?.message||String(e);
-    // Network error vs auth error
-    if(msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
-      setSyncStatus('err','لا يوجد إنترنت');
-      document.getElementById('syncText').textContent = 'لا يوجد إنترنت';
-    } else {
-      setSyncStatus('err','Local Mode');
-      document.getElementById('syncText').textContent = 'Local Mode';
-    }
-    document.getElementById('connStatus').textContent = 'خطأ: ' + msg;
-    // Auto-retry after 8 seconds
-    setTimeout(()=>{ if(!sb) connect(url, key); }, 8000);
-  }
+  // No-op: system works offline via localStorage
 }
-function startPoll() { if(pollTimer)clearInterval(pollTimer); poll(); pollTimer=setInterval(poll,3000); }
-function retryConnect() {
-  if(sb) { toast('متصل بالفعل ✅'); return; }
-  const url=localStorage.getItem('sb_url')||SB_URL, key=localStorage.getItem('sb_key')||SB_KEY;
-  toast('جاري إعادة الاتصال...');
-  connect(url, key).then(()=>{ if(sb) { loadAll().then(()=>{ if(cur==='hub')renderHub(); }); } });
-}
-function stopPoll() { if(pollTimer){clearInterval(pollTimer);pollTimer=null;} }
-async function poll() {
-  if(!sb)return;
-  try {
-    // Day
-    if((Date.now()-localWriteTs.day)>15000) {
-      const [{data:rb},{data:bc}]=await Promise.all([
-        sb.from('recurring_blocks').select('updated_at').order('updated_at',{ascending:false}).limit(1),
-        sb.from('block_completions').select('updated_at').order('updated_at',{ascending:false}).limit(1),
-      ]);
-      const lat=[rb?.[0]?.updated_at,bc?.[0]?.updated_at].filter(Boolean).sort().pop()||new Date(0).toISOString();
-      if(lat>lastSeen.day){lastSeen.day=lat; await dayLoad(); if(cur==='day')renderDay(); if(cur==='hub')renderHub(); updateBadges(); syncPulse();}
-    }
-    // Work
-    if((Date.now()-localWriteTs.work)>15000) {
-      const [{data:ts}]=await Promise.all([sb.from('tasks').select('created_at,updated_at').order('updated_at',{ascending:false}).limit(1)]);
-      const lat=ts?.[0]?.updated_at||new Date(0).toISOString();
-      if(lat>lastSeen.work){lastSeen.work=lat; await workLoad(); if(cur==='work')renderWork(); if(cur==='hub')renderHub(); updateBadges(); syncPulse();}
-    }
-    // Finance
-    if((Date.now()-localWriteTs.fin)>15000) {
-      const [{data:bk}]=await Promise.all([sb.from('banks').select('created_at').order('created_at',{ascending:false}).limit(1)]);
-      const lat=bk?.[0]?.created_at||new Date(0).toISOString();
-      if(lat>lastSeen.fin){lastSeen.fin=lat; await finLoad(); if(cur==='finance')renderFin(); if(cur==='hub')renderHub(); syncPulse();}
-    }
-    // Goals
-    if((Date.now()-localWriteTs.goals)>15000) {
-      const [{data:gl}]=await Promise.all([sb.from('goals').select('updated_at').order('updated_at',{ascending:false}).limit(1)]);
-      const lat=gl?.[0]?.updated_at||new Date(0).toISOString();
-      if(lat>lastSeen.goals){lastSeen.goals=lat; await goalsLoad(); if(cur==='goals')renderGoals(); if(cur==='hub')renderHub(); syncPulse();}
-    }
-    setSyncStatus('ok','متصل ✓');
-  } catch(_){ setSyncStatus('err','خطأ في الاتصال'); }
-}
-function syncPulse(label) { const d=document.getElementById('syncDot'); d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900); if(label) toast('🔄 مزامنة '+label); }
+function startPoll() {} // no-op
+function stopPoll() {} // no-op
+function syncPulse() { const d=document.getElementById('syncDot'); d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900); toast('🔄 تم المزامنة'); }
 
 /* ===== LOAD ALL ===== */
 async function loadAll() { await Promise.all([dayLoad(),workLoad(),finLoad(),goalsLoad()]); }
-
-// Load from localStorage only (instant, no network)
-async function loadAllLocal() {
-  // Day
-  const localB=JSON.parse(localStorage.getItem('ms_day_blocks')||'[]').map(dayNorm);
-  DAY.overrides=JSON.parse(localStorage.getItem('ms_day_ov')||'{}');
-  DAY.completions=JSON.parse(localStorage.getItem('ms_day_comp')||'{}');
-  DAY.taskChecks=JSON.parse(localStorage.getItem('ms_day_tc')||'{}');
-  DAY.blocks = localB.length ? localB : [
-    dayNorm({id:'default-1',title:'وقت العمل',notes:'شغل عميق بدون مشتتات',start_time:'09:00',end_time:'17:00',color:'#6366f1',repeat_mode:'everyday'}),
-    dayNorm({id:'default-2',title:'راحة',notes:'',start_time:'13:00',end_time:'14:00',color:'#22c55e',repeat_mode:'everyday'}),
-  ];
-  // Work
-  const cachedW=JSON.parse(localStorage.getItem('ms_work')||'null');
-  if(cachedW?.company) WORK.data=cachedW;
-  // Finance
-  const cachedF=JSON.parse(localStorage.getItem('ms_fin')||'null');
-  if(cachedF) Object.assign(FIN,cachedF);
-  // Goals
-  const cachedG=JSON.parse(localStorage.getItem('ms_goals')||'null');
-  if(cachedG){GOALS.items=cachedG.items||[];GOALS.sections=cachedG.sections||[];}
-  if(!GOALS.sections.length) GOALS.sections=[
-    {id:'personal',name:'شخصي',icon:'🌟',color:'#f472b6'},
-    {id:'work',name:'مهني',icon:'💼',color:'#818cf8'},
-    {id:'health',name:'صحي',icon:'💪',color:'#34d399'},
-  ];
-}
 
 /* ===== THEME ===== */
 function toggleTheme() { isDark=!isDark; applyTheme(); localStorage.setItem('sys_theme',isDark?'dark':'light'); }
@@ -1331,29 +1217,15 @@ function daySaveLocal() {
   localStorage.setItem('ms_day_tc',JSON.stringify(DAY.taskChecks));
 }
 async function dayLoad() {
-  const localB=JSON.parse(localStorage.getItem('ms_day_blocks')||'[]').map(dayNorm);
-  DAY.overrides=JSON.parse(localStorage.getItem('ms_day_ov')||'{}');
-  DAY.completions=JSON.parse(localStorage.getItem('ms_day_comp')||'{}');
-  DAY.taskChecks=JSON.parse(localStorage.getItem('ms_day_tc')||'{}');
-  if(sb) {
-    try {
-      const today=dateKey();
-      const [{data:bl},{data:ov},{data:comp},{data:chk}]=await Promise.all([
-        sb.from('recurring_blocks').select('*').eq('user_id',OWNER),
-        sb.from('block_overrides').select('*').eq('user_id',OWNER),
-        sb.from('block_completions').select('*').eq('user_id',OWNER).eq('completion_date',today),
-        sb.from('task_checks').select('*').eq('user_id',OWNER).eq('check_date',today),
-      ]);
-      if(bl) DAY.blocks=bl.map(dayNorm);
-      if(ov) { DAY.overrides={}; ov.forEach(o=>{ DAY.overrides[`${o.recurring_block_id}_${o.override_date}`]=o; }); }
-      DAY.completions={}; (comp||[]).forEach(c=>{ DAY.completions[`${c.recurring_block_id}_${today}`]=c.status; });
-      DAY.taskChecks={}; (chk||[]).forEach(c=>{ DAY.taskChecks[`${c.recurring_block_id}_${today}_${c.task_id}`]=c.is_checked; });
-      daySaveLocal();
-    } catch(_){ DAY.blocks=localB; }
-  } else { DAY.blocks=localB; }
+  DAY.blocks = JSON.parse(localStorage.getItem('ms_day_blocks')||'[]').map(dayNorm);
+  DAY.overrides = JSON.parse(localStorage.getItem('ms_day_ov')||'{}');
+  DAY.completions = JSON.parse(localStorage.getItem('ms_day_comp')||'{}');
+  DAY.taskChecks = JSON.parse(localStorage.getItem('ms_day_tc')||'{}');
   if(!DAY.blocks.length) {
-    DAY.blocks=[dayNorm({id:uid(),title:'وقت العمل',notes:'شغل عميق بدون مشتتات',start_time:'09:00',end_time:'17:00',color:'#6366f1',repeat_mode:'everyday'}),
-               dayNorm({id:uid(),title:'راحة',notes:'',start_time:'13:00',end_time:'14:00',color:'#22c55e',repeat_mode:'everyday'})];
+    DAY.blocks=[
+      dayNorm({id:uid(),title:'وقت العمل',notes:'شغل عميق بدون مشتتات',start_time:'09:00',end_time:'17:00',color:'#6366f1',repeat_mode:'everyday'}),
+      dayNorm({id:uid(),title:'راحة',notes:'',start_time:'13:00',end_time:'14:00',color:'#22c55e',repeat_mode:'everyday'}),
+    ];
     daySaveLocal();
   }
 }
@@ -1478,28 +1350,12 @@ function applyScale(v) {
 }
 
 async function setDayStatus(bid, status) {
-  const d=dateKey(DAY.date);
-  DAY.completions[`${bid}_${d}`]=status;
-  markWrite('day'); daySaveLocal();
+  const d=dateKey(DAY.date); DAY.completions[`${bid}_${d}`]=status; daySaveLocal(); markWrite('day');
   renderDay(); if(cur==='hub') renderHub();
-  if(sb){
-    try{
-      await sb.from('block_completions').upsert({user_id:OWNER,recurring_block_id:bid,completion_date:d,status,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,completion_date'});
-      lastSeen.day=new Date().toISOString();
-    }catch(_){}
-  }
 }
 async function toggleTask(bid, tid, checked) {
-  const d=dateKey(DAY.date);
-  DAY.taskChecks[`${bid}_${d}_${tid}`]=checked;
-  markWrite('day'); daySaveLocal();
+  const d=dateKey(DAY.date); DAY.taskChecks[`${bid}_${d}_${tid}`]=checked; daySaveLocal();
   renderDay();
-  if(sb){
-    try{
-      await sb.from('task_checks').upsert({user_id:OWNER,recurring_block_id:bid,task_id:tid,check_date:d,is_checked:checked,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,task_id,check_date'});
-      lastSeen.day=new Date().toISOString();
-    }catch(_){}
-  }
 }
 
 /* DAY MODAL */
@@ -1587,7 +1443,6 @@ async function saveDayBlock(e) {
     links:bLinks.filter(l=>l.url.trim()),
     days_of_week:internalMode==='custom'?selDays:[0,1,2,3,4,5,6],
   });
-  // 1. Update local state immediately
   if(editingBlockId) {
     const scope=getScope();
     const idx=DAY.blocks.findIndex(t=>t.id===editingBlockId);
@@ -1596,35 +1451,16 @@ async function saveDayBlock(e) {
     if(idx<0&&scope!=='today') DAY.blocks.push(block);
   } else {
     DAY.blocks.push(block);
+    notif({icon:'📅',title:'بلوك جديد',sub:`"${title}" أُضيف لجدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
   }
-  // 2. Save to localStorage and mark write time BEFORE any async ops
-  daySaveLocal();
-  markWrite('day');
-  // 3. Close modal and re-render immediately (optimistic UI)
-  closeDayModal();
-  renderDay();
-  toast(editingBlockId?'تم التعديل ✅':'تم الإضافة ✅');
-  if(!editingBlockId) notif({icon:'📅',title:'بلوك جديد',sub:`"${title}" أُضيف لجدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
-  // 4. Async save to Supabase - update lastSeen after to prevent poll overwrite
-  if(sb) {
-    try {
-      await sb.from('recurring_blocks').upsert({...block,user_id:OWNER,updated_at:new Date().toISOString()});
-      lastSeen.day=new Date().toISOString();
-    } catch(err){console.warn('day block save err',err);}
-  }
+  daySaveLocal(); markWrite('day');
+  closeDayModal(); renderDay(); toast(editingBlockId?'تم التعديل ✅':'تم الإضافة ✅');
 }
 async function deleteDayBlock() {
   if(!editingBlockId)return;
-  const delId=editingBlockId;
-  DAY.blocks=DAY.blocks.filter(t=>t.id!==delId);
-  markWrite('day'); daySaveLocal();
+  DAY.blocks=DAY.blocks.filter(t=>t.id!==editingBlockId);
+  daySaveLocal();
   closeDayModal(); renderDay(); toast('تم الحذف');
-  if(sb){
-    try{
-      await sb.from('recurring_blocks').delete().eq('id',delId);
-      lastSeen.day=new Date().toISOString();
-    }catch(_){}
-  }
 }
 
 /* =====================================================
@@ -1632,22 +1468,8 @@ async function deleteDayBlock() {
    ===================================================== */
 function workSaveLocal() { localStorage.setItem('ms_work',JSON.stringify(WORK.data)); }
 async function workLoad() {
-  const cached=JSON.parse(localStorage.getItem('ms_work')||'null');
-  const expMap={};
-  [...(cached?.company||[]),...(cached?.client||[])].forEach(e=>{expMap[e.id]=e._expanded;});
-  if(sb) {
-    try {
-      const [{data:ents},{data:tsks}]=await Promise.all([sb.from('entities').select('*'),sb.from('tasks').select('*')]);
-      if(ents) {
-        const map={}; ents.forEach(e=>{map[e.id]={...e,tasks:[],_expanded:expMap[e.id]??true};});
-        (tsks||[]).forEach(t=>{if(map[t.entity_id])map[t.entity_id].tasks.push(t);});
-        WORK.data.company=ents.filter(e=>e.type==='company').map(e=>map[e.id]);
-        WORK.data.client=ents.filter(e=>e.type==='client').map(e=>map[e.id]);
-        workSaveLocal(); return;
-      }
-    } catch(_){}
-  }
-  if(cached?.company) { WORK.data=cached; }
+  const c = JSON.parse(localStorage.getItem('ms_work')||'null');
+  if(c?.company) WORK.data = c;
 }
 
 function renderWork() {
@@ -1800,30 +1622,16 @@ async function workSaveEnt(type, existId) {
   const kind=type==='company'?'company':'client';
   if(existId) {
     const e=WORK.data[kind].find(x=>x.id===existId); if(e){e.name=name;e.color=color;}
-    if(sb) try{await sb.from('entities').update({name,color}).eq('id',existId);}catch(_){}
   } else {
     const ne={id:uid(),name,type,color,tasks:[]};
     WORK.data[kind].push(ne);
-    if(sb) try{await sb.from('entities').insert({name,type,color});}catch(_){}
   }
-  // Optimistic local save
-  markWrite('work');
-  workSaveLocal();
-  closeEntityModal(); renderWork();
-  toast(existId?'تم الحفظ ✅':'تم الإضافة ✅');
-  // Async Supabase
-  if(sb){
-    try{
-      if(existId){ await sb.from('entities').update({name,color}).eq('id',existId); }
-      else { await sb.from('entities').insert(WORK.data[kind][WORK.data[kind].length-1]); }
-      lastSeen.work=new Date().toISOString();
-    }catch(err){console.warn('entity save err',err);}
-  }
+  workSaveLocal(); markWrite('work'); closeEntityModal(); renderWork(); toast(existId?'تم الحفظ ✅':'تم الإضافة ✅');
 }
 async function workDelEnt(id) {
   if(!confirm('هتحذف الشركة/العميل وكل تاسكاته؟'))return;
   ['company','client'].forEach(k=>{WORK.data[k]=WORK.data[k].filter(e=>e.id!==id);});
-  workSaveLocal(); if(sb)try{await sb.from('entities').delete().eq('id',id);}catch(_){}
+  workSaveLocal();
   renderWork(); toast('تم الحذف');
 }
 function closeEntityModal() { document.getElementById('entityModal').classList.add('hidden'); }
@@ -1891,23 +1699,12 @@ async function saveTask() {
     autoSyncTaskToDay(tData, ent);
     notif({icon:'💼',title:`تاسك جديد: "${title}"`,sub:`في ${ent.name}`,actions:[{label:'عرض',cls:'primary',fn:()=>go('work')}]});
   }
-  // Save local immediately (optimistic)
-  markWrite('work');
-  workSaveLocal();
-  closeTaskModal(); renderWork(); updateBadges();
-  toast(editingTaskId?'تم الحفظ ✅':'تم إضافة التاسك ✅');
-  // Async to Supabase
+  workSaveLocal(); markWrite('work');
   if(sb) {
     try {
-      if(editingTaskId){
-        await sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,updated_at:new Date().toISOString()}).eq('id',editingTaskId);
-      } else {
-        const {data:ins}=await sb.from('tasks').insert({entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,day_synced:false}).select().single();
-        if(ins&&ins.id){tData.id=ins.id; workSaveLocal();}
-      }
-      lastSeen.work=new Date().toISOString();
-    } catch(err){console.warn('task save err',err);}
+    } catch(_){}
   }
+  closeTaskModal(); renderWork(); updateBadges(); toast(editingTaskId?'تم الحفظ ✅':'تم إضافة التاسك ✅');
 }
 
 // AUTO-SYNC: add work task as a sub-task in the overlapping day block (today only, no repeat)
@@ -1942,7 +1739,6 @@ function autoSyncTaskToDay(task, ent) {
     // No overlapping block — add as standalone once-block for today
     const newBlock=dayNorm({id:uid(),title:task.title,notes:`من شغلي — ${ent.name}`,start_time:'09:00',end_time:'10:00',color:ent.color||'#a855f7',repeat_mode:'once',block_date:today,tasks:[],links:[]});
     DAY.blocks.push(newBlock); daySaveLocal();
-    if(sb) sb.from('recurring_blocks').upsert({...newBlock,user_id:OWNER,updated_at:new Date().toISOString()}).then(()=>{}).catch(()=>{});
     notif({icon:'📅',title:'تاسك جديد أُضيف لليوم',sub:`"${task.title}" ظهر في جدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
   }
   markWrite('day');
@@ -1951,22 +1747,12 @@ function autoSyncTaskToDay(task, ent) {
 async function workToggleTask(tid, eid) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); const task=ent?.tasks?.find(t=>t.id===tid); if(!task)return;
   task.completed=!task.completed; task.completed_at=task.completed?new Date().toISOString():null;
-  // Optimistic: save local and re-render immediately
-  markWrite('work');
-  workSaveLocal();
-  renderWork(); updateBadges();
-  toast(task.completed?'✅ منجز!':'تم إلغاء الإنجاز');
-  // Async Supabase
-  if(sb){
-    try{
-      await sb.from('tasks').update({completed:task.completed,completed_at:task.completed_at,updated_at:new Date().toISOString()}).eq('id',tid);
-      lastSeen.work=new Date().toISOString();
-    }catch(err){console.warn('toggle task err',err);}
-  }
+  workSaveLocal(); markWrite('work');
+  renderWork(); updateBadges(); toast(task.completed?'✅ منجز!':'تم إلغاء الإنجاز');
 }
 async function workDelTask(tid, eid) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); if(ent)ent.tasks=ent.tasks.filter(t=>t.id!==tid);
-  workSaveLocal(); if(sb)try{await sb.from('tasks').delete().eq('id',tid);}catch(_){}
+  workSaveLocal();
   renderWork(); updateBadges();
 }
 
@@ -1975,9 +1761,137 @@ async function workDelTask(tid, eid) {
    ===================================================== */
 function finSaveLocal() { localStorage.setItem('ms_fin',JSON.stringify({banks:FIN.banks,gold:FIN.gold,salary:FIN.salary,expenses:FIN.expenses,subscriptions:FIN.subscriptions,debts:FIN.debts,increases:FIN.increases})); }
 async function finLoad() {
-  const c=JSON.parse(localStorage.getItem('ms_fin')||'null'); if(c) Object.assign(FIN,c);
-  if(sb){try{const tables=['banks','gold_items','salary_items','expenses','subscriptions','debts','monthly_increases'];const res=await Promise.all(tables.map(t=>sb.from(t).select('*')));FIN.banks=res[0].data||FIN.banks;FIN.gold=res[1].data||FIN.gold;FIN.salary=res[2].data||FIN.salary;FIN.expenses=res[3].data||FIN.expenses;FIN.subscriptions=res[4].data||FIN.subscriptions;FIN.debts=res[5].data||FIN.debts;FIN.increases=res[6].data||FIN.increases;finSaveLocal();}catch(_){}}
+  const c = JSON.parse(localStorage.getItem('ms_fin')||'null');
+  if(c) Object.assign(FIN, c);
 }
+
+/* ===== FINANCE MODAL (add/edit) ===== */
+let finModalKey=null, finModalId=null;
+
+function finAdd(key) { openFinModal(key, null); }
+function closeFinModal(){ document.getElementById('finEntryModal').classList.add('hidden'); }
+
+function openFinModal(key, id) {
+  finModalKey=key; finModalId=id;
+  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
+            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[key];
+  const existing = id ? FIN[sk].find(r=>r.id===id) : null;
+  const configs = {
+    banks:{title:'بنك',fields:[
+      {id:'fm_name',label:'اسم البنك',type:'text',placeholder:'مثلاً: CIB',val:existing?.name||''},
+      {id:'fm_balEGP',label:'رصيد (جنيه EGP)',type:'number',val:existing?.balance_egp??existing?.balance??0,dir:'ltr'},
+      {id:'fm_balUSD',label:'رصيد (دولار USD)',type:'number',val:existing?.balance_usd??0,dir:'ltr'},
+      {id:'fm_note',label:'ملاحظة',type:'text',placeholder:'اختياري',val:existing?.note||''},
+    ]},
+    gold:{title:'ذهب',fields:[
+      {id:'fm_name',label:'الصنف',type:'text',placeholder:'مثلاً: سبيكة 21k',val:existing?.name||''},
+      {id:'fm_grams',label:'الوزن (جرام)',type:'number',val:existing?.grams??0,dir:'ltr'},
+      {id:'fm_ppg',label:'سعر الجرام (EGP)',type:'number',val:existing?.price_per_gram??0,dir:'ltr'},
+    ]},
+    salary:{title:'مرتب/دخل',fields:[
+      {id:'fm_name',label:'المصدر',type:'text',placeholder:'مثلاً: شركة X',val:existing?.name||''},
+      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',val:existing?.amount??0,dir:'ltr'},
+      {id:'fm_paid',label:'تم الاستلام؟',type:'checkbox',val:existing?.paid??false},
+    ]},
+    expenses:{title:'مصروف',fields:[
+      {id:'fm_name',label:'اسم المصروف',type:'text',placeholder:'مثلاً: إيجار',val:existing?.name||''},
+      {id:'fm_amount',label:'المبلغ الكلي (EGP)',type:'number',val:existing?.amount??0,dir:'ltr'},
+      {id:'fm_paid_amount',label:'المدفوع (EGP)',type:'number',val:existing?.paid_amount??0,dir:'ltr'},
+    ]},
+    subscriptions:{title:'اشتراك',fields:[
+      {id:'fm_name',label:'الاشتراك',type:'text',placeholder:'مثلاً: Netflix',val:existing?.name||''},
+      {id:'fm_usd',label:'السعر (USD/شهر)',type:'number',val:existing?.usd??0,dir:'ltr'},
+      {id:'fm_paid',label:'تم الدفع؟',type:'checkbox',val:existing?.paid??false},
+    ]},
+    debts:{title:'دين',fields:[
+      {id:'fm_name',label:'الدين / لمن',type:'text',placeholder:'مثلاً: قرض البنك',val:existing?.name||''},
+      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',val:existing?.amount??0,dir:'ltr'},
+      {id:'fm_paid',label:'تم السداد؟',type:'checkbox',val:existing?.paid??false},
+    ]},
+    increases:{title:'زيادة دخل',fields:[
+      {id:'fm_name',label:'المصدر',type:'text',placeholder:'مثلاً: بونص',val:existing?.name||''},
+      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',val:existing?.amount??0,dir:'ltr'},
+      {id:'fm_note',label:'السبب',type:'text',placeholder:'اختياري',val:existing?.note||''},
+      {id:'fm_paid',label:'تم الاستلام؟',type:'checkbox',val:existing?.paid??false},
+    ]},
+  };
+  const cfg=configs[key]; if(!cfg)return;
+  const fieldsHtml=cfg.fields.map(f=>{
+    if(f.type==='checkbox') return `<div class="mf-row" style="flex-direction:row;align-items:center;gap:10px"><input type="checkbox" id="${f.id}" ${f.val?'checked':''} style="width:18px;height:18px;accent-color:var(--success)"><label for="${f.id}" style="font-size:13px;font-weight:700">${f.label}</label></div>`;
+    return `<div class="mf-row"><label>${f.label}</label><input class="mf-inp" id="${f.id}" type="${f.type}" value="${typeof f.val==='string'?f.val.replace(/"/g,'&quot;'):f.val}" placeholder="${f.placeholder||''}" ${f.dir?'dir="'+f.dir+'"':''}></div>`;
+  }).join('');
+  document.getElementById('finEntryTitle').textContent=(id?'تعديل ':'إضافة ')+cfg.title;
+  document.getElementById('finEntryFields').innerHTML=fieldsHtml;
+  document.getElementById('finEntryDelBtn').classList.toggle('hidden',!id);
+  document.getElementById('finEntryModal').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('fm_name')?.focus(),60);
+}
+
+function saveFinEntry() {
+  const key=finModalKey, id=finModalId;
+  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
+            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[key];
+  const name=document.getElementById('fm_name')?.value?.trim();
+  if(!name) return toast('اكتب الاسم أولاً');
+  const rate=+document.getElementById('usdRate')?.value||50;
+  let row={};
+  if(key==='banks'){
+    const egp=+document.getElementById('fm_balEGP')?.value||0;
+    const usd=+document.getElementById('fm_balUSD')?.value||0;
+    row={name,balance_egp:egp,balance_usd:usd,balance:egp+(usd*rate),note:document.getElementById('fm_note')?.value?.trim()||''};
+  } else if(key==='gold'){
+    row={name,grams:+document.getElementById('fm_grams')?.value||0,price_per_gram:+document.getElementById('fm_ppg')?.value||0};
+  } else if(key==='salary'){
+    row={name,amount:+document.getElementById('fm_amount')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
+  } else if(key==='expenses'){
+    const amt=+document.getElementById('fm_amount')?.value||0,pa=+document.getElementById('fm_paid_amount')?.value||0;
+    row={name,amount:amt,paid_amount:pa,paid:pa>=amt&&amt>0};
+  } else if(key==='subscriptions'){
+    row={name,usd:+document.getElementById('fm_usd')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
+  } else if(key==='debts'){
+    row={name,amount:+document.getElementById('fm_amount')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
+  } else if(key==='increases'){
+    row={name,amount:+document.getElementById('fm_amount')?.value||0,note:document.getElementById('fm_note')?.value?.trim()||'',paid:document.getElementById('fm_paid')?.checked||false};
+  }
+  if(id) {
+    const existing=FIN[sk].find(r=>r.id===id);
+    if(existing) Object.assign(existing, row);
+  } else {
+    FIN[sk].push({id:uid(), user_id:OWNER, ...row});
+  }
+  finSaveLocal();
+  closeFinModal();
+  finRender();
+  toast(id?'تم التعديل ✅':'تم الإضافة ✅');
+}
+
+function deleteFinEntry() {
+  if(!finModalKey||!finModalId)return;
+  if(!confirm('هتحذف هذا العنصر؟'))return;
+  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
+            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[finModalKey];
+  FIN[sk]=FIN[sk].filter(r=>r.id!==finModalId);
+  finSaveLocal();
+  closeFinModal();
+  finRender();
+  toast('تم الحذف');
+}
+
+function finUpd(key, id, patch) {
+  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
+            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[key];
+  const row=FIN[sk].find(r=>r.id===id);
+  if(row) Object.assign(row,patch);
+  finSaveLocal();
+}
+function finDel(key, id) {
+  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
+            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[key];
+  FIN[sk]=FIN[sk].filter(r=>r.id!==id);
+  finSaveLocal();
+  finRender();
+}
+
 const FIN_TABS=[['banks','🏦','بنوك','linear-gradient(135deg,#2563eb,#7c3aed)'],['gold','🥇','ذهب','linear-gradient(135deg,#b45309,#f59e0b)'],['salary','💵','مرتبات','linear-gradient(135deg,#047857,#10b981)'],['expenses','📊','مصاريف','linear-gradient(135deg,#7c3aed,#a855f7)'],['debts','💳','ديون','linear-gradient(135deg,#b91c1c,#ef4444)'],['increases','📈','زيادات','linear-gradient(135deg,#0f766e,#06b6d4)']];
 const FIN_TBL_MAP={banks:'banks',gold:'gold_items',salary:'salary_items',expenses:'expenses',subscriptions:'subscriptions',debts:'debts',increases:'monthly_increases'};
 const FIN_STATE_KEY={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',subscriptions:'subscriptions',debts:'debts',increases:'increases'};
@@ -2017,193 +1931,60 @@ function finRenderSection(rate=50) {
   const wrapEnd='</div>';
 
   if(FIN.tab==='banks') {
-    const rate=+document.getElementById('usdRate')?.value||50;
-    const tot=FIN.banks.reduce((s,b)=>s+((+b.balance_egp||+b.balance||0)+(+b.balance_usd||0)*rate),0);
-    const totEGP=FIN.banks.reduce((s,b)=>s+(+b.balance_egp||+b.balance||0),0);
-    const totUSD=FIN.banks.reduce((s,b)=>s+(+b.balance_usd||0),0);
+    const tot=FIN.banks.reduce((s,b)=>s+(+b.balance||0),0);
     el.innerHTML=`<div class="fin-summary">
-      <div class="fin-sum-card"><div class="fin-sum-label">الإجمالي الكلي</div><div class="fin-sum-val" style="color:var(--fin-accent)">${fmtEGP(tot)}</div></div>
-      <div class="fin-sum-card"><div class="fin-sum-label">جنيه مصري</div><div class="fin-sum-val">${fmtEGP(totEGP)}</div></div>
-      <div class="fin-sum-card"><div class="fin-sum-label">دولار</div><div class="fin-sum-val" style="direction:ltr">$${fmtNum(totUSD)}</div></div>
-    </div>${wrapStart}<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>البنك</th><th>EGP</th><th>USD</th><th>الإجمالي</th><th>ملاحظة</th><th></th></tr></thead><tbody id="banksBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('banks')">+ إضافة بنك</button></div>${wrapEnd}`;
-    document.getElementById('banksBody').innerHTML=FIN.banks.map((b,i)=>{
-      const c=BK[i%BK.length];
-      const balEGP=+b.balance_egp||+b.balance||0;
-      const balUSD=+b.balance_usd||0;
-      const total=balEGP+(balUSD*rate);
-      return `<tr class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('banks','${b.id}')">
-        <td style="color:${c};font-weight:800">${esc(b.name)}</td>
-        <td style="direction:ltr;font-weight:700">${fmtNum(balEGP)}</td>
-        <td style="direction:ltr;font-weight:700;color:#38bdf8">${balUSD?'$'+fmtNum(balUSD):'—'}</td>
-        <td style="direction:ltr;font-weight:900;color:${c}">${fmtEGP(total)}</td>
-        <td style="color:var(--text-d);font-size:11px">${esc(b.note||'')}</td>
-        <td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('banks','${b.id}')">✏️</button></td>
-      </tr>`;}).join('');
+      <div class="fin-sum-card"><div class="fin-sum-label">عدد البنوك</div><div class="fin-sum-val">${FIN.banks.length}</div></div>
+      <div class="fin-sum-card"><div class="fin-sum-label">الإجمالي</div><div class="fin-sum-val" style="color:var(--fin-accent)">${fmtEGP(tot)}</div></div>
+      <div class="fin-sum-card"><div class="fin-sum-label">المتوسط</div><div class="fin-sum-val">${fmtEGP(FIN.banks.length?tot/FIN.banks.length:0)}</div></div>
+    </div>${wrapStart}<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>البنك</th><th>الرصيد</th><th>ملاحظة</th><th></th></tr></thead><tbody id="banksBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('banks',null)">+ إضافة بنك</button></div>${wrapEnd}`;
+    document.getElementById('banksBody').innerHTML=FIN.banks.map((b,i)=>{const c=BK[i%BK.length];return `<tr class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(b.name)}" style="color:${c};font-weight:800" onchange="finUpd('banks','${b.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+b.balance||0}" style="font-weight:800" onchange="finUpd('banks','${b.id}',{balance:+this.value});finRender()" dir="ltr"></td><td><input class="fin-inp" value="${esc(b.note||'')}" placeholder="ملاحظة..." onchange="finUpd('banks','${b.id}',{note:this.value})"></td><td class="del-cell"><button class="del-btn" onclick="finDel('banks','${b.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='gold') {
     const tot=FIN.gold.reduce((s,g)=>s+((+g.grams||0)*(+g.price_per_gram||0)),0), totG=FIN.gold.reduce((s,g)=>s+(+g.grams||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الجرامات</div><div class="fin-sum-val">${fmtGrams(totG)} جم</div></div><div class="fin-sum-card"><div class="fin-sum-label">القيمة الإجمالية</div><div class="fin-sum-val" style="color:#fbbf24">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متوسط سعر الجرام</div><div class="fin-sum-val">${fmtEGP(totG?tot/totG:0)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الصنف</th><th>الوزن (جم)</th><th>سعر الجرام</th><th>الإجمالي</th><th></th></tr></thead><tbody id="goldBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('gold')">+ إضافة ذهب</button></div>`;
-    document.getElementById('goldBody').innerHTML=FIN.gold.map((g,i)=>{const c=['#fbbf24','#f59e0b','#fcd34d','#d97706'][i%4];const v=(+g.grams||0)*(+g.price_per_gram||0);return `<tr class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('gold','${g.id}')"><td style="color:${c};font-weight:800">${esc(g.name)}</td><td style="direction:ltr">${fmtGrams(g.grams)}</td><td style="direction:ltr">${fmtNum(g.price_per_gram)}</td><td style="font-weight:800;color:${c};direction:ltr">${fmtEGP(v)}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('gold','${g.id}')">✏️</button></td></tr>`;}).join('');
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الصنف</th><th>الوزن (جم)</th><th>سعر الجرام</th><th>الإجمالي</th><th></th></tr></thead><tbody id="goldBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('gold',null)">+ إضافة ذهب</button></div>`;
+    document.getElementById('goldBody').innerHTML=FIN.gold.map((g,i)=>{const c=['#fbbf24','#f59e0b','#fcd34d','#d97706'][i%4];const v=(+g.grams||0)*(+g.price_per_gram||0);return `<tr class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(g.name)}" style="color:${c};font-weight:800" onchange="finUpd('gold','${g.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+g.grams||0}" dir="ltr" onchange="finUpd('gold','${g.id}',{grams:+this.value});finRender()"></td><td><input class="fin-inp" type="number" value="${+g.price_per_gram||0}" dir="ltr" onchange="finUpd('gold','${g.id}',{price_per_gram:+this.value});finRender()"></td><td style="font-weight:800;color:${c};direction:ltr">${fmtEGP(v)}</td><td class="del-cell"><button class="del-btn" onclick="finDel('gold','${g.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='salary') {
     const tot=FIN.salary.reduce((s,r)=>s+(+r.amount||0),0),paid=FIN.salary.filter(r=>r.paid).reduce((s,r)=>s+(+r.amount||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">الإجمالي</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصدر</th><th>المبلغ</th><th>استلمت؟</th><th></th></tr></thead><tbody id="salBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('salary')">+ إضافة مرتب</button></div>`;
-    document.getElementById('salBody').innerHTML=FIN.salary.map((r,i)=>{const c=['#34d399','#10b981','#6ee7b7'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('salary','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:800">${fmtEGP(r.amount)}</td><td>${r.paid?'<span style="color:var(--success);font-size:13px">✅ استلمت</span>':'<span style="color:var(--warning);font-size:13px">⏳ لسه</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('salary','${r.id}')">✏️</button></td></tr>`;}).join('');
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصدر</th><th>المبلغ</th><th>استلمت؟</th><th></th></tr></thead><tbody id="salBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('salary',null)">+ إضافة مرتب</button></div>`;
+    document.getElementById('salBody').innerHTML=FIN.salary.map((r,i)=>{const c=['#34d399','#10b981','#6ee7b7'][i%3];return `<tr ${r.paid?'class="paid-row"':''} style="${r.paid?'':''}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('salary','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('salary','${r.id}',{amount:+this.value});finRender()"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('salary','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('salary','${r.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='expenses') {
     const expTot=FIN.expenses.reduce((s,e)=>s+(+e.amount||0),0),expPaid=FIN.expenses.reduce((s,e)=>s+(+e.paid_amount||0),0),subUSD=FIN.subscriptions.reduce((s,r)=>s+(+r.usd||0),0),subEGP=subUSD*rate,grandTot=expTot+subEGP,grandPaid=expPaid+FIN.subscriptions.filter(r=>r.paid).reduce((s,r)=>s+(+r.usd*rate||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">مصاريف</div><div class="fin-sum-val">${fmtEGP(expTot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">اشتراكات</div><div class="fin-sum-val">${fmtEGP(subEGP)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--danger)">${fmtEGP(grandTot-grandPaid)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصروف</th><th>المبلغ</th><th>مدفوع</th><th>متبقي</th><th>✓</th><th></th></tr></thead><tbody id="expBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('expenses')">+ إضافة مصروف</button></div>
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصروف</th><th>المبلغ</th><th>مدفوع</th><th>متبقي</th><th>✓</th><th></th></tr></thead><tbody id="expBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('expenses',null)">+ إضافة مصروف</button></div>
     <div style="font-size:13px;font-weight:800;margin:14px 0 10px;color:var(--text-m)">الاشتراكات الشهرية</div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاشتراك</th><th>USD</th><th>EGP</th><th>✓</th><th></th></tr></thead><tbody id="subBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('subscriptions')">+ إضافة اشتراك</button></div>`;
-    document.getElementById('expBody').innerHTML=FIN.expenses.map((r,i)=>{const c=['#a78bfa','#818cf8','#c4b5fd'][i%3];const rem=Math.max(0,(+r.amount||0)-(+r.paid_amount||0));const done=r.paid||(+r.paid_amount>=(+r.amount)&&+r.amount>0);return `<tr ${done?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('expenses','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:700">${fmtEGP(r.amount)}</td><td style="direction:ltr">${fmtEGP(r.paid_amount)}</td><td style="direction:ltr;font-weight:800;color:${rem>0?'var(--warning)':'var(--success)'}">${fmtEGP(rem)}</td><td>${done?'<span style="color:var(--success)">✅</span>':'<span style="color:var(--warning)">⏳</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('expenses','${r.id}')">✏️</button></td></tr>`;}).join('');
-    document.getElementById('subBody').innerHTML=FIN.subscriptions.map((r,i)=>{const c=['#38bdf8','#0ea5e9','#22d3ee'][i%3];const egp=(+r.usd||0)*rate;return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('subscriptions','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:700">$${fmtNum(r.usd)}</td><td style="direction:ltr;font-weight:800;color:${c}">${fmtEGP(egp)}</td><td>${r.paid?'<span style="color:var(--success)">✅ دُفع</span>':'<span style="color:var(--warning)">⏳ لسه</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('subscriptions','${r.id}')">✏️</button></td></tr>`;}).join('');
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاشتراك</th><th>USD</th><th>EGP</th><th>✓</th><th></th></tr></thead><tbody id="subBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('subscriptions',null)">+ إضافة اشتراك</button></div>`;
+    document.getElementById('expBody').innerHTML=FIN.expenses.map((r,i)=>{const c=['#a78bfa','#818cf8','#c4b5fd'][i%3];const rem=Math.max(0,(+r.amount||0)-(+r.paid_amount||0));const done=r.paid||(+r.paid_amount>=(+r.amount)&&+r.amount>0);return `<tr ${done?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('expenses','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('expenses','${r.id}',{amount:+this.value});finRender()"></td><td><input class="fin-inp" type="number" value="${+r.paid_amount||0}" dir="ltr" onchange="finUpd('expenses','${r.id}',{paid_amount:+this.value});finRender()"></td><td style="direction:ltr;font-weight:800;color:${rem>0?'var(--warning)':'var(--success)'}">${fmtEGP(rem)}</td><td><input type="checkbox" ${done?'checked':''} onchange="finUpd('expenses','${r.id}',{paid:this.checked,paid_amount:this.checked?${+r.amount||0}:0});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('expenses','${r.id}')">×</button></td></tr>`;}).join('');
+    document.getElementById('subBody').innerHTML=FIN.subscriptions.map((r,i)=>{const c=['#38bdf8','#0ea5e9','#22d3ee'][i%3];const egp=(+r.usd||0)*rate;return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('subscriptions','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.usd||0}" dir="ltr" onchange="finUpd('subscriptions','${r.id}',{usd:+this.value});finRender()"></td><td style="direction:ltr;font-weight:800;color:${c}">${fmtEGP(egp)}</td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('subscriptions','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('subscriptions','${r.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='debts') {
     const tot=FIN.debts.filter(d=>!d.paid).reduce((s,d)=>s+(+d.amount||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">ديون متبقية</div><div class="fin-sum-val" style="color:var(--danger)">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">عدد الديون</div><div class="fin-sum-val">${FIN.debts.filter(d=>!d.paid).length}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مسددة</div><div class="fin-sum-val" style="color:var(--success)">${FIN.debts.filter(d=>d.paid).length}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الدين</th><th>المبلغ</th><th>خلص؟</th><th></th></tr></thead><tbody id="debtsBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('debts')">+ إضافة دين</button></div>`;
-    document.getElementById('debtsBody').innerHTML=FIN.debts.map((r,i)=>{const c=['#f87171','#fb923c','#fca5a5'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('debts','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:800">${fmtEGP(r.amount)}</td><td>${r.paid?'<span style="color:var(--success)">✅ اتسدد</span>':'<span style="color:var(--danger)">⚠️ متبقي</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('debts','${r.id}')">✏️</button></td></tr>`;}).join('');
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الدين</th><th>المبلغ</th><th>خلص؟</th><th></th></tr></thead><tbody id="debtsBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('debts',null)">+ إضافة دين</button></div>`;
+    document.getElementById('debtsBody').innerHTML=FIN.debts.map((r,i)=>{const c=['#f87171','#fb923c','#fca5a5'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('debts','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('debts','${r.id}',{amount:+this.value});finRender()"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('debts','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--danger);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('debts','${r.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='increases') {
     const tot=FIN.increases.reduce((s,r)=>s+(+r.amount||0),0),paid=FIN.increases.filter(r=>r.paid).reduce((s,r)=>s+(+r.amount||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الزيادات</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاسم</th><th>المبلغ</th><th>السبب</th><th>✓</th><th></th></tr></thead><tbody id="incBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('increases')">+ إضافة زيادة</button></div>`;
-    document.getElementById('incBody').innerHTML=FIN.increases.map((r,i)=>{const c=['#06b6d4','#0ea5e9','#22d3ee'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('increases','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:800">${fmtEGP(r.amount)}</td><td style="color:var(--text-d)">${esc(r.note||'')}</td><td>${r.paid?'<span style="color:var(--success)">✅ استلمت</span>':'<span style="color:var(--warning)">⏳ لسه</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('increases','${r.id}')">✏️</button></td></tr>`;}).join('');
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاسم</th><th>المبلغ</th><th>السبب</th><th>✓</th><th></th></tr></thead><tbody id="incBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('increases',null)">+ إضافة زيادة</button></div>`;
+    document.getElementById('incBody').innerHTML=FIN.increases.map((r,i)=>{const c=['#06b6d4','#0ea5e9','#22d3ee'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('increases','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('increases','${r.id}',{amount:+this.value});finRender()"></td><td><input class="fin-inp" value="${esc(r.note||'')}" placeholder="السبب..." onchange="finUpd('increases','${r.id}',{note:this.value})"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('increases','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('increases','${r.id}')">×</button></td></tr>`;}).join('');
   }
 }
-function finAdd(key) { openFinModal(key, null); }
-
-let finModalKey=null, finModalId=null;
-function openFinModal(key, id) {
-  finModalKey=key; finModalId=id;
-  const sk=FIN_STATE_KEY[key];
-  const existing=id?FIN[sk].find(r=>r.id===id):null;
-  const configs={
-    banks:{title:'بنك',fields:[
-      {id:'fm_name',label:'اسم البنك',type:'text',placeholder:'مثلاً: CIB',val:existing?.name||''},
-      {id:'fm_balEGP',label:'الرصيد (جنيه)',type:'number',placeholder:'0',val:existing?.balance_egp??existing?.balance??0,dir:'ltr'},
-      {id:'fm_balUSD',label:'الرصيد (دولار)',type:'number',placeholder:'0',val:existing?.balance_usd??0,dir:'ltr'},
-      {id:'fm_note',label:'ملاحظة',type:'text',placeholder:'اختياري',val:existing?.note||''},
-    ]},
-    gold:{title:'ذهب',fields:[
-      {id:'fm_name',label:'الصنف',type:'text',placeholder:'مثلاً: سبيكة 18k',val:existing?.name||''},
-      {id:'fm_grams',label:'الوزن (جرام)',type:'number',placeholder:'0',val:existing?.grams??0,dir:'ltr'},
-      {id:'fm_ppg',label:'سعر الجرام (EGP)',type:'number',placeholder:'0',val:existing?.price_per_gram??0,dir:'ltr'},
-    ]},
-    salary:{title:'مرتب/دخل',fields:[
-      {id:'fm_name',label:'المصدر',type:'text',placeholder:'مثلاً: شركة X',val:existing?.name||''},
-      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',placeholder:'0',val:existing?.amount??0,dir:'ltr'},
-      {id:'fm_paid',label:'تم الاستلام؟',type:'checkbox',val:existing?.paid??false},
-    ]},
-    expenses:{title:'مصروف',fields:[
-      {id:'fm_name',label:'اسم المصروف',type:'text',placeholder:'مثلاً: إيجار',val:existing?.name||''},
-      {id:'fm_amount',label:'المبلغ الكلي (EGP)',type:'number',placeholder:'0',val:existing?.amount??0,dir:'ltr'},
-      {id:'fm_paid_amount',label:'المدفوع (EGP)',type:'number',placeholder:'0',val:existing?.paid_amount??0,dir:'ltr'},
-    ]},
-    subscriptions:{title:'اشتراك',fields:[
-      {id:'fm_name',label:'اسم الاشتراك',type:'text',placeholder:'مثلاً: Netflix',val:existing?.name||''},
-      {id:'fm_usd',label:'السعر (USD/شهر)',type:'number',placeholder:'0',val:existing?.usd??0,dir:'ltr'},
-      {id:'fm_paid',label:'تم الدفع؟',type:'checkbox',val:existing?.paid??false},
-    ]},
-    debts:{title:'دين',fields:[
-      {id:'fm_name',label:'اسم الدين / لمن',type:'text',placeholder:'مثلاً: قرض البنك',val:existing?.name||''},
-      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',placeholder:'0',val:existing?.amount??0,dir:'ltr'},
-      {id:'fm_paid',label:'تم السداد؟',type:'checkbox',val:existing?.paid??false},
-    ]},
-    increases:{title:'زيادة دخل',fields:[
-      {id:'fm_name',label:'المصدر',type:'text',placeholder:'مثلاً: بونص',val:existing?.name||''},
-      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',placeholder:'0',val:existing?.amount??0,dir:'ltr'},
-      {id:'fm_note',label:'السبب',type:'text',placeholder:'اختياري',val:existing?.note||''},
-      {id:'fm_paid',label:'تم الاستلام؟',type:'checkbox',val:existing?.paid??false},
-    ]},
-  };
-  const cfg=configs[key]; if(!cfg)return;
-  const fieldsHtml=cfg.fields.map(f=>{
-    if(f.type==='checkbox') return `<div class="mf-row" style="flex-direction:row;align-items:center;gap:10px"><input type="checkbox" id="${f.id}" ${f.val?'checked':''} style="width:18px;height:18px;accent-color:var(--success)"><label for="${f.id}" style="font-size:13px;font-weight:700">${f.label}</label></div>`;
-    return `<div class="mf-row"><label>${f.label}</label><input class="mf-inp" id="${f.id}" type="${f.type}" value="${typeof f.val==='string'?f.val.replace(/"/g,'&quot;'):f.val}" placeholder="${f.placeholder||''}" ${f.dir?'dir="'+f.dir+'"':''} ${f.type==='text'?'':''}></div>`;
-  }).join('');
-  const el=document.getElementById('finEntryModal');
-  document.getElementById('finEntryTitle').textContent=(id?'تعديل ':'إضافة ')+cfg.title;
-  document.getElementById('finEntryFields').innerHTML=fieldsHtml;
-  document.getElementById('finEntryDelBtn').classList.toggle('hidden',!id);
-  el.classList.remove('hidden');
-  setTimeout(()=>document.getElementById('fm_name')?.focus(),60);
+async function finAdd(key) {
+  const id=uid(); const sk=FIN_STATE_KEY[key];
+  const defs={banks:{id,user_id:OWNER,name:'بنك جديد',balance:0,note:''},gold:{id,user_id:OWNER,name:'ذهب',grams:0,price_per_gram:0},salary:{id,user_id:OWNER,name:'مرتب',amount:0,paid:false},expenses:{id,user_id:OWNER,name:'مصروف جديد',amount:0,paid_amount:0,paid:false},subscriptions:{id,user_id:OWNER,name:'اشتراك جديد',usd:0,paid:false},debts:{id,user_id:OWNER,name:'دين جديد',amount:0,paid:false},increases:{id,user_id:OWNER,name:'زيادة جديدة',amount:0,note:'',paid:false}};
+  FIN[sk].push(defs[key]); finSaveLocal(); markWrite('fin');
+  finRender();
 }
-async function saveFinEntry() {
-  const key=finModalKey, id=finModalId, sk=FIN_STATE_KEY[key];
-  const name=document.getElementById('fm_name')?.value?.trim();
-  if(!name)return toast('اكتب الاسم أولاً');
-  const rate=+document.getElementById('usdRate')?.value||50;
-  let row={};
-  if(key==='banks'){
-    const egp=+document.getElementById('fm_balEGP')?.value||0;
-    const usdVal=+document.getElementById('fm_balUSD')?.value||0;
-    row={name,balance_egp:egp,balance_usd:usdVal,balance:egp+(usdVal*rate),note:document.getElementById('fm_note')?.value?.trim()||''};
-  } else if(key==='gold'){
-    row={name,grams:+document.getElementById('fm_grams')?.value||0,price_per_gram:+document.getElementById('fm_ppg')?.value||0};
-  } else if(key==='salary'){
-    row={name,amount:+document.getElementById('fm_amount')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
-  } else if(key==='expenses'){
-    const amt=+document.getElementById('fm_amount')?.value||0,paid_amt=+document.getElementById('fm_paid_amount')?.value||0;
-    row={name,amount:amt,paid_amount:paid_amt,paid:paid_amt>=amt&&amt>0};
-  } else if(key==='subscriptions'){
-    row={name,usd:+document.getElementById('fm_usd')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
-  } else if(key==='debts'){
-    row={name,amount:+document.getElementById('fm_amount')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
-  } else if(key==='increases'){
-    row={name,amount:+document.getElementById('fm_amount')?.value||0,note:document.getElementById('fm_note')?.value?.trim()||'',paid:document.getElementById('fm_paid')?.checked||false};
-  }
-  // 1. Update local state immediately (optimistic)
-  markWrite('fin');
-  if(id) {
-    const existing=FIN[sk].find(r=>r.id===id); if(existing)Object.assign(existing,row);
-  } else {
-    const newRow={id:uid(),user_id:OWNER,...row};
-    FIN[sk].push(newRow);
-    // Async save to Supabase - don't block UI
-    finSaveLocal();
-    closeFinModal(); finRender(); toast('تم الإضافة ✅');
-    if(sb){
-      try{
-        const dbRow={...newRow}; delete dbRow.balance_egp; delete dbRow.balance_usd;
-        if(key==='banks') dbRow.balance=newRow.balance;
-        const{data}=await sb.from(FIN_TBL_MAP[key]).insert({...newRow}).select().single();
-        if(data&&data.id){newRow.id=data.id;}
-        lastSeen.fin=new Date().toISOString();
-      }catch(e){console.warn('fin insert err',e);}
-    }
-    return;
-  }
-  finSaveLocal();
-  closeFinModal(); finRender(); toast('تم التعديل ✅');
-  // Async update to Supabase
-  if(sb){
-    try{
-      await sb.from(FIN_TBL_MAP[key]).update({...row,user_id:OWNER}).eq('id',id);
-      lastSeen.fin=new Date().toISOString();
-    }catch(e){console.warn('fin update err',e);}
-  }
-}
-async function deleteFinEntry() {
-  if(!finModalKey||!finModalId)return;
-  if(!confirm('هتحذف هذا العنصر؟'))return;
-  const sk=FIN_STATE_KEY[finModalKey]; FIN[sk]=FIN[sk].filter(r=>r.id!==finModalId);
-  finSaveLocal(); markWrite('fin');
-  if(sb)try{await sb.from(FIN_TBL_MAP[finModalKey]).delete().eq('id',finModalId);}catch(_){}
-  closeFinModal(); finRender(); toast('تم الحذف');
-}
-function closeFinModal(){document.getElementById('finEntryModal').classList.add('hidden');}
 async function finUpd(key, id, patch) {
   const sk=FIN_STATE_KEY[key]; const row=FIN[sk].find(r=>r.id===id); if(row)Object.assign(row,patch);
   finSaveLocal(); markWrite('fin');
-  if(sb)try{await sb.from(FIN_TBL_MAP[key]).update(patch).eq('id',id);}catch(_){}
 }
 async function finDel(key, id) {
   const sk=FIN_STATE_KEY[key]; FIN[sk]=FIN[sk].filter(r=>r.id!==id); finSaveLocal(); markWrite('fin');
-  if(sb)try{await sb.from(FIN_TBL_MAP[key]).delete().eq('id',id);}catch(_){}
   finRender();
 }
 
@@ -2212,22 +1993,23 @@ async function finDel(key, id) {
    ===================================================== */
 function goalsSaveLocal() { localStorage.setItem('ms_goals',JSON.stringify({items:GOALS.items,sections:GOALS.sections})); }
 async function goalsLoad() {
-  const c=JSON.parse(localStorage.getItem('ms_goals')||'null');
-  if(c){GOALS.items=c.items||[];GOALS.sections=c.sections||[];}
-  if(sb){
-    try{
-      const [{data:gl},{data:sc}]=await Promise.all([sb.from('goals').select('*').eq('user_id',OWNER),sb.from('hub_sections').select('*').eq('user_id',OWNER).order('sort_order')]);
-      if(gl)GOALS.items=gl; if(sc)GOALS.sections=sc; goalsSaveLocal();
-    }catch(_){}
+  const c = JSON.parse(localStorage.getItem('ms_goals')||'null');
+  if(c){ GOALS.items=c.items||[]; GOALS.sections=c.sections||[]; }
+  if(!GOALS.sections.length){
+    GOALS.sections=[
+      {id:'personal',name:'شخصي',icon:'🌟',color:'#f472b6'},
+      {id:'work',name:'مهني',icon:'💼',color:'#818cf8'},
+      {id:'health',name:'صحي',icon:'💪',color:'#34d399'},
+    ];
+    goalsSaveLocal();
   }
-  if(!GOALS.sections.length){GOALS.sections=[{id:'personal',name:'شخصي',icon:'🌟',color:'#f472b6'},{id:'work',name:'مهني',icon:'💼',color:'#818cf8'},{id:'health',name:'صحي',icon:'💪',color:'#34d399'}];goalsSaveLocal();}
 }
 
 function renderGoals() {
   // Sections bar
   const secBar=document.getElementById('sectionsBar');
   secBar.innerHTML=`<div class="section-chip ${GOALS.activeSection==='all'?'active':''}" onclick="GOALS.activeSection='all';renderGoals()">🌐 الكل (${GOALS.items.length})</div>`+
-    GOALS.sections.map(s=>{const cnt=GOALS.items.filter(g=>g.section_id===s.id).length;return `<div class="section-chip ${GOALS.activeSection===s.id?'active':''}" style="${GOALS.activeSection===s.id?'border-color:'+s.color+';color:'+s.color:''}"><span onclick="GOALS.activeSection='${s.id}';renderGoals()">${s.icon} ${esc(s.name)} (${cnt})</span><button onclick="openSectionModal('${s.id}')" style="background:none;border:none;font-size:11px;opacity:.6;cursor:pointer;padding:0 0 0 4px" title="تعديل القسم">✏️</button></div>`;}).join('');
+    GOALS.sections.map(s=>{const cnt=GOALS.items.filter(g=>g.section_id===s.id).length;return `<div class="section-chip ${GOALS.activeSection===s.id?'active':''}" onclick="GOALS.activeSection='${s.id}';renderGoals()" style="${GOALS.activeSection===s.id?'border-color:'+s.color+';color:'+s.color:''}">${s.icon} ${esc(s.name)} (${cnt})</div>`;}).join('');
 
   const filtered=GOALS.activeSection==='all'?GOALS.items:GOALS.items.filter(g=>g.section_id===GOALS.activeSection);
   const board=document.getElementById('goalsBoard');
@@ -2274,30 +2056,16 @@ function renderGoalCard(g) {
 
 async function toggleGoal(gid) {
   const g=GOALS.items.find(x=>x.id===gid); if(!g)return;
-  g.completed=!g.completed; g.updated_at=new Date().toISOString();
-  markWrite('goals'); goalsSaveLocal();
-  renderGoals(); updateBadges();
+  g.completed=!g.completed; g.updated_at=new Date().toISOString(); goalsSaveLocal(); markWrite('goals');
   if(g.completed) toast('🎉 مبروك! تم تحقيق الهدف!');
-  if(sb){
-    try{
-      await sb.from('goals').update({completed:g.completed,updated_at:g.updated_at}).eq('id',gid);
-      lastSeen.goals=new Date().toISOString();
-    }catch(_){}
-  }
+  renderGoals(); updateBadges();
 }
 async function toggleGoalStep(gid, idx, val) {
   const g=GOALS.items.find(x=>x.id===gid); if(!g)return;
   g.steps=Array.isArray(g.steps)?g.steps:[];
   if(g.steps[idx]) g.steps[idx].done=val;
-  g.updated_at=new Date().toISOString();
-  markWrite('goals'); goalsSaveLocal();
+  g.updated_at=new Date().toISOString(); goalsSaveLocal(); markWrite('goals');
   renderGoals();
-  if(sb){
-    try{
-      await sb.from('goals').update({steps:g.steps,updated_at:g.updated_at}).eq('id',gid);
-      lastSeen.goals=new Date().toISOString();
-    }catch(_){}
-  }
 }
 
 let editingGoalId=null, gSteps=[];
@@ -2352,319 +2120,52 @@ async function saveGoal() {
   };
   if(editingGoalId) { const idx=GOALS.items.findIndex(x=>x.id===editingGoalId); if(idx>=0)GOALS.items[idx]=g; else GOALS.items.push(g); }
   else { GOALS.items.push(g); notif({icon:'🎯',title:`هدف جديد: "${title}"`,sub:'تمت الإضافة لقائمة أهدافك',color:g.color,persist:true}); }
-  // Save local immediately (optimistic)
-  markWrite('goals');
-  goalsSaveLocal();
-  closeGoalModal(); renderGoals(); updateBadges();
-  toast(editingGoalId?'تم التعديل ✅':'تم إضافة الهدف ✅');
-  // Async to Supabase
-  if(sb){
-    try{
-      await sb.from('goals').upsert({...g,user_id:OWNER});
-      lastSeen.goals=new Date().toISOString();
-    }catch(err){console.warn('goal save err',err);}
-  }
+  goalsSaveLocal(); markWrite('goals');
+  closeGoalModal(); renderGoals(); updateBadges(); toast(editingGoalId?'تم التعديل ✅':'تم إضافة الهدف ✅');
 }
 async function delGoal(gid) {
   GOALS.items=GOALS.items.filter(x=>x.id!==gid); goalsSaveLocal(); markWrite('goals');
-  if(sb)try{await sb.from('goals').delete().eq('id',gid);}catch(_){}
   closeGoalModal(); renderGoals(); updateBadges(); toast('تم الحذف');
 }
 
-let editingSectionId=null;
-function openSectionModal(sid=null) {
-  editingSectionId=sid;
-  const existing=sid?GOALS.sections.find(s=>s.id===sid):null;
-  document.getElementById('secModalTitle').textContent=existing?'تعديل القسم':'📁 قسم جديد';
-  document.getElementById('secName').value=existing?.name||'';
-  document.getElementById('secIcon').value=existing?.icon||'📌';
-  document.getElementById('secColor').value=existing?.color||'#6366f1';
-  document.getElementById('secDelBtn').classList.toggle('hidden',!existing);
-  document.getElementById('sectionModal').classList.remove('hidden');
-  setTimeout(()=>document.getElementById('secName')?.focus(),60);
-}
-function closeSectionModal() { document.getElementById('sectionModal').classList.add('hidden'); editingSectionId=null; }
+function openSectionModal() { document.getElementById('sectionModal').classList.remove('hidden'); setTimeout(()=>document.getElementById('secName')?.focus(),60); }
+function closeSectionModal() { document.getElementById('sectionModal').classList.add('hidden'); }
 async function saveSection() {
   const name=document.getElementById('secName').value.trim(); if(!name)return toast('اكتب اسم القسم');
-  const data={name,icon:document.getElementById('secIcon').value||'📌',color:document.getElementById('secColor').value};
-  if(editingSectionId) {
-    const s=GOALS.sections.find(x=>x.id===editingSectionId); if(s)Object.assign(s,data);
-    if(sb)try{await sb.from('hub_sections').update(data).eq('id',editingSectionId);}catch(_){}
-  } else {
-    const sec={id:uid(),sort_order:GOALS.sections.length,user_id:OWNER,...data};
-    GOALS.sections.push(sec);
-    if(sb)try{await sb.from('hub_sections').insert(sec);}catch(_){}
-  }
-  markWrite('goals');
-  goalsSaveLocal();
-  closeSectionModal(); renderGoals();
-  toast(editingSectionId?'تم تعديل القسم ✅':'تم إضافة القسم ✅');
-  // Async Supabase (goals sections)
-  if(sb){
-    try{
-      if(editingSectionId){ await sb.from('hub_sections').update(data).eq('id',editingSectionId); }
-      else { const sec=GOALS.sections[GOALS.sections.length-1]; await sb.from('hub_sections').insert(sec); }
-    }catch(err){console.warn('section save err',err);}
-  }
-}
-async function deleteSection() {
-  if(!editingSectionId)return;
-  if(!confirm('هتحذف القسم ده؟ الأهداف اللي فيه هتتحول لـ "بدون قسم"'))return;
-  GOALS.items.filter(g=>g.section_id===editingSectionId).forEach(g=>g.section_id='personal');
-  GOALS.sections=GOALS.sections.filter(s=>s.id!==editingSectionId);
-  if(sb)try{await sb.from('hub_sections').delete().eq('id',editingSectionId);}catch(_){}
-  goalsSaveLocal(); closeSectionModal();
-  if(GOALS.activeSection===editingSectionId)GOALS.activeSection='all';
-  renderGoals(); toast('تم حذف القسم');
-}
-
-/* =====================================================
-   CUSTOM MODULES SYSTEM
-   ===================================================== */
-const CM = { modules: JSON.parse(localStorage.getItem('ms_custom_mods')||'[]') };
-const FIELD_TYPES = [
-  {id:'text',label:'نص',icon:'📝'},{id:'number',label:'رقم',icon:'🔢'},
-  {id:'date',label:'تاريخ',icon:'📅'},{id:'select',label:'قائمة اختيار',icon:'📋'},
-  {id:'checkbox',label:'صح/غلط',icon:'☑️'},{id:'link',label:'رابط',icon:'🔗'},
-  {id:'currency',label:'مبلغ مالي',icon:'💰'},{id:'rating',label:'تقييم ⭐',icon:'⭐'},
-  {id:'textarea',label:'نص طويل',icon:'📄'},
-];
-
-function cmSave() { localStorage.setItem('ms_custom_mods',JSON.stringify(CM.modules)); }
-function cmGetMod(id) { return CM.modules.find(m=>m.id===id); }
-function cmGetEntries(modId) { return JSON.parse(localStorage.getItem('ms_cm_entries_'+modId)||'[]'); }
-function cmSaveEntries(modId, entries) { localStorage.setItem('ms_cm_entries_'+modId,JSON.stringify(entries)); }
-
-// Render custom nav items in sidebar
-function renderCustomNav() {
-  const el=document.getElementById('customNavItems'); if(!el)return;
-  el.innerHTML=CM.modules.map(m=>`<div class="nav-item ${cur===m.id?'active':''}" data-mod="${m.id}" onclick="go('${m.id}')" style="${cur===m.id?'background:linear-gradient(135deg,'+m.color+'22,'+m.color+'11);color:#fff;border-color:'+m.color+'33':''}">
-    <span class="nav-icon">${m.icon}</span><span>${esc(m.name)}</span>
-    <button onclick="event.stopPropagation();openCMModal('${m.id}')" style="margin-right:auto;font-size:11px;opacity:.5;padding:3px;background:none;border:none;cursor:pointer;color:inherit">⚙️</button>
-  </div>`).join('');
-  // Create/update module sections in main
-  const container=document.getElementById('customModules'); if(!container)return;
-  // Remove old sections
-  container.querySelectorAll('.cm-module-section').forEach(s=>s.remove());
-  CM.modules.forEach(m=>{
-    if(document.getElementById('mod-'+m.id))return;
-    const sec=document.createElement('section');
-    sec.id='mod-'+m.id; sec.className='module cm-module-section';
-    sec.innerHTML=`<div class="cm-custom-wrap" style="--cm-color:${m.color}">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap">
-        <div class="sec-title"><h2>${m.icon} ${esc(m.name)}</h2><p>${esc(m.description||'')}</p></div>
-        <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
-          <div class="view-toggle" id="cm-layout-${m.id}">
-            <div class="vt-btn active" onclick="cmSetLayout('${m.id}','list')">☰</div>
-            <div class="vt-btn" onclick="cmSetLayout('${m.id}','grid')">⊞</div>
-          </div>
-          <button class="add-btn" style="background:linear-gradient(135deg,${m.color},${m.color}cc)" onclick="openCMEntryModal('${m.id}',null)">+ ${esc(m.name.slice(0,10))}</button>
-          <button class="icon-btn" onclick="openCMModal('${m.id}')" title="إعدادات القسم">⚙️</button>
-        </div>
-      </div>
-      <div class="stats-row cols-3" id="cm-stats-${m.id}"></div>
-      <div id="cm-board-${m.id}" style="margin-top:14px"></div>
-    </div>`;
-    container.appendChild(sec);
-  });
-}
-
-// CM Module modal (create/edit structure)
-let cmEditingModId=null, cmFields=[];
-function openCMModal(modId=null) {
-  cmEditingModId=modId;
-  const m=modId?cmGetMod(modId):null;
-  cmFields=m?JSON.parse(JSON.stringify(m.fields||[])):[{id:uid().slice(0,8),label:'اسم',type:'text',required:true}];
-  document.getElementById('cmModalTitle').textContent=m?'⚙️ إعدادات '+m.name:'قسم رئيسي جديد';
-  document.getElementById('cmModalBody').innerHTML=`
-    <div class="mg2">
-      <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="cmIcon" value="${m?.icon||'📦'}" maxlength="2"></div>
-      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="cmColor" type="color" value="${m?.color||'#6366f1'}"></div>
-    </div>
-    <div class="mf-row"><label>اسم القسم *</label><input class="mf-inp" id="cmName" value="${esc(m?.name||'')}" placeholder="مثلاً: مشاريع، سفر، كتب..."></div>
-    <div class="mf-row"><label>وصف (اختياري)</label><input class="mf-inp" id="cmDesc" value="${esc(m?.description||'')}" placeholder="وصف مختصر..."></div>
-    <div class="cm-section-header" style="margin-top:16px">
-      <h3>🧩 حقول القسم</h3>
-      <button class="add-btn teal" onclick="cmAddField()" style="font-size:11px;padding:6px 12px">+ حقل جديد</button>
-    </div>
-    <div id="cmFieldsList"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="saveCM()">حفظ</button>
-      <button class="btn btn-ghost" onclick="closeCMModal()">إلغاء</button>
-      ${m?`<button class="btn btn-danger" onclick="deleteCM('${modId}')">حذف القسم</button>`:''}
-    </div>`;
-  renderCMFields();
-  document.getElementById('customModModal').classList.remove('hidden');
-  setTimeout(()=>document.getElementById('cmName')?.focus(),60);
-}
-function closeCMModal(){document.getElementById('customModModal').classList.add('hidden');cmEditingModId=null;cmFields=[];}
-function cmAddField(){cmFields.push({id:uid().slice(0,8),label:'',type:'text',required:false,options:''});renderCMFields();}
-function renderCMFields(){
-  document.getElementById('cmFieldsList').innerHTML=cmFields.map((f,i)=>`
-    <div class="cm-field-card">
-      <div class="cm-field-label"><span>حقل ${i+1}</span><button onclick="cmFields.splice(${i},1);renderCMFields()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:13px">حذف</button></div>
-      <div class="mg2">
-        <div class="mf-row"><label>اسم الحقل</label><input class="mf-inp" value="${esc(f.label)}" placeholder="مثلاً: الميزانية" oninput="cmFields[${i}].label=this.value"></div>
-        <div class="mf-row"><label>النوع</label><select class="mf-inp" onchange="cmFields[${i}].type=this.value;renderCMFields()">
-          ${FIELD_TYPES.map(t=>`<option value="${t.id}" ${f.type===t.id?'selected':''}>${t.icon} ${t.label}</option>`).join('')}
-        </select></div>
-      </div>
-      ${f.type==='select'?`<div class="mf-row"><label>الخيارات (افصل بفاصلة)</label><input class="mf-inp" value="${esc(f.options||'')}" placeholder="خيار1,خيار2,خيار3" oninput="cmFields[${i}].options=this.value"></div>`:''}
-      <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><input type="checkbox" id="fReq${i}" ${f.required?'checked':''} onchange="cmFields[${i}].required=this.checked" style="width:15px;height:15px"><label for="fReq${i}" style="font-size:11px;color:var(--text-m)">حقل إجباري</label></div>
-    </div>`).join('');
-}
-function saveCM(){
-  const name=document.getElementById('cmName').value.trim(); if(!name)return toast('اكتب اسم القسم');
-  const validFields=cmFields.filter(f=>f.label.trim());
-  if(!validFields.length)return toast('أضف حقل واحد على الأقل');
-  const mod={
-    id:cmEditingModId||uid(),name,
-    icon:document.getElementById('cmIcon').value||'📦',
-    color:document.getElementById('cmColor').value||'#6366f1',
-    description:document.getElementById('cmDesc').value.trim(),
-    fields:validFields,layout:'list',
-  };
-  if(cmEditingModId){const idx=CM.modules.findIndex(m=>m.id===cmEditingModId);if(idx>=0)CM.modules[idx]=mod;else CM.modules.push(mod);}
-  else CM.modules.push(mod);
-  cmSave(); closeCMModal(); renderCustomNav(); go(mod.id); renderCMModule(mod.id);
-  toast(cmEditingModId?'تم تعديل القسم ✅':'تم إنشاء القسم ✅');
-}
-function deleteCM(modId){
-  if(!confirm('هتحذف القسم ده وكل بياناته؟'))return;
-  CM.modules=CM.modules.filter(m=>m.id!==modId);
-  localStorage.removeItem('ms_cm_entries_'+modId); cmSave();
-  closeCMModal(); go('hub'); renderCustomNav();
-  // Remove section from DOM
-  document.getElementById('mod-'+modId)?.remove(); toast('تم حذف القسم');
-}
-
-// CM Entry modal (add/edit a record)
-let cmEntryModId=null, cmEntryId=null;
-function openCMEntryModal(modId, entId) {
-  cmEntryModId=modId; cmEntryId=entId;
-  const m=cmGetMod(modId); if(!m)return;
-  const entries=cmGetEntries(modId);
-  const existing=entId?entries.find(e=>e.id===entId):null;
-  const fieldsHtml=m.fields.map(f=>{
-    const val=existing?.[f.id]??'';
-    if(f.type==='checkbox') return `<div class="mf-row" style="flex-direction:row;align-items:center;gap:10px"><input type="checkbox" id="cmef_${f.id}" ${val?'checked':''} style="width:18px;height:18px;accent-color:${m.color}"><label for="cmef_${f.id}" style="font-size:13px;font-weight:700">${esc(f.label)}</label></div>`;
-    if(f.type==='select') return `<div class="mf-row"><label>${esc(f.label)}</label><select class="mf-inp" id="cmef_${f.id}">${(f.options||'').split(',').map(o=>`<option value="${esc(o.trim())}" ${val===o.trim()?'selected':''}>${esc(o.trim())}</option>`).join('')}</select></div>`;
-    if(f.type==='textarea') return `<div class="mf-row"><label>${esc(f.label)}</label><textarea class="mf-inp" id="cmef_${f.id}" placeholder="${esc(f.label)}">${esc(val)}</textarea></div>`;
-    if(f.type==='rating') return `<div class="mf-row"><label>${esc(f.label)}</label><select class="mf-inp" id="cmef_${f.id}">${[1,2,3,4,5].map(n=>`<option value="${n}" ${+val===n?'selected':''}>⭐ ${n}</option>`).join('')}</select></div>`;
-    return `<div class="mf-row"><label>${esc(f.label)}${f.required?'<span style="color:var(--danger)"> *</span>':''}</label><input class="mf-inp" id="cmef_${f.id}" type="${f.type==='currency'?'number':f.type==='link'?'url':f.type}" value="${esc(val)}" placeholder="${esc(f.label)}" ${f.type==='number'||f.type==='currency'||f.type==='link'?'dir="ltr"':''}></div>`;
-  }).join('');
-  document.getElementById('cmModalTitle').textContent=existing?'تعديل':'إضافة إلى '+m.name;
-  document.getElementById('cmModalBody').innerHTML=fieldsHtml+`<div class="modal-actions">
-    <button class="btn btn-primary" onclick="saveCMEntry()">حفظ</button>
-    <button class="btn btn-ghost" onclick="closeCMModal()">إلغاء</button>
-    ${existing?`<button class="btn btn-danger" onclick="deleteCMEntry()">حذف</button>`:''}
-  </div>`;
-  document.getElementById('customModModal').classList.remove('hidden');
-  setTimeout(()=>document.getElementById('cmef_'+m.fields[0]?.id)?.focus(),60);
-}
-function saveCMEntry(){
-  const m=cmGetMod(cmEntryModId); if(!m)return;
-  const entries=cmGetEntries(cmEntryModId);
-  const entry={id:cmEntryId||uid()};
-  for(const f of m.fields){
-    const el=document.getElementById('cmef_'+f.id);
-    if(f.type==='checkbox') entry[f.id]=el?.checked||false;
-    else if(f.type==='number'||f.type==='currency'||f.type==='rating') entry[f.id]=+el?.value||0;
-    else entry[f.id]=el?.value||'';
-    if(f.required&&!entry[f.id]&&entry[f.id]!==0&&entry[f.id]!==false)return toast(f.label+' مطلوب');
-  }
-  entry._created=entry._created||new Date().toISOString();
-  entry._updated=new Date().toISOString();
-  if(cmEntryId){const idx=entries.findIndex(e=>e.id===cmEntryId);if(idx>=0)entries[idx]=entry;}
-  else entries.unshift(entry);
-  cmSaveEntries(cmEntryModId,entries); closeCMModal(); renderCMModule(cmEntryModId);
-  toast(cmEntryId?'تم التعديل ✅':'تم الإضافة ✅');
-}
-function deleteCMEntry(){
-  if(!cmEntryId)return; if(!confirm('هتحذف؟'))return;
-  const entries=cmGetEntries(cmEntryModId).filter(e=>e.id!==cmEntryId);
-  cmSaveEntries(cmEntryModId,entries); closeCMModal(); renderCMModule(cmEntryModId); toast('تم الحذف');
-}
-function cmSetLayout(modId,l){const m=cmGetMod(modId);if(m)m.layout=l;cmSave();document.querySelectorAll('#cm-layout-'+modId+' .vt-btn').forEach((b,i)=>b.classList.toggle('active',['list','grid'][i]===l));renderCMModule(modId);}
-function renderCMModule(modId){
-  const m=cmGetMod(modId); if(!m)return;
-  const entries=cmGetEntries(modId);
-  const statsEl=document.getElementById('cm-stats-'+modId);
-  if(statsEl) statsEl.innerHTML=`<div class="stat-card"><div class="stat-icon">${m.icon}</div><div class="stat-label">الإجمالي</div><div class="stat-val">${entries.length}</div></div>`;
-  const board=document.getElementById('cm-board-'+modId); if(!board)return;
-  const layout=m.layout||'list';
-  let style='display:flex;flex-direction:column;gap:10px';
-  if(layout==='grid') style='display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start';
-  if(!entries.length){board.innerHTML='<div class="hub-empty" style="padding:40px">لا يوجد سجلات. اضغط "+" عشان تضيف.</div>';return;}
-  board.innerHTML=`<div style="${style}">${entries.map(e=>{
-    const mainField=m.fields[0];
-    const mainVal=e[mainField?.id]||'—';
-    const otherFields=m.fields.slice(1,4);
-    return `<div class="cm-entry-card" style="--cm-color:${m.color}" onclick="openCMEntryModal('${modId}','${e.id}')">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
-        <div class="cm-entry-title" style="color:${m.color}">${esc(String(mainVal))}</div>
-        <div style="font-size:10px;color:var(--text-d)">${new Date(e._created||Date.now()).toLocaleDateString('ar-EG')}</div>
-      </div>
-      ${otherFields.map(f=>`<div class="cm-entry-field"><span style="color:var(--text-d);font-size:10px">${esc(f.label)}:</span><span>${
-        f.type==='checkbox'?(e[f.id]?'✅':'❌'):
-        f.type==='rating'?'⭐'.repeat(+e[f.id]||0):
-        f.type==='currency'?fmtEGP(e[f.id]):
-        f.type==='link'?`<a href="${esc(e[f.id])}" onclick="event.stopPropagation()" target="_blank" style="color:#a5b4fc">🔗 رابط</a>`:
-        esc(String(e[f.id]||'—'))
-      }</span></div>`).join('')}
-    </div>`;
-  }).join('')}</div>`;
+  const sec={id:uid(),name,icon:document.getElementById('secIcon').value||'📌',color:document.getElementById('secColor').value,sort_order:GOALS.sections.length,user_id:OWNER};
+  GOALS.sections.push(sec); goalsSaveLocal();
+  closeSectionModal(); renderGoals(); toast('تم إضافة القسم ✅');
 }
 
 /* ===== KEYBOARD & MISC ===== */
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();closeCMModal();closeFinModal();const nc=document.getElementById('notifCenter');if(nc.classList.contains('open'))toggleNotifCenter();}
+  if(e.key==='Escape'){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();closeFinModal();const nc=document.getElementById('notifCenter');if(nc.classList.contains('open'))toggleNotifCenter();}
 });
 ['settingsModal','dayModal','taskModal','entityModal','goalModal','sectionModal','customModModal','finEntryModal'].forEach(id=>{
-  document.getElementById(id)?.addEventListener('click',function(e){if(e.target===this){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();closeCMModal();closeFinModal();}});
+  document.getElementById(id)?.addEventListener('click',function(e){if(e.target===this){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();}});
 });
 document.getElementById('notifCenter').addEventListener('click',e=>{if(!e.target.closest('.notif-center')&&e.target.id!=='notifCenter')return;});
 
 function checkMobile() { const m=window.innerWidth<=960; document.getElementById('bottomNav').style.display=m?'flex':'none'; }
 window.addEventListener('resize',checkMobile); checkMobile();
 
-document.addEventListener('visibilitychange',()=>{
-  if(!sb)return;
-  if(document.hidden){stopPoll();}
-  else{lastSeen={day:new Date(0).toISOString(),work:new Date(0).toISOString(),fin:new Date(0).toISOString(),goals:new Date(0).toISOString()};startPoll();}
-});
+
 
 /* ===== BOOT ===== */
 async function boot() {
   isDark = localStorage.getItem('sys_theme')!=='light'; applyTheme();
   startClock();
-  // 1. Load from localStorage immediately (instant render even offline)
-  await loadAllLocal();
+  setSyncStatus('ok','محفوظ');
+  await loadAll();
   renderHub();
   updateBadges();
-  // 2. Then try to connect and sync in background
-  const url=localStorage.getItem('sb_url')||SB_URL, key=localStorage.getItem('sb_key')||SB_KEY;
-  connect(url,key).then(async()=>{
-    if(sb){
-      await loadAll();
-      renderHub();
-      if(cur==='day') renderDay();
-      if(cur==='work') renderWork();
-      if(cur==='finance') renderFin();
-      if(cur==='goals') renderGoals();
-      updateBadges();
-    }
-  });
-  // Init layout controls from localStorage
   const dl=localStorage.getItem('ms_day_layout')||'list'; DAY.layout=dl;
   document.querySelectorAll('#dayLayoutToggle .vt-btn').forEach((b,i)=>b.classList.toggle('active',['list','grid','side'][i]===dl));
   const ds=parseInt(localStorage.getItem('ms_day_scale')||'100'); DAY.scale=ds;
   const sl=document.getElementById('dayScale'); if(sl)sl.value=ds;
   document.getElementById('dayScaleLbl').textContent=ds+'%';
-  // Run notifications checker every 5 mins
   setInterval(checkNotifications, 300000);
   setTimeout(checkNotifications, 3000);
-  // Custom modules
   renderCustomNav();
 }
 boot();
