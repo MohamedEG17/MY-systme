@@ -717,6 +717,536 @@ body[data-theme="light"] .fin-card::after{color:#0f172a;opacity:.055}
 @media(max-width:980px){.dashboard-v2{grid-template-columns:1fr!important}.dashboard-grid{grid-template-columns:1fr!important}.dash-fin-grid{grid-template-columns:1fr 1fr}.dash-hero-card{min-height:210px}.dash-hero-top h3{font-size:30px}.dash-hero-icon{width:60px;height:60px;font-size:28px}.dash-hero-bottom b{font-size:18px}}
 @media(max-width:540px){.hub-wrap{padding:14px}.dash-key-grid{grid-template-columns:1fr 1fr;gap:9px}.dash-key-card{min-height:92px;padding:13px}.dash-hero-card{padding:18px;border-radius:24px}.dash-hero-top{gap:10px}.dash-hero-top h3{font-size:25px}.dash-hero-top p{font-size:13px}.dash-hero-bottom{grid-template-columns:1fr}.dash-fin-grid{grid-template-columns:1fr}.hub-greeting h2{font-size:28px!important}}
 
+
+/* ===== V5 polish: AM/PM + compact work subtasks inside day blocks ===== */
+.block-task-wrap{width:100%;min-width:0}
+.block-task-main{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:8px;width:100%}
+.block-task-title{font-size:13px;font-weight:900;line-height:1.35;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:normal;color:var(--text)}
+.block-task-title.checked{text-decoration:line-through;opacity:.55}
+.block-task-time{direction:ltr;white-space:nowrap;font-size:10px;font-weight:950;letter-spacing:.2px;color:var(--block-color,#6366f1);background:color-mix(in srgb,var(--block-color,#6366f1) 13%,var(--field));border:1px solid color-mix(in srgb,var(--block-color,#6366f1) 24%,var(--border));padding:3px 8px;border-radius:999px;justify-self:end}
+.block-task-source{font-size:9px!important;white-space:nowrap;justify-self:end;opacity:.9}
+.block-subtask-list{margin:6px 30px 0 0!important;width:calc(100% - 30px)!important;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px!important}
+.block-subtask-item{min-width:0;font-size:10px!important;line-height:1.25;padding:5px 8px!important;background:color-mix(in srgb,var(--block-color,#6366f1) 7%,var(--field))!important;border:1px solid color-mix(in srgb,var(--block-color,#6366f1) 14%,var(--border));color:var(--text-m)!important}
+.block-subtask-item span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btr-period,#clockPeriod{text-transform:lowercase;direction:ltr;font-family:ui-sans-serif,system-ui,sans-serif;letter-spacing:.8px}
+
+/* ===== V6 home dashboard: brighter graphic cards, important-only layout ===== */
+#mod-hub .hub-wrap{background:
+  radial-gradient(circle at 12% 8%,rgba(99,102,241,.20),transparent 28%),
+  radial-gradient(circle at 80% 0%,rgba(14,165,233,.18),transparent 30%),
+  radial-gradient(circle at 55% 78%,rgba(236,72,153,.12),transparent 32%),
+  linear-gradient(135deg,color-mix(in srgb,var(--bg) 88%,#6366f1),color-mix(in srgb,var(--bg) 92%,#38bdf8))!important;
+}
+#mod-hub .hub-header{padding:4px 2px 8px;border-bottom:1px solid rgba(255,255,255,.08)}
+#mod-hub .hub-greeting h2{background:linear-gradient(135deg,#ffffff,#a5b4fc 42%,#38bdf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 18px 50px rgba(99,102,241,.16)}
+body[data-theme="light"] #mod-hub .hub-greeting h2{background:linear-gradient(135deg,#111827,#4f46e5 45%,#0ea5e9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+#mod-hub .dash-hero-card{background:linear-gradient(135deg,#7c3aed 0%,#2563eb 46%,#06b6d4 100%)!important;color:#fff!important;border:1px solid rgba(255,255,255,.26)!important;box-shadow:0 28px 90px rgba(37,99,235,.28),inset 0 1px 0 rgba(255,255,255,.24)!important}
+#mod-hub .dash-hero-card.danger{background:linear-gradient(135deg,#ef4444 0%,#7c3aed 50%,#2563eb 100%)!important}
+#mod-hub .dash-hero-card.warn{background:linear-gradient(135deg,#f59e0b 0%,#ec4899 46%,#6366f1 100%)!important}
+#mod-hub .dash-hero-card.calm{background:linear-gradient(135deg,#10b981 0%,#0ea5e9 50%,#6366f1 100%)!important}
+#mod-hub .dash-kicker,#mod-hub .dash-hero-top p,#mod-hub .dash-hero-top p span,#mod-hub .dash-hero-bottom span{color:rgba(255,255,255,.82)!important}
+#mod-hub .dash-hero-icon{background:rgba(255,255,255,.22)!important;color:#fff!important;box-shadow:0 18px 55px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.28)!important}
+#mod-hub .dash-meter{background:rgba(255,255,255,.22)!important}.dash-meter span{background:linear-gradient(90deg,#fff,#fde68a,#fff)!important}
+#mod-hub .dash-hero-bottom div{background:rgba(255,255,255,.17)!important;border-color:rgba(255,255,255,.24)!important;color:#fff!important}
+#mod-hub .dash-key-card{color:#fff!important;border:0!important;box-shadow:0 18px 55px rgba(15,23,42,.14);min-height:118px!important}
+#mod-hub .dash-key-card.day{background:linear-gradient(135deg,#4f46e5,#06b6d4)!important}
+#mod-hub .dash-key-card.work{background:linear-gradient(135deg,#ef4444,#f97316)!important}
+#mod-hub .dash-key-card.fin{background:linear-gradient(135deg,#0284c7,#22c55e)!important}
+#mod-hub .dash-key-card.goals{background:linear-gradient(135deg,#db2777,#8b5cf6)!important}
+#mod-hub .dash-key-card::before{background:rgba(255,255,255,.42)!important;opacity:.18!important}
+#mod-hub .dk-label,#mod-hub .dash-key-card small{color:rgba(255,255,255,.76)!important}
+#mod-hub .dk-icon{width:38px;height:38px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.2);margin-bottom:10px}
+#mod-hub .dash-panel,#mod-hub .finance-focus{background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.045))!important;border:1px solid rgba(255,255,255,.16)!important;box-shadow:0 20px 70px rgba(15,23,42,.14)!important;backdrop-filter:blur(22px) saturate(155%)}
+body[data-theme="light"] #mod-hub .dash-panel,body[data-theme="light"] #mod-hub .finance-focus{background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(246,248,255,.78))!important;border:1px solid rgba(99,102,241,.13)!important;box-shadow:0 20px 65px rgba(79,70,229,.10)!important}
+#mod-hub .dash-panel .hub-panel-head h3{font-size:17px!important;background:linear-gradient(135deg,#818cf8,#38bdf8,#f472b6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+#mod-hub .dash-focus-row,#mod-hub .dash-task-row,#mod-hub .dash-mini-row{box-shadow:0 10px 28px color-mix(in srgb,var(--row-color,#6366f1) 11%,transparent);border-width:1px!important}
+#mod-hub .dash-focus-row{background:linear-gradient(90deg,color-mix(in srgb,var(--row-color,#6366f1) 24%,transparent),color-mix(in srgb,var(--row-color,#6366f1) 7%,var(--panel)))!important}
+#mod-hub .dash-task-row.danger{background:linear-gradient(90deg,rgba(239,68,68,.18),rgba(239,68,68,.055))!important}
+#mod-hub .dash-task-row.warn{background:linear-gradient(90deg,rgba(245,158,11,.18),rgba(245,158,11,.055))!important}
+#mod-hub .dash-fin-card{color:#fff!important;border:0!important;box-shadow:0 16px 44px rgba(15,23,42,.13)}
+#mod-hub .dash-fin-card.wealth{background:linear-gradient(135deg,#0ea5e9,#6366f1)!important}
+#mod-hub .dash-fin-card.salary{background:linear-gradient(135deg,#22c55e,#14b8a6)!important}
+#mod-hub .dash-fin-card.expense{background:linear-gradient(135deg,#a855f7,#ec4899)!important}
+#mod-hub .dash-fin-card.debt{background:linear-gradient(135deg,#ef4444,#f59e0b)!important}
+#mod-hub .dash-fin-card span,#mod-hub .dash-fin-card small{color:rgba(255,255,255,.78)!important}
+#mod-hub .dash-fin-card::after{background:rgba(255,255,255,.7)!important;opacity:.14!important}
+@media(max-width:540px){.block-task-main{grid-template-columns:auto minmax(0,1fr);gap:6px 8px}.block-task-time{grid-column:2;justify-self:start;font-size:9px;padding:2px 7px}.block-task-source{grid-column:2;justify-self:start}.block-subtask-list{grid-template-columns:1fr!important}.dashboard-v2{gap:12px!important}.dash-key-card{min-height:105px!important}}
+
+
+
+/* ===== V7: Bigger home dashboard typography + yellow sun greeting ===== */
+#mod-hub .hub-greeting h2{
+  font-size:clamp(36px,4vw,58px)!important;
+  line-height:1.05!important;
+  letter-spacing:-1.2px!important;
+}
+#mod-hub .hub-greeting .greet-sun{
+  color:#fbbf24!important;
+  -webkit-text-fill-color:#fbbf24!important;
+  background:none!important;
+  text-shadow:0 6px 28px rgba(251,191,36,.55)!important;
+  display:inline-block;
+  transform:translateY(2px);
+  filter:saturate(1.2);
+}
+#mod-hub .hub-greeting .greet-moon{
+  color:#facc15!important;
+  -webkit-text-fill-color:#facc15!important;
+  background:none!important;
+  text-shadow:0 6px 28px rgba(250,204,21,.38)!important;
+}
+#mod-hub #hubDate{
+  font-size:16px!important;
+  font-weight:850!important;
+  color:var(--text-m)!important;
+  margin-top:8px!important;
+}
+#mod-hub .dashboard-v2{
+  gap:22px!important;
+  margin-bottom:22px!important;
+}
+#mod-hub .dash-hero-card{
+  min-height:275px!important;
+  padding:32px!important;
+  border-radius:36px!important;
+}
+#mod-hub .dash-kicker{
+  font-size:13px!important;
+  padding:8px 15px!important;
+  margin-bottom:14px!important;
+}
+#mod-hub .dash-hero-top h3{
+  font-size:clamp(34px,3.7vw,58px)!important;
+  line-height:1.04!important;
+}
+#mod-hub .dash-hero-top p{
+  font-size:18px!important;
+  line-height:1.75!important;
+  font-weight:900!important;
+}
+#mod-hub .dash-hero-top p span{
+  font-size:14px!important;
+  margin-top:6px!important;
+  opacity:.9!important;
+}
+#mod-hub .dash-hero-icon{
+  width:88px!important;
+  height:88px!important;
+  border-radius:28px!important;
+  font-size:42px!important;
+}
+#mod-hub .dash-meter{
+  height:14px!important;
+  margin:32px 0 20px!important;
+}
+#mod-hub .dash-hero-bottom{
+  gap:14px!important;
+}
+#mod-hub .dash-hero-bottom div{
+  min-height:78px!important;
+  padding:15px 16px!important;
+  border-radius:22px!important;
+}
+#mod-hub .dash-hero-bottom b{
+  font-size:30px!important;
+}
+#mod-hub .dash-hero-bottom span{
+  font-size:13px!important;
+  color:rgba(255,255,255,.86)!important;
+}
+#mod-hub .dash-key-grid{
+  gap:16px!important;
+}
+#mod-hub .dash-key-card{
+  min-height:142px!important;
+  padding:22px!important;
+  border-radius:28px!important;
+}
+#mod-hub .dk-icon{
+  width:46px!important;
+  height:46px!important;
+  font-size:24px!important;
+  margin-bottom:14px!important;
+}
+#mod-hub .dk-label{
+  font-size:13px!important;
+  margin-bottom:7px!important;
+}
+#mod-hub .dash-key-card strong{
+  font-size:29px!important;
+  line-height:1.1!important;
+}
+#mod-hub .dash-key-card small{
+  font-size:12px!important;
+  line-height:1.5!important;
+  margin-top:6px!important;
+}
+#mod-hub .dashboard-grid{
+  gap:22px!important;
+  margin-bottom:22px!important;
+}
+#mod-hub .dash-panel,
+#mod-hub .finance-focus{
+  border-radius:32px!important;
+  padding:22px!important;
+}
+#mod-hub .dash-panel .hub-panel-head{
+  margin-bottom:18px!important;
+}
+#mod-hub .dash-panel .hub-panel-head h3{
+  font-size:21px!important;
+}
+#mod-hub .hub-see{
+  font-size:13px!important;
+  padding:7px 12px!important;
+  border-radius:999px!important;
+  background:var(--panel2)!important;
+  border:1px solid var(--border)!important;
+}
+#mod-hub .dash-focus-row,
+#mod-hub .dash-task-row{
+  min-height:66px!important;
+  padding:15px 16px!important;
+  border-radius:22px!important;
+  gap:14px!important;
+}
+#mod-hub .dash-focus-mark{
+  width:40px!important;
+  height:40px!important;
+  border-radius:15px!important;
+  font-size:16px!important;
+}
+#mod-hub .dash-focus-main b,
+#mod-hub .dash-task-main b{
+  font-size:17px!important;
+  line-height:1.35!important;
+}
+#mod-hub .dash-focus-main span,
+#mod-hub .dash-task-main span{
+  font-size:12px!important;
+  margin-top:5px!important;
+}
+#mod-hub .dash-focus-tag,
+#mod-hub .dash-task-chip{
+  font-size:12px!important;
+  padding:7px 11px!important;
+}
+#mod-hub .dash-task-dot{
+  width:14px!important;
+  height:14px!important;
+}
+#mod-hub .dash-fin-grid{
+  gap:18px!important;
+}
+#mod-hub .dash-fin-card{
+  min-height:158px!important;
+  padding:24px!important;
+  border-radius:28px!important;
+}
+#mod-hub .dash-fin-card span{
+  font-size:14px!important;
+  margin-bottom:14px!important;
+  font-weight:950!important;
+}
+#mod-hub .dash-fin-card b{
+  font-size:30px!important;
+  line-height:1.08!important;
+}
+#mod-hub .dash-fin-card small{
+  font-size:13px!important;
+  line-height:1.55!important;
+  margin-top:10px!important;
+}
+#mod-hub .dash-fin-card::after{
+  width:170px!important;
+  height:170px!important;
+  left:-58px!important;
+  bottom:-72px!important;
+  opacity:.2!important;
+}
+#mod-hub .dash-goals-strip{
+  margin-top:20px!important;
+  padding-top:18px!important;
+}
+#mod-hub .dash-strip-title{
+  font-size:15px!important;
+  margin-bottom:12px!important;
+}
+#mod-hub .dash-mini-row{
+  min-height:54px!important;
+  padding:13px 14px!important;
+  border-radius:18px!important;
+}
+#mod-hub .dash-mini-row span{
+  font-size:22px!important;
+}
+#mod-hub .dash-mini-row b{
+  font-size:15px!important;
+}
+#mod-hub .dash-mini-row small{
+  font-size:12px!important;
+}
+@media(max-width:980px){
+  #mod-hub .dash-fin-grid{grid-template-columns:1fr 1fr!important}
+  #mod-hub .dash-hero-card{min-height:250px!important;padding:26px!important}
+}
+@media(max-width:540px){
+  #mod-hub .hub-wrap{padding:16px!important}
+  #mod-hub .hub-greeting h2{font-size:34px!important}
+  #mod-hub #hubDate{font-size:13px!important}
+  #mod-hub .dash-hero-card{min-height:230px!important;padding:20px!important;border-radius:26px!important}
+  #mod-hub .dash-hero-top h3{font-size:28px!important}
+  #mod-hub .dash-hero-top p{font-size:15px!important}
+  #mod-hub .dash-hero-icon{width:62px!important;height:62px!important;font-size:31px!important}
+  #mod-hub .dash-hero-bottom div{min-height:64px!important}
+  #mod-hub .dash-hero-bottom b{font-size:23px!important}
+  #mod-hub .dash-key-grid{grid-template-columns:1fr!important}
+  #mod-hub .dash-key-card{min-height:118px!important}
+  #mod-hub .dash-fin-grid{grid-template-columns:1fr!important}
+  #mod-hub .dash-fin-card{min-height:128px!important;padding:20px!important}
+  #mod-hub .dash-fin-card b{font-size:25px!important}
+}
+
+
+
+/* ===== V8: stronger day block titles + compact side time capsule ===== */
+.block-card{
+  padding:22px 20px 18px!important;
+  border-radius:28px!important;
+  overflow:hidden;
+}
+.block-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 96% 10%, color-mix(in srgb,var(--block-color,#6366f1) 18%, transparent), transparent 34%),
+    linear-gradient(135deg, color-mix(in srgb,var(--block-color,#6366f1) 9%, transparent), transparent 48%);
+  pointer-events:none;
+  opacity:.9;
+}
+.block-card > *{position:relative;z-index:1}
+.block-card-head{
+  align-items:flex-start!important;
+  gap:14px!important;
+  margin-bottom:14px!important;
+}
+.block-title-row{
+  align-items:flex-start!important;
+  gap:12px!important;
+  min-width:0;
+}
+.block-title{
+  font-size:clamp(24px,2.15vw,34px)!important;
+  font-weight:1000!important;
+  line-height:1.1!important;
+  letter-spacing:-.9px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  width:fit-content!important;
+  max-width:100%!important;
+  padding:7px 13px!important;
+  border-radius:20px!important;
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--block-color,#6366f1) 15%, rgba(255,255,255,.12)),
+    color-mix(in srgb,var(--block-color,#6366f1) 5%, transparent));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 12px 30px color-mix(in srgb,var(--block-color,#6366f1) 16%, transparent);
+  text-shadow:0 8px 24px color-mix(in srgb,var(--block-color,#6366f1) 22%, transparent);
+}
+.block-icon-badge{
+  width:42px!important;
+  height:42px!important;
+  border-radius:15px!important;
+  font-size:21px!important;
+  margin-inline-end:0!important;
+  box-shadow:0 12px 30px color-mix(in srgb,var(--block-color,#6366f1) 32%, transparent)!important;
+}
+.block-done-toggle{
+  width:40px!important;
+  height:40px!important;
+  border-radius:14px!important;
+  font-size:20px!important;
+  margin-top:4px;
+}
+.block-mini-btn{
+  width:34px!important;
+  height:34px!important;
+  border-radius:12px!important;
+  background:color-mix(in srgb,var(--block-color,#6366f1) 10%,var(--panel2))!important;
+}
+.block-notes{
+  margin-top:8px!important;
+  font-size:13px!important;
+  font-weight:800!important;
+}
+.block-task-list{
+  margin-top:8px!important;
+}
+.block-task-item{
+  border-radius:15px!important;
+  padding:9px 11px!important;
+}
+.block-task-title{
+  font-size:14px!important;
+  font-weight:900!important;
+}
+
+.block-time-range{
+  width:max-content!important;
+  min-width:252px!important;
+  max-width:100%!important;
+  margin:12px auto 0 0!important;
+  padding:8px 10px!important;
+  border-radius:999px!important;
+  display:inline-flex!important;
+  grid-template-columns:unset!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  direction:ltr!important;
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--block-color,#6366f1) 22%,var(--field)),
+    color-mix(in srgb,var(--block-color,#6366f1) 8%,var(--panel)))!important;
+  border:1px solid color-mix(in srgb,var(--block-color,#6366f1) 30%,var(--border))!important;
+  box-shadow:
+    0 14px 34px color-mix(in srgb,var(--block-color,#6366f1) 16%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+.btr-from,.btr-to{
+  min-height:0!important;
+  min-width:94px!important;
+  border-radius:999px!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  padding:8px 10px!important;
+  background:rgba(255,255,255,.08)!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  overflow:hidden!important;
+}
+.btr-from::before,.btr-to::before{display:none!important}
+.btr-label{
+  font-size:9px!important;
+  font-weight:1000!important;
+  letter-spacing:0!important;
+  color:var(--text-d)!important;
+  white-space:nowrap!important;
+}
+.btr-time{
+  font-size:18px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  letter-spacing:-.6px!important;
+  animation:timeGlow 2.8s ease-in-out infinite alternate!important;
+  white-space:nowrap!important;
+}
+.btr-period{
+  font-size:9px!important;
+  font-weight:1000!important;
+  color:color-mix(in srgb,var(--block-color,#6366f1) 78%,var(--text-d))!important;
+  text-transform:uppercase!important;
+  white-space:nowrap!important;
+}
+.btr-arrow{
+  width:28px!important;
+  height:28px!important;
+  min-width:28px!important;
+  border-radius:999px!important;
+  font-size:16px!important;
+  animation:arrowPulse 1.8s ease-in-out infinite!important;
+  flex-shrink:0!important;
+}
+@media(max-width:640px){
+  .block-card{padding:18px 14px 15px!important;border-radius:24px!important}
+  .block-title{font-size:22px!important;padding:6px 10px!important;border-radius:16px!important}
+  .block-icon-badge{width:36px!important;height:36px!important;font-size:18px!important}
+  .block-done-toggle{width:36px!important;height:36px!important;font-size:18px!important}
+  .block-time-range{min-width:0!important;width:100%!important;margin:10px 0 0!important;padding:7px!important;justify-content:space-between!important}
+  .btr-from,.btr-to{min-width:0!important;flex:1!important;padding:7px 6px!important}
+  .btr-time{font-size:16px!important}
+  .btr-label,.btr-period{font-size:8px!important}
+  .btr-arrow{width:24px!important;height:24px!important;min-width:24px!important;font-size:14px!important}
+}
+
+
+/* ===== V9 - Stronger Day Block Time Pills ===== */
+.block-time-range{
+  padding:9px 11px!important;
+  gap:9px!important;
+  background:linear-gradient(135deg,
+    rgba(255,255,255,.72),
+    color-mix(in srgb,var(--block-color,#6366f1) 14%,rgba(255,255,255,.58)))!important;
+  border:1px solid color-mix(in srgb,var(--block-color,#6366f1) 42%,rgba(255,255,255,.55))!important;
+  box-shadow:
+    0 18px 38px color-mix(in srgb,var(--block-color,#6366f1) 22%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.72)!important;
+}
+body:not([data-theme="light"]) .block-time-range{
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--block-color,#6366f1) 18%,rgba(15,23,42,.78)),
+    rgba(15,23,42,.64))!important;
+  border-color:color-mix(in srgb,var(--block-color,#6366f1) 48%,rgba(255,255,255,.10))!important;
+}
+.btr-from,.btr-to{
+  min-width:104px!important;
+  padding:9px 12px!important;
+  gap:6px!important;
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--block-color,#6366f1) 92%,#ffffff 8%),
+    color-mix(in srgb,var(--block-color,#6366f1) 68%,#020617 32%))!important;
+  border:1px solid rgba(255,255,255,.34)!important;
+  box-shadow:
+    0 10px 22px color-mix(in srgb,var(--block-color,#6366f1) 34%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.32),
+    inset 0 -10px 24px rgba(0,0,0,.10)!important;
+}
+.btr-label{
+  color:rgba(255,255,255,.88)!important;
+  font-size:8px!important;
+  font-weight:1000!important;
+  padding:2px 6px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.16)!important;
+  text-shadow:0 1px 5px rgba(0,0,0,.24)!important;
+}
+.btr-time{
+  color:#fff!important;
+  font-size:20px!important;
+  font-weight:1000!important;
+  letter-spacing:-.7px!important;
+  text-shadow:0 3px 12px rgba(0,0,0,.34)!important;
+  filter:drop-shadow(0 0 10px rgba(255,255,255,.18));
+}
+.btr-period{
+  color:#fff!important;
+  font-size:8px!important;
+  font-weight:1000!important;
+  padding:2px 5px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.20)!important;
+  text-shadow:0 1px 5px rgba(0,0,0,.22)!important;
+}
+.btr-arrow{
+  background:linear-gradient(135deg,#fff,color-mix(in srgb,var(--block-color,#6366f1) 12%,#fff))!important;
+  color:color-mix(in srgb,var(--block-color,#6366f1) 82%,#111827)!important;
+  border:1px solid color-mix(in srgb,var(--block-color,#6366f1) 22%,rgba(255,255,255,.86))!important;
+  box-shadow:
+    0 8px 18px color-mix(in srgb,var(--block-color,#6366f1) 26%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.9)!important;
+  font-weight:1000!important;
+}
+@media(max-width:640px){
+  .block-time-range{padding:8px!important;gap:7px!important}
+  .btr-from,.btr-to{min-width:0!important;padding:8px 7px!important;gap:4px!important}
+  .btr-time{font-size:17px!important;letter-spacing:-.4px!important}
+  .btr-label{font-size:7px!important;padding:2px 5px!important}
+  .btr-period{font-size:7px!important;padding:2px 4px!important}
+}
 </style>
 </head>
 <body>
@@ -785,7 +1315,7 @@ body[data-theme="light"] .fin-card::after{color:#0f172a;opacity:.055}
           <div class="day-date-area"><h2 id="dayTitle">اليوم</h2><p id="daySub"></p></div>
           <div class="day-clock-widget">
             <div class="day-clock-time" id="clockTime">00:00:00</div>
-            <div class="day-clock-period" id="clockPeriod">صباحاً</div>
+            <div class="day-clock-period" id="clockPeriod">am</div>
             <div class="day-clock-date-line" id="clockDateLine"></div>
           </div>
           <div class="sec-actions">
@@ -946,8 +1476,8 @@ body[data-theme="light"] .fin-card::after{color:#0f172a;opacity:.055}
     <form onsubmit="saveDayBlock(event)">
       <div class="mf-row"><label>العنوان *</label><input class="mf-inp" id="bTitle" required placeholder="مثلاً: وقت العمل"></div>
       <div class="mg2">
-        <div class="mf-row"><label>من (صباحاً/مساءاً)</label><input class="mf-inp" id="bStart" type="time" value="09:00"></div>
-        <div class="mf-row"><label>إلى (صباحاً/مساءاً)</label><input class="mf-inp" id="bEnd" type="time" value="11:00"></div>
+        <div class="mf-row"><label>من (AM/PM)</label><input class="mf-inp" id="bStart" type="time" value="09:00"></div>
+        <div class="mf-row"><label>إلى (AM/PM)</label><input class="mf-inp" id="bEnd" type="time" value="11:00"></div>
       </div>
       <div class="mf-row"><label>ملاحظات</label><textarea class="mf-inp" id="bNotes" placeholder="تفاصيل..."></textarea></div>
       <div class="mg2">
@@ -1063,7 +1593,8 @@ const daysUntil = s => { if(!s)return null; const a=new Date(s); a.setHours(0,0,
 const fmtNum = n => Math.round(+n||0).toLocaleString('en-US');
 const fmtEGP = (n,s=false) => { const v=Math.round(+n||0); return s&&Math.abs(v)>=1000?(v/1000).toFixed(1)+'k':(fmtNum(v)+' EGP'); };
 const fmtGrams = n => (+n||0).toFixed(2);
-const fmtTime = t => { if(!t)return''; const [h,m]=(t||'').split(':'); const hh=parseInt(h); const per=hh<12?'صباحاً':'مساءاً'; const h12=hh%12||12; return `${String(h12).padStart(2,'0')}:${m} ${per}`; };
+const fmtTime = t => { if(!t)return''; const [h,m]=(t||'').split(':'); const hh=parseInt(h); const per=hh<12?'am':'pm'; const h12=hh%12||12; return `${String(h12).padStart(2,'0')}:${m} ${per}`; };
+function splitTaskTextTime(txt){ const s=String(txt||''); const parts=s.split(' — '); return {title:parts[0]||'', time:parts.slice(1).join(' — ')}; }
 const markWrite = g => { localWriteTs[g] = Date.now(); if (typeof queueCloudSave === 'function') queueCloudSave(); };
 
 /* ===== STATE ===== */
@@ -1474,7 +2005,7 @@ function startClock() {
   function tick() {
     const n=new Date();
     const h=n.getHours(), m=String(n.getMinutes()).padStart(2,'0'), s=String(n.getSeconds()).padStart(2,'0');
-    const h12=h%12||12, per=h<12?'صباحاً':h<18?'ظهراً':'مساءاً';
+    const h12=h%12||12, per=h<12?'am':'pm';
     const el=document.getElementById('clockTime'), p=document.getElementById('clockPeriod'), dl=document.getElementById('clockDateLine');
     if(el) el.textContent=`${String(h12).padStart(2,'0')}:${m}:${s}`;
     if(p) p.textContent=per;
@@ -1648,10 +2179,18 @@ function renderHub() {
       ${goalRows}
     </div>`;
 
-  document.getElementById('hubGreet').textContent = greet();
+  const greetEl=document.getElementById('hubGreet');
+  if(greetEl) greetEl.innerHTML = greetRich();
   document.getElementById('hubDate').textContent = new Date().toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
 function greet() { const h=new Date().getHours(); return h<12?'صباح الخير ☀️':h<17?'مساء الخير 🌤':h<21?'مساء النور 🌙':'تصبح على خير 🌟'; }
+function greetRich() {
+  const h=new Date().getHours();
+  if(h<12) return 'صباح الخير <span class="greet-sun">☀️</span>';
+  if(h<17) return 'مساء الخير <span class="greet-sun">🌤</span>';
+  if(h<21) return 'مساء النور <span class="greet-moon">🌙</span>';
+  return 'تصبح على خير <span class="greet-moon">🌟</span>';
+}
 
 /* =====================================================
    MY DAY
@@ -1764,7 +2303,7 @@ function renderBlock(b) {
   // Time range display
   const fromH=parseInt((b.start_time||'09:00').split(':')[0]); const fromM=(b.start_time||'09:00').split(':')[1];
   const toH=parseInt((b.end_time||'10:00').split(':')[0]); const toM=(b.end_time||'10:00').split(':')[1];
-  const fromPer=fromH<12?'صباحاً':'مساءاً'; const toPer=toH<12?'صباحاً':'مساءاً';
+  const fromPer=fromH<12?'am':'pm'; const toPer=toH<12?'am':'pm';
   const from12=fromH%12||12; const to12=toH%12||12;
   return `<div class="block-card ${stCls}" style="--block-color:${b.color||'#6366f1'}">
     <div class="block-card-head">
@@ -2880,8 +3419,8 @@ autoSyncTaskToDay=function(task,ent,forceUpdate=false){
   if(!targetBlock){ targetBlock=blocks[0]; }
   const ovKey=`${targetBlock.id}_${targetDate}`; const existing=DAY.overrides[ovKey]||{...targetBlock}; const existTasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(targetBlock.tasks||[])];
   const sub=(task.subtasks||[]).filter(st=>st.text).map((st,i)=>({id:`${task.id}-sub-${st.id||i}`,text:st.text,source:task.id}));
-  const textTime=task.start_time?` — ${fmtTime(task.start_time)}${task.end_time?' لـ '+fmtTime(task.end_time):''}`:'';
-  const newItem={id:`w-${task.id}`,text:task.title+textTime,source:task.id,sourceEnt:ent.name,subtasks:sub,color:task.color||ent.color||targetBlock.color};
+  const textTime=task.start_time?`${fmtTime(task.start_time)}${task.end_time?' → '+fmtTime(task.end_time):''}`:'';
+  const newItem={id:`w-${task.id}`,text:task.title,timeLabel:textTime,source:task.id,sourceEnt:ent.name,subtasks:sub,color:task.color||ent.color||targetBlock.color};
   const idx=existTasks.findIndex(t=>t.source===task.id || t.id===newItem.id);
   if(idx>=0) existTasks[idx]={...existTasks[idx],...newItem}; else existTasks.push(newItem);
   DAY.overrides[ovKey]={...existing,tasks:existTasks}; daySaveLocal(); markWrite('day');
@@ -2896,11 +3435,120 @@ const __dayStatusV4=dayStatus;
 dayStatus=function(bid,d=dateKey(DAY.date)){ const explicit=DAY.completions[`${bid}_${d}`]; if(explicit && explicit!=='pending')return explicit; const b=dayVisibleBlocks(d).find(x=>x.id===bid); if(b && isBlockPast(b,d))return 'missed'; return explicit||'pending'; };
 renderBlock=function(b){
   const st=dayStatus(b.id), stCls=st==='done'?'done':st==='missed'?'missed':''; const c=b.color||'#6366f1';
-  const tasks=(b.tasks||[]).map(t=>{ const chk=dayTaskChecked(b.id,t.id); const subs=(t.subtasks||[]).map(sta=>{const sid=sta.id||(`${t.id}-sub-${String(sta.text||'').slice(0,8)}`); const sch=dayTaskChecked(b.id,sid); return `<label class="block-subtask-item"><input type="checkbox" ${sch?'checked':''} onchange="toggleTask('${b.id}','${sid}',this.checked)"><span class="${sch?'checked':''}">${esc(sta.text||'')}</span></label>`;}).join(''); return `<div class="block-task-item"><div style="width:100%"><div class="block-task-main"><input type="checkbox" ${chk?'checked':''} onchange="toggleTask('${b.id}','${t.id}',this.checked)"><span class="${chk?'checked':''}">${esc(t.text)}</span>${t.sourceEnt?`<span class="block-task-source">💼 ${esc(t.sourceEnt)}</span>`:t.source?`<span class="block-task-source">📌 من شغلي</span>`:''}</div>${subs?`<div class="block-subtask-list">${subs}</div>`:''}</div></div>`; }).join('');
+  const tasks=(b.tasks||[]).map(t=>{ const chk=dayTaskChecked(b.id,t.id); const split=splitTaskTextTime(t.text); const title=split.title; const ttime=t.timeLabel||split.time||''; const subs=(t.subtasks||[]).map(sta=>{const sid=sta.id||(`${t.id}-sub-${String(sta.text||'').slice(0,8)}`); const sch=dayTaskChecked(b.id,sid); return `<label class="block-subtask-item"><input type="checkbox" ${sch?'checked':''} onchange="toggleTask('${b.id}','${sid}',this.checked)"><span class="${sch?'checked':''}">${esc(sta.text||'')}</span></label>`;}).join(''); return `<div class="block-task-item"><div class="block-task-wrap"><div class="block-task-main"><input type="checkbox" ${chk?'checked':''} onchange="toggleTask('${b.id}','${t.id}',this.checked)"><span class="block-task-title ${chk?'checked':''}">${esc(title)}</span>${ttime?`<span class="block-task-time">${esc(ttime)}</span>`:''}${t.sourceEnt?`<span class="block-task-source">💼 ${esc(t.sourceEnt)}</span>`:t.source?`<span class="block-task-source">📌 من شغلي</span>`:''}</div>${subs?`<div class="block-subtask-list">${subs}</div>`:''}</div></div>`; }).join('');
   const links=(b.links||[]).map(l=>`<a class="link-chip" href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.name||l.url)}</a>`).join('');
   const fromH=parseInt((b.start_time||'09:00').split(':')[0]); const fromM=(b.start_time||'09:00').split(':')[1]; const toH=parseInt((b.end_time||'10:00').split(':')[0]); const toM=(b.end_time||'10:00').split(':')[1];
-  const fromPer=fromH<12?'صباحاً':'مساءاً', toPer=toH<12?'صباحاً':'مساءاً', from12=fromH%12||12, to12=toH%12||12;
-  return `<div class="block-card ${stCls}" style="--block-color:${c}"><div class="block-card-head"><div class="block-title-row"><button class="block-done-toggle ${st}" onclick="setDayStatus('${b.id}','${st==='done'?'pending':'done'}')" title="${st==='done'?'تم':st==='missed'?'فات معاده':'علّم كتم'}">${st==='done'?'✓':st==='missed'?'×':''}</button><div><div class="block-title" style="color:${c}">${b.icon?`<span class="block-icon-badge" style="--block-color:${c}">${esc(b.icon)}</span>`:''}${esc(b.title)}</div>${b.notes?`<div class="block-notes">${esc(b.notes)}</div>`:''}</div></div><div class="block-card-actions"><button class="block-mini-btn" onclick="openDayModal('${b.id}')" title="تعديل">✏️</button></div></div>${tasks?`<div class="block-task-list">${tasks}</div>`:''}${links?`<div style="margin-bottom:8px">${links}</div>`:''}<div class="block-time-range" style="--block-color:${c}"><div class="btr-from"><div class="btr-label">من</div><div class="btr-time">${String(from12).padStart(2,'0')}:${fromM}</div><div class="btr-period">${fromPer}</div></div><div class="btr-arrow">←</div><div class="btr-to"><div class="btr-label">إلى</div><div class="btr-time">${String(to12).padStart(2,'0')}:${toM}</div><div class="btr-period">${toPer}</div></div></div></div>`;
+  const fromPer=fromH<12?'am':'pm', toPer=toH<12?'am':'pm', from12=fromH%12||12, to12=toH%12||12;
+  return `<div class="block-card ${stCls}" style="--block-color:${c}"><div class="block-card-head"><div class="block-title-row"><button class="block-done-toggle ${st}" onclick="setDayStatus('${b.id}','${st==='done'?'pending':'done'}')" title="${st==='done'?'تم':st==='missed'?'فات معاده':'علّم كتم'}">${st==='done'?'✓':st==='missed'?'×':''}</button><div><div class="block-title" style="color:${c}">${b.icon?`<span class="block-icon-badge" style="--block-color:${c}">${esc(b.icon)}</span>`:''}${esc(b.title)}</div>${b.notes?`<div class="block-notes">${esc(b.notes)}</div>`:''}</div></div><div class="block-card-actions"><button class="block-mini-btn" onclick="openDayModal('${b.id}')" title="تعديل">✏️</button></div></div>${tasks?`<div class="block-task-list">${tasks}</div>`:''}${links?`<div style="margin-bottom:8px">${links}</div>`:''}<div class="block-time-range" style="--block-color:${c}"><div class="btr-from"><div class="btr-label">من</div><div class="btr-time">${String(from12).padStart(2,'0')}:${fromM}</div><div class="btr-period">${fromPer}</div></div><div class="btr-arrow">→</div><div class="btr-to"><div class="btr-label">إلى</div><div class="btr-time">${String(to12).padStart(2,'0')}:${toM}</div><div class="btr-period">${toPer}</div></div></div></div>`;
+};
+
+
+
+/* ===== V6: Two-way checkbox sync between Work tasks and Day embedded tasks ===== */
+function getAllWorkEntitiesForSync(){
+  return (WORK?.data?.company||[]).concat(WORK?.data?.client||[]);
+}
+function findWorkTaskByAnyId(rawId){
+  const tid=String(rawId||'');
+  const directId=tid.startsWith('w-') ? tid.slice(2) : tid;
+  for(const ent of getAllWorkEntitiesForSync()){
+    for(const task of (ent.tasks||[])){
+      if(task.id===directId || task.id===tid || `w-${task.id}`===tid) return {ent,task,sub:null,type:'task'};
+      for(const sub of (task.subtasks||[])){
+        const sid=String(sub.id||'');
+        const daySubId=`${task.id}-sub-${sid}`;
+        if(tid===daySubId || tid===sid || tid===`w-${task.id}-sub-${sid}`){
+          return {ent,task,sub,type:'subtask'};
+        }
+      }
+    }
+  }
+  return null;
+}
+function dayOverrideKeyParts(k){
+  const m=String(k||'').match(/^(.*)_(\d{4}-\d{2}-\d{2})$/);
+  return m ? {bid:m[1],date:m[2]} : null;
+}
+function setDayCheckLocalOnly(bid,date,tid,checked){
+  if(!bid||!date||!tid) return;
+  DAY.taskChecks[`${bid}_${date}_${tid}`]=!!checked;
+}
+function syncWorkTaskChecksIntoDay(workTaskId, checked, subId=null){
+  const mainDayId=`w-${workTaskId}`;
+  const subDayId=subId ? `${workTaskId}-sub-${subId}` : null;
+  let changed=false;
+  Object.entries(DAY.overrides||{}).forEach(([key,ov])=>{
+    const p=dayOverrideKeyParts(key); if(!p) return;
+    (ov.tasks||[]).forEach(dt=>{
+      const isSameTask = dt.source===workTaskId || dt.id===mainDayId;
+      if(isSameTask && !subDayId){ setDayCheckLocalOnly(p.bid,p.date,dt.id,checked); changed=true; }
+      if(isSameTask && subDayId){
+        (dt.subtasks||[]).forEach(st=>{
+          const sid=st.id || `${workTaskId}-sub-${st.text||''}`;
+          if(sid===subDayId){ setDayCheckLocalOnly(p.bid,p.date,sid,checked); changed=true; }
+        });
+      }
+    });
+  });
+  // Also cover the currently rendered day, in case the task exists in a non-override block.
+  const curDate=dateKey(DAY.date);
+  dayVisibleBlocks(curDate).forEach(b=>{
+    (b.tasks||[]).forEach(dt=>{
+      const isSameTask = dt.source===workTaskId || dt.id===mainDayId;
+      if(isSameTask && !subDayId){ setDayCheckLocalOnly(b.id,curDate,dt.id,checked); changed=true; }
+      if(isSameTask && subDayId){
+        (dt.subtasks||[]).forEach(st=>{
+          const sid=st.id || `${workTaskId}-sub-${st.text||''}`;
+          if(sid===subDayId){ setDayCheckLocalOnly(b.id,curDate,sid,checked); changed=true; }
+        });
+      }
+    });
+  });
+  if(changed){ daySaveLocal(); markWrite('day'); }
+  return changed;
+}
+function setWorkTaskCompletedFromDay(dayTaskId, checked){
+  const found=findWorkTaskByAnyId(dayTaskId);
+  if(!found) return false;
+  if(found.type==='task'){
+    found.task.completed=!!checked;
+    found.task.completed_at=checked ? new Date().toISOString() : null;
+    syncWorkTaskChecksIntoDay(found.task.id, checked, null);
+  }else if(found.type==='subtask'){
+    found.sub.completed=!!checked;
+    found.sub.completed_at=checked ? new Date().toISOString() : null;
+    syncWorkTaskChecksIntoDay(found.task.id, checked, found.sub.id);
+  }
+  workSaveLocal(); markWrite('work');
+  return true;
+}
+
+const __toggleTaskBeforeSyncV6 = toggleTask;
+toggleTask = async function(bid, tid, checked){
+  const d=dateKey(DAY.date);
+  DAY.taskChecks[`${bid}_${d}_${tid}`]=!!checked;
+  setWorkTaskCompletedFromDay(tid, checked);
+  daySaveLocal(); markWrite('day');
+  renderDay();
+  if(cur==='work') renderWork();
+  if(cur==='hub') renderHub();
+};
+
+const __workToggleTaskBeforeSyncV6 = workToggleTask;
+workToggleTask = async function(tid, eid){
+  const all=getAllWorkEntitiesForSync();
+  const ent=all.find(e=>e.id===eid);
+  const task=ent?.tasks?.find(t=>t.id===tid);
+  if(!task) return;
+  task.completed=!task.completed;
+  task.completed_at=task.completed ? new Date().toISOString() : null;
+  syncWorkTaskChecksIntoDay(task.id, task.completed, null);
+  workSaveLocal(); markWrite('work');
+  renderWork();
+  if(cur==='day') renderDay();
+  if(cur==='hub') renderHub();
+  updateBadges();
+  toast(task.completed?'✅ اتعلمت في شغلي ويومي':'تم إلغاء الإنجاز من شغلي ويومي');
 };
 
 /* ===== KEYBOARD & MISC ===== */
