@@ -8,7 +8,26 @@
 <meta name="theme-color" content="#080c18">
 <title>MY System — نظامك الكامل</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// Supabase loader with multiple CDN fallbacks
+(function() {
+  var cdns = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://esm.run/@supabase/supabase-js'
+  ];
+  var loaded = false;
+  function tryLoad(i) {
+    if(i >= cdns.length || loaded) return;
+    var s = document.createElement('script');
+    s.src = cdns[i];
+    s.onload = function() { loaded = true; window.__sbReady = true; };
+    s.onerror = function() { tryLoad(i+1); };
+    document.head.appendChild(s);
+  }
+  tryLoad(0);
+})();
+</script>
 <style>
 /* ===== RESET ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -573,7 +592,7 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
     <div id="customNavItems"></div>
     <button class="nav-add-btn" onclick="openCMModal()"><span style="font-size:18px">＋</span>قسم رئيسي جديد</button>
     <div class="sync-bar">
-      <div class="sync-dot loading" id="syncDot"></div>
+      <div class="sync-dot loading" id="syncDot" onclick="retryConnect()" style="cursor:pointer" title="اضغط لإعادة الاتصال"></div>
       <span class="sync-text" id="syncText">جاري الاتصال...</span>
       <button class="notif-bell" onclick="toggleNotifCenter()" title="الإشعارات"><span>🔔</span><div class="notif-bell-dot" id="bellDot"></div></button>
       <button class="icon-btn" onclick="openSettings()" title="الإعدادات" style="font-size:16px">⚙️</button>
@@ -1017,18 +1036,64 @@ function copySql() { navigator.clipboard.writeText(SQL_SETUP).then(()=>toast('ت
 function setSyncStatus(state, text) { document.getElementById('syncDot').className='sync-dot '+state; document.getElementById('syncText').textContent=text; }
 
 /* ===== SUPABASE CONNECT & POLLING ===== */
+// Wait for supabase library to be available (CDN might be slow on mobile)
+async function waitForSupabase(maxMs=12000) {
+  const start = Date.now();
+  while(Date.now()-start < maxMs) {
+    if(window.supabase && window.supabase.createClient) return true;
+    await new Promise(r=>setTimeout(r,200));
+  }
+  return false;
+}
+
 async function connect(url, key) {
   setSyncStatus('loading','جاري الاتصال...');
+  document.getElementById('syncText').textContent = 'تحميل المكتبة...';
+  
+  // Wait for supabase CDN to load
+  const ready = await waitForSupabase();
+  if(!ready) {
+    sb = null;
+    setSyncStatus('err','Local Mode');
+    document.getElementById('syncText').textContent = 'بدون اتصال (Local)';
+    document.getElementById('connStatus').textContent = 'مكتبة Supabase لم تُحمَّل — تأكد من الإنترنت';
+    return;
+  }
+
+  document.getElementById('syncText').textContent = 'جاري الاتصال بـ Supabase...';
   try {
-    sb = window.supabase.createClient(url, key);
+    sb = window.supabase.createClient(url, key, {
+      auth: { persistSession: false },
+      global: { fetch: (...args) => fetch(...args) }
+    });
     const {error} = await sb.from('recurring_blocks').select('id').limit(1);
-    if(error && !['PGRST116','42P01'].includes(error.code)) throw error;
+    if(error && !['PGRST116','42P01','406'].includes(error.code)) throw error;
     setSyncStatus('ok','متصل ✓');
-    document.getElementById('connStatus').textContent='متصل ✅';
+    document.getElementById('connStatus').textContent = 'متصل ✅';
     startPoll();
-  } catch(e) { sb=null; setSyncStatus('err','Local Mode'); document.getElementById('connStatus').textContent='غير متصل: '+(e.message||e); }
+  } catch(e) {
+    sb = null;
+    const msg = e?.message||String(e);
+    // Network error vs auth error
+    if(msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+      setSyncStatus('err','لا يوجد إنترنت');
+      document.getElementById('syncText').textContent = 'لا يوجد إنترنت';
+    } else {
+      setSyncStatus('err','Local Mode');
+      document.getElementById('syncText').textContent = 'Local Mode';
+    }
+    document.getElementById('connStatus').textContent = 'خطأ: ' + msg;
+    // Auto-retry after 8 seconds
+    setTimeout(()=>{ if(!sb) connect(url, key); }, 8000);
+  }
 }
 function startPoll() { if(pollTimer)clearInterval(pollTimer); poll(); pollTimer=setInterval(poll,3000); }
+function retryConnect() {
+  if(sb) { toast('متصل بالفعل ✅'); return; }
+  const url=localStorage.getItem('sb_url')||SB_URL, key=localStorage.getItem('sb_key')||SB_KEY;
+  toast('جاري إعادة الاتصال...');
+  connect(url, key).then(()=>{ if(sb) { loadAll().then(()=>{ if(cur==='hub')renderHub(); }); } });
+}
 function stopPoll() { if(pollTimer){clearInterval(pollTimer);pollTimer=null;} }
 async function poll() {
   if(!sb)return;
@@ -1067,6 +1132,33 @@ function syncPulse(label) { const d=document.getElementById('syncDot'); d.classL
 
 /* ===== LOAD ALL ===== */
 async function loadAll() { await Promise.all([dayLoad(),workLoad(),finLoad(),goalsLoad()]); }
+
+// Load from localStorage only (instant, no network)
+async function loadAllLocal() {
+  // Day
+  const localB=JSON.parse(localStorage.getItem('ms_day_blocks')||'[]').map(dayNorm);
+  DAY.overrides=JSON.parse(localStorage.getItem('ms_day_ov')||'{}');
+  DAY.completions=JSON.parse(localStorage.getItem('ms_day_comp')||'{}');
+  DAY.taskChecks=JSON.parse(localStorage.getItem('ms_day_tc')||'{}');
+  DAY.blocks = localB.length ? localB : [
+    dayNorm({id:'default-1',title:'وقت العمل',notes:'شغل عميق بدون مشتتات',start_time:'09:00',end_time:'17:00',color:'#6366f1',repeat_mode:'everyday'}),
+    dayNorm({id:'default-2',title:'راحة',notes:'',start_time:'13:00',end_time:'14:00',color:'#22c55e',repeat_mode:'everyday'}),
+  ];
+  // Work
+  const cachedW=JSON.parse(localStorage.getItem('ms_work')||'null');
+  if(cachedW?.company) WORK.data=cachedW;
+  // Finance
+  const cachedF=JSON.parse(localStorage.getItem('ms_fin')||'null');
+  if(cachedF) Object.assign(FIN,cachedF);
+  // Goals
+  const cachedG=JSON.parse(localStorage.getItem('ms_goals')||'null');
+  if(cachedG){GOALS.items=cachedG.items||[];GOALS.sections=cachedG.sections||[];}
+  if(!GOALS.sections.length) GOALS.sections=[
+    {id:'personal',name:'شخصي',icon:'🌟',color:'#f472b6'},
+    {id:'work',name:'مهني',icon:'💼',color:'#818cf8'},
+    {id:'health',name:'صحي',icon:'💪',color:'#34d399'},
+  ];
+}
 
 /* ===== THEME ===== */
 function toggleTheme() { isDark=!isDark; applyTheme(); localStorage.setItem('sys_theme',isDark?'dark':'light'); }
@@ -2546,11 +2638,23 @@ document.addEventListener('visibilitychange',()=>{
 async function boot() {
   isDark = localStorage.getItem('sys_theme')!=='light'; applyTheme();
   startClock();
-  const url=localStorage.getItem('sb_url')||SB_URL, key=localStorage.getItem('sb_key')||SB_KEY;
-  await connect(url,key);
-  await loadAll();
+  // 1. Load from localStorage immediately (instant render even offline)
+  await loadAllLocal();
   renderHub();
   updateBadges();
+  // 2. Then try to connect and sync in background
+  const url=localStorage.getItem('sb_url')||SB_URL, key=localStorage.getItem('sb_key')||SB_KEY;
+  connect(url,key).then(async()=>{
+    if(sb){
+      await loadAll();
+      renderHub();
+      if(cur==='day') renderDay();
+      if(cur==='work') renderWork();
+      if(cur==='finance') renderFin();
+      if(cur==='goals') renderGoals();
+      updateBadges();
+    }
+  });
   // Init layout controls from localStorage
   const dl=localStorage.getItem('ms_day_layout')||'list'; DAY.layout=dl;
   document.querySelectorAll('#dayLayoutToggle .vt-btn').forEach((b,i)=>b.classList.toggle('active',['list','grid','side'][i]===dl));
