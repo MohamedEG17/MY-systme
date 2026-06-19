@@ -8,7 +8,26 @@
 <meta name="theme-color" content="#080c18">
 <title>MY System — نظامك الكامل</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
+<script>
+/* Supabase CDN with mobile-friendly fallback loading */
+(function() {
+  var CDNS = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/supabase/2.39.3/umd/supabase.js'
+  ];
+  function load(i) {
+    if (i >= CDNS.length) return;
+    var s = document.createElement('script');
+    s.src = CDNS[i];
+    s.async = false; // Keep synchronous-ish loading order
+    s.onload = function() { window.__sbLoaded = true; };
+    s.onerror = function() { load(i + 1); };
+    document.head.appendChild(s);
+  }
+  load(0);
+})();
+</script>
 <style>
 /* ===== RESET ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -701,33 +720,26 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
 </nav>
 <!-- SETTINGS MODAL -->
 <div id="settingsModal" class="modal-backdrop hidden">
-  <div class="modal-box" style="max-width:480px">
+  <div class="modal-box">
     <div class="modal-head"><h2>⚙️ الإعدادات</h2><button class="modal-close" onclick="closeSettings()">✕</button></div>
     <div class="settings-section">
-      <h3>🌙 المظهر</h3>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn btn-primary" onclick="isDark=true;applyTheme();localStorage.setItem('sys_theme','dark')">🌙 داكن</button>
-        <button class="btn btn-ghost" onclick="isDark=false;applyTheme();localStorage.setItem('sys_theme','light')">☀️ فاتح</button>
+      <h3>🔗 ربط Supabase</h3>
+      <div class="mf-row"><label>Supabase URL</label><input class="mf-inp" id="cfgUrl" type="text" dir="ltr" placeholder="https://xxxx.supabase.co"></div>
+      <div class="mf-row"><label>Anon Key</label><textarea class="mf-inp" id="cfgKey" dir="ltr" style="min-height:60px;font-size:11px"></textarea></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="saveConfig()">حفظ وربط</button>
+        <button class="btn btn-ghost" onclick="clearConfig()">Local Mode</button>
       </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-d)">الحالة: <span id="connStatus">—</span></div>
     </div>
     <div class="settings-section">
-      <h3>📤 تصدير البيانات (Backup)</h3>
-      <p style="font-size:12px;color:var(--text-m);margin-bottom:10px">احفظ نسخة من كل بياناتك كملف JSON — استخدمه لنقل البيانات لجهاز تاني</p>
-      <button class="btn btn-primary" onclick="exportData()">⬇️ تصدير الكل</button>
-    </div>
-    <div class="settings-section">
-      <h3>📥 استيراد البيانات (Restore)</h3>
-      <p style="font-size:12px;color:var(--text-m);margin-bottom:10px">استرجع بياناتك من ملف backup سابق</p>
-      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
-      <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆️ استيراد من ملف</button>
-    </div>
-    <div class="settings-section">
-      <h3>🗑️ حذف كل البيانات</h3>
-      <button class="btn btn-danger" onclick="clearAllData()">🗑️ حذف الكل</button>
+      <h3>🗄️ SQL Setup</h3>
+      <pre class="sql-box" id="sqlBox" style="max-height:160px"></pre>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="copySql()">نسخ SQL</button>
     </div>
   </div>
 </div>
-<!-- DAY BLOCK MODAL<!-- DAY BLOCK MODAL -->
+<!-- DAY BLOCK MODAL -->
 <div id="dayModal" class="modal-backdrop hidden">
   <div class="modal-box">
     <div class="modal-head"><h2 id="dayModalTitle">بلوك جديد</h2><button class="modal-close" onclick="closeDayModal()">✕</button></div>
@@ -801,18 +813,6 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
     <div id="goalModalBody"></div>
   </div>
 </div>
-<!-- FINANCE ENTRY MODAL -->
-<div id="finEntryModal" class="modal-backdrop hidden">
-  <div class="modal-box" style="max-width:480px">
-    <div class="modal-head"><h2 id="finEntryTitle">إضافة</h2><button class="modal-close" onclick="closeFinModal()">✕</button></div>
-    <div id="finEntryFields"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="saveFinEntry()">حفظ</button>
-      <button class="btn btn-ghost" onclick="closeFinModal()">إلغاء</button>
-      <button class="btn btn-danger hidden" id="finEntryDelBtn" onclick="deleteFinEntry()">حذف</button>
-    </div>
-  </div>
-</div>
 <!-- SECTION MODAL -->
 <div id="sectionModal" class="modal-backdrop hidden">
   <div class="modal-box" style="max-width:420px">
@@ -832,10 +832,9 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
 /* ============================================================
    MY SYSTEM — Complete JS Engine
    ============================================================ */
-// localStorage-only mode
-
-const OWNER = 'local';
-let sb = null; // localStorage only — no network needed
+const SB_URL = 'https://tepkuccwoinpgjfimnvo.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcGt1Y2N3b2lucGdqZmltbnZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NzA2ODcsImV4cCI6MjA5NzM0NjY4N30.RXnZ9m7BqxSuMN4TfhYNh8-XHD7IntVP9UCvwPcVKIQ';
+const OWNER = 'df0d8bf9-4474-4cb2-801b-a50679858740';
 const GOAL_PALLETE = ['#f472b6','#818cf8','#34d399','#fb923c','#38bdf8','#a78bfa','#fbbf24','#e879f9','#86efac','#f87171'];
 const WORK_PAL = ['#6366f1','#a855f7','#ec4899','#0ea5e9','#14b8a6','#22c55e','#f97316','#f59e0b'];
 const BK_PAL  = ['#38bdf8','#818cf8','#34d399','#f472b6','#fb923c','#a78bfa','#22d3ee','#86efac'];
@@ -843,6 +842,9 @@ const BK_PAL  = ['#38bdf8','#818cf8','#34d399','#f472b6','#fb923c','#a78bfa','#2
 let sb = null;
 let cur = 'hub';
 let isDark = true;
+let pollTimer = null;
+let lastSeen = { day: new Date(0).toISOString(), work: new Date(0).toISOString(), fin: new Date(0).toISOString(), goals: new Date(0).toISOString() };
+let localWriteTs = { day:0, work:0, fin:0, goals:0 };
 
 const uid = () => crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2);
 const esc = s => (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -852,7 +854,7 @@ const fmtNum = n => Math.round(+n||0).toLocaleString('en-US');
 const fmtEGP = (n,s=false) => { const v=Math.round(+n||0); return s&&Math.abs(v)>=1000?(v/1000).toFixed(1)+'k':(fmtNum(v)+' EGP'); };
 const fmtGrams = n => (+n||0).toFixed(2);
 const fmtTime = t => { if(!t)return''; const [h,m]=(t||'').split(':'); const hh=parseInt(h); const per=hh<12?'صباحاً':'مساءاً'; const h12=hh%12||12; return `${String(h12).padStart(2,'0')}:${m} ${per}`; };
-const markWrite = () => {}; };
+const markWrite = g => { localWriteTs[g] = Date.now(); };
 
 /* ===== STATE ===== */
 const DAY = { blocks:[], overrides:{}, completions:{}, taskChecks:{}, date:new Date(), view:'list', layout:'list', scale:100, editing:null, modalTasks:[], modalLinks:[] };
@@ -977,73 +979,121 @@ grant all on all tables in schema public to anon, authenticated;`;
 
 document.getElementById('sqlBox').textContent = SQL_SETUP;
 
-function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
+function openSettings() {
+  document.getElementById('cfgUrl').value = localStorage.getItem('sb_url')||SB_URL;
+  document.getElementById('cfgKey').value = localStorage.getItem('sb_key')||SB_KEY;
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
 function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
-function saveConfig() { toast('💾 النظام يحفظ محلياً تلقائياً'); closeSettings(); }
-function clearConfig() {}
+async function saveConfig() {
+  const url=document.getElementById('cfgUrl').value.trim(), key=document.getElementById('cfgKey').value.trim();
+  if(!url||!key)return toast('أدخل URL وال key');
+  localStorage.setItem('sb_url',url); localStorage.setItem('sb_key',key);
+  await connect(url,key);
+  if(sb){toast('تم الربط ✅'); closeSettings(); await loadAll(); renderAll();}
+  else toast('فشل الاتصال ❌');
+}
+function clearConfig() { localStorage.removeItem('sb_url'); localStorage.removeItem('sb_key'); sb=null; setSyncStatus('err','Local Mode'); toast('Local Mode'); }
+function copySql() { navigator.clipboard.writeText(SQL_SETUP).then(()=>toast('تم نسخ SQL ✅')); }
+function setSyncStatus(state, text) { document.getElementById('syncDot').className='sync-dot '+state; document.getElementById('syncText').textContent=text; }
 
-/* ===== EXPORT / IMPORT / CLEAR ===== */
-function exportData() {
-  const mods = JSON.parse(localStorage.getItem('ms_custom_mods')||'[]');
-  const data = {v:2, exported:new Date().toISOString(),
-    day_blocks: localStorage.getItem('ms_day_blocks'),
-    day_ov: localStorage.getItem('ms_day_ov'),
-    day_comp: localStorage.getItem('ms_day_comp'),
-    day_tc: localStorage.getItem('ms_day_tc'),
-    work: localStorage.getItem('ms_work'),
-    fin: localStorage.getItem('ms_fin'),
-    goals: localStorage.getItem('ms_goals'),
-    custom_mods: localStorage.getItem('ms_custom_mods'),
-  };
-  mods.forEach(m=>{ data['cm_'+m.id]=localStorage.getItem('ms_cm_entries_'+m.id); });
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url;
-  a.download='mysystem-'+new Date().toISOString().slice(0,10)+'.json';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url); toast('✅ تم التصدير');
-}
-function importData(input) {
-  const file=input.files[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try {
-      const data=JSON.parse(e.target.result);
-      if(!data.v){toast('❌ ملف غير صحيح');return;}
-      if(!confirm('هتستبدل كل البيانات الحالية؟'))return;
-      ['day_blocks','day_ov','day_comp','day_tc','work','fin','goals','custom_mods'].forEach(k=>{
-        if(data[k]) localStorage.setItem('ms_'+k,data[k]);
-      });
-      const mods=JSON.parse(data.custom_mods||'[]');
-      mods.forEach(m=>{if(data['cm_'+m.id])localStorage.setItem('ms_cm_entries_'+m.id,data['cm_'+m.id]);});
-      loadAll().then(()=>{renderHub();renderCustomNav();updateBadges();closeSettings();toast('✅ تم الاستيراد');});
-    }catch(err){toast('❌ خطأ: '+err.message);}
-  };
-  reader.readAsText(file);
-}
-function clearAllData() {
-  if(!confirm('حذف كل البيانات نهائياً؟'))return;
-  if(!confirm('تأكيد؟'))return;
-  Object.keys(localStorage).filter(k=>k.startsWith('ms_')).forEach(k=>localStorage.removeItem(k));
-  location.reload();
-}
-
-function setSyncStatus(s, t) {
-  const dot=document.getElementById('syncDot');
-  const txt=document.getElementById('syncText');
-  if(dot) dot.className='sync-dot ok';
-  if(txt) txt.textContent='💾 محفوظ';
-}
-
-/* ===== STORAGE (localStorage only) ===== */
+/* ===== SUPABASE CONNECT & POLLING ===== */
 async function connect(url, key) {
-  // No-op: system works offline via localStorage
+  setSyncStatus('loading','جاري الاتصال...');
+  // Wait up to 15s for CDN to load (mobile can be slow)
+  let waited = 0;
+  while (!window.supabase && waited < 15000) {
+    await new Promise(r => setTimeout(r, 300));
+    waited += 300;
+  }
+  if (!window.supabase) {
+    setSyncStatus('err','Local Mode');
+    document.getElementById('connStatus').textContent = 'لم يتحمل Supabase — تأكد من الإنترنت ثم أعد تحميل الصفحة';
+    // Retry after 10 seconds automatically
+    setTimeout(() => connect(url, key), 10000);
+    return;
+  }
+  try {
+    sb = window.supabase.createClient(url, key);
+    const {data, error} = await sb.from('recurring_blocks').select('id').limit(1);
+    if(error && !['PGRST116','42P01','406'].includes(error.code)) throw error;
+    setSyncStatus('ok','متصل ✓');
+    document.getElementById('connStatus').textContent='متصل ✅';
+    startPoll();
+  } catch(e) {
+    sb=null;
+    setSyncStatus('err','Local Mode');
+    document.getElementById('connStatus').textContent='خطأ: '+(e.message||e);
+    // Auto retry
+    setTimeout(() => connect(url, key), 10000);
+  }
 }
-function startPoll() {} // no-op
-function stopPoll() {} // no-op
+function startPoll() { if(pollTimer)clearInterval(pollTimer); poll(); pollTimer=setInterval(poll,3000); }
+function stopPoll() { if(pollTimer){clearInterval(pollTimer);pollTimer=null;} }
+async function poll() {
+  if(!sb)return;
+  try {
+    // Day
+    if((Date.now()-localWriteTs.day)>3000) {
+      const [{data:rb},{data:bc}]=await Promise.all([
+        sb.from('recurring_blocks').select('updated_at').order('updated_at',{ascending:false}).limit(1),
+        sb.from('block_completions').select('updated_at').order('updated_at',{ascending:false}).limit(1),
+      ]);
+      const lat=[rb?.[0]?.updated_at,bc?.[0]?.updated_at].filter(Boolean).sort().pop()||new Date(0).toISOString();
+      if(lat>lastSeen.day){lastSeen.day=lat; await dayLoad(); if(cur==='day')renderDay(); if(cur==='hub')renderHub(); updateBadges(); syncPulse();}
+    }
+    // Work
+    if((Date.now()-localWriteTs.work)>3000) {
+      const [{data:ts}]=await Promise.all([sb.from('tasks').select('created_at,updated_at').order('updated_at',{ascending:false}).limit(1)]);
+      const lat=ts?.[0]?.updated_at||new Date(0).toISOString();
+      if(lat>lastSeen.work){lastSeen.work=lat; await workLoad(); if(cur==='work')renderWork(); if(cur==='hub')renderHub(); updateBadges(); syncPulse();}
+    }
+    // Finance
+    if((Date.now()-localWriteTs.fin)>3000) {
+      const [{data:bk}]=await Promise.all([sb.from('banks').select('created_at').order('created_at',{ascending:false}).limit(1)]);
+      const lat=bk?.[0]?.created_at||new Date(0).toISOString();
+      if(lat>lastSeen.fin){lastSeen.fin=lat; await finLoad(); if(cur==='finance')renderFin(); if(cur==='hub')renderHub(); syncPulse();}
+    }
+    // Goals
+    if((Date.now()-localWriteTs.goals)>3000) {
+      const [{data:gl}]=await Promise.all([sb.from('goals').select('updated_at').order('updated_at',{ascending:false}).limit(1)]);
+      const lat=gl?.[0]?.updated_at||new Date(0).toISOString();
+      if(lat>lastSeen.goals){lastSeen.goals=lat; await goalsLoad(); if(cur==='goals')renderGoals(); if(cur==='hub')renderHub(); syncPulse();}
+    }
+    setSyncStatus('ok','متصل ✓');
+  } catch(_){ setSyncStatus('err','خطأ في الاتصال'); }
+}
 function syncPulse() { const d=document.getElementById('syncDot'); d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900); toast('🔄 تم المزامنة'); }
 
 /* ===== LOAD ALL ===== */
+
+// Load all data from localStorage (instant, no network needed)
+async function loadLocal() {
+  // Day
+  const b = JSON.parse(localStorage.getItem('ms_day_blocks')||'[]').map(dayNorm);
+  DAY.overrides = JSON.parse(localStorage.getItem('ms_day_ov')||'{}');
+  DAY.completions = JSON.parse(localStorage.getItem('ms_day_comp')||'{}');
+  DAY.taskChecks = JSON.parse(localStorage.getItem('ms_day_tc')||'{}');
+  DAY.blocks = b.length ? b : [
+    dayNorm({id:uid(),title:'وقت العمل',notes:'',start_time:'09:00',end_time:'17:00',color:'#6366f1',repeat_mode:'everyday'}),
+    dayNorm({id:uid(),title:'راحة',notes:'',start_time:'13:00',end_time:'14:00',color:'#22c55e',repeat_mode:'everyday'}),
+  ];
+  // Work
+  const w = JSON.parse(localStorage.getItem('ms_work')||'null');
+  if(w?.company) WORK.data = w;
+  // Finance
+  const f = JSON.parse(localStorage.getItem('ms_fin')||'null');
+  if(f) Object.assign(FIN, f);
+  // Goals
+  const g = JSON.parse(localStorage.getItem('ms_goals')||'null');
+  if(g){ GOALS.items=g.items||[]; GOALS.sections=g.sections||[]; }
+  if(!GOALS.sections.length) GOALS.sections=[
+    {id:'personal',name:'شخصي',icon:'🌟',color:'#f472b6'},
+    {id:'work',name:'مهني',icon:'💼',color:'#818cf8'},
+    {id:'health',name:'صحي',icon:'💪',color:'#34d399'},
+  ];
+}
+
 async function loadAll() { await Promise.all([dayLoad(),workLoad(),finLoad(),goalsLoad()]); }
 
 /* ===== THEME ===== */
@@ -1217,15 +1267,29 @@ function daySaveLocal() {
   localStorage.setItem('ms_day_tc',JSON.stringify(DAY.taskChecks));
 }
 async function dayLoad() {
-  DAY.blocks = JSON.parse(localStorage.getItem('ms_day_blocks')||'[]').map(dayNorm);
-  DAY.overrides = JSON.parse(localStorage.getItem('ms_day_ov')||'{}');
-  DAY.completions = JSON.parse(localStorage.getItem('ms_day_comp')||'{}');
-  DAY.taskChecks = JSON.parse(localStorage.getItem('ms_day_tc')||'{}');
+  const localB=JSON.parse(localStorage.getItem('ms_day_blocks')||'[]').map(dayNorm);
+  DAY.overrides=JSON.parse(localStorage.getItem('ms_day_ov')||'{}');
+  DAY.completions=JSON.parse(localStorage.getItem('ms_day_comp')||'{}');
+  DAY.taskChecks=JSON.parse(localStorage.getItem('ms_day_tc')||'{}');
+  if(sb) {
+    try {
+      const today=dateKey();
+      const [{data:bl},{data:ov},{data:comp},{data:chk}]=await Promise.all([
+        sb.from('recurring_blocks').select('*').eq('user_id',OWNER),
+        sb.from('block_overrides').select('*').eq('user_id',OWNER),
+        sb.from('block_completions').select('*').eq('user_id',OWNER).eq('completion_date',today),
+        sb.from('task_checks').select('*').eq('user_id',OWNER).eq('check_date',today),
+      ]);
+      if(bl) DAY.blocks=bl.map(dayNorm);
+      if(ov) { DAY.overrides={}; ov.forEach(o=>{ DAY.overrides[`${o.recurring_block_id}_${o.override_date}`]=o; }); }
+      DAY.completions={}; (comp||[]).forEach(c=>{ DAY.completions[`${c.recurring_block_id}_${today}`]=c.status; });
+      DAY.taskChecks={}; (chk||[]).forEach(c=>{ DAY.taskChecks[`${c.recurring_block_id}_${today}_${c.task_id}`]=c.is_checked; });
+      daySaveLocal();
+    } catch(_){ DAY.blocks=localB; }
+  } else { DAY.blocks=localB; }
   if(!DAY.blocks.length) {
-    DAY.blocks=[
-      dayNorm({id:uid(),title:'وقت العمل',notes:'شغل عميق بدون مشتتات',start_time:'09:00',end_time:'17:00',color:'#6366f1',repeat_mode:'everyday'}),
-      dayNorm({id:uid(),title:'راحة',notes:'',start_time:'13:00',end_time:'14:00',color:'#22c55e',repeat_mode:'everyday'}),
-    ];
+    DAY.blocks=[dayNorm({id:uid(),title:'وقت العمل',notes:'شغل عميق بدون مشتتات',start_time:'09:00',end_time:'17:00',color:'#6366f1',repeat_mode:'everyday'}),
+               dayNorm({id:uid(),title:'راحة',notes:'',start_time:'13:00',end_time:'14:00',color:'#22c55e',repeat_mode:'everyday'})];
     daySaveLocal();
   }
 }
@@ -1351,10 +1415,12 @@ function applyScale(v) {
 
 async function setDayStatus(bid, status) {
   const d=dateKey(DAY.date); DAY.completions[`${bid}_${d}`]=status; daySaveLocal(); markWrite('day');
+  if(sb) try { await sb.from('block_completions').upsert({user_id:OWNER,recurring_block_id:bid,completion_date:d,status,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,completion_date'}); } catch(_){}
   renderDay(); if(cur==='hub') renderHub();
 }
 async function toggleTask(bid, tid, checked) {
   const d=dateKey(DAY.date); DAY.taskChecks[`${bid}_${d}_${tid}`]=checked; daySaveLocal();
+  if(sb) try { await sb.from('task_checks').upsert({user_id:OWNER,recurring_block_id:bid,task_id:tid,check_date:d,is_checked:checked,updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,task_id,check_date'}); } catch(_){}
   renderDay();
 }
 
@@ -1454,12 +1520,13 @@ async function saveDayBlock(e) {
     notif({icon:'📅',title:'بلوك جديد',sub:`"${title}" أُضيف لجدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
   }
   daySaveLocal(); markWrite('day');
+  if(sb) try { await sb.from('recurring_blocks').upsert({...block,user_id:OWNER,updated_at:new Date().toISOString()}); } catch(_){}
   closeDayModal(); renderDay(); toast(editingBlockId?'تم التعديل ✅':'تم الإضافة ✅');
 }
 async function deleteDayBlock() {
   if(!editingBlockId)return;
   DAY.blocks=DAY.blocks.filter(t=>t.id!==editingBlockId);
-  daySaveLocal();
+  daySaveLocal(); if(sb) try { await sb.from('recurring_blocks').delete().eq('id',editingBlockId); } catch(_){}
   closeDayModal(); renderDay(); toast('تم الحذف');
 }
 
@@ -1468,8 +1535,22 @@ async function deleteDayBlock() {
    ===================================================== */
 function workSaveLocal() { localStorage.setItem('ms_work',JSON.stringify(WORK.data)); }
 async function workLoad() {
-  const c = JSON.parse(localStorage.getItem('ms_work')||'null');
-  if(c?.company) WORK.data = c;
+  const cached=JSON.parse(localStorage.getItem('ms_work')||'null');
+  const expMap={};
+  [...(cached?.company||[]),...(cached?.client||[])].forEach(e=>{expMap[e.id]=e._expanded;});
+  if(sb) {
+    try {
+      const [{data:ents},{data:tsks}]=await Promise.all([sb.from('entities').select('*'),sb.from('tasks').select('*')]);
+      if(ents) {
+        const map={}; ents.forEach(e=>{map[e.id]={...e,tasks:[],_expanded:expMap[e.id]??true};});
+        (tsks||[]).forEach(t=>{if(map[t.entity_id])map[t.entity_id].tasks.push(t);});
+        WORK.data.company=ents.filter(e=>e.type==='company').map(e=>map[e.id]);
+        WORK.data.client=ents.filter(e=>e.type==='client').map(e=>map[e.id]);
+        workSaveLocal(); return;
+      }
+    } catch(_){}
+  }
+  if(cached?.company) { WORK.data=cached; }
 }
 
 function renderWork() {
@@ -1622,16 +1703,18 @@ async function workSaveEnt(type, existId) {
   const kind=type==='company'?'company':'client';
   if(existId) {
     const e=WORK.data[kind].find(x=>x.id===existId); if(e){e.name=name;e.color=color;}
+    if(sb) try{await sb.from('entities').update({name,color}).eq('id',existId);}catch(_){}
   } else {
     const ne={id:uid(),name,type,color,tasks:[]};
     WORK.data[kind].push(ne);
+    if(sb) try{await sb.from('entities').insert({name,type,color});}catch(_){}
   }
   workSaveLocal(); markWrite('work'); closeEntityModal(); renderWork(); toast(existId?'تم الحفظ ✅':'تم الإضافة ✅');
 }
 async function workDelEnt(id) {
   if(!confirm('هتحذف الشركة/العميل وكل تاسكاته؟'))return;
   ['company','client'].forEach(k=>{WORK.data[k]=WORK.data[k].filter(e=>e.id!==id);});
-  workSaveLocal();
+  workSaveLocal(); if(sb)try{await sb.from('entities').delete().eq('id',id);}catch(_){}
   renderWork(); toast('تم الحذف');
 }
 function closeEntityModal() { document.getElementById('entityModal').classList.add('hidden'); }
@@ -1702,6 +1785,8 @@ async function saveTask() {
   workSaveLocal(); markWrite('work');
   if(sb) {
     try {
+      if(editingTaskId) await sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links}).eq('id',editingTaskId);
+      else { const {data:ins}=await sb.from('tasks').insert({entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,day_synced:false}).select().single(); if(ins){tData.id=ins.id;} }
     } catch(_){}
   }
   closeTaskModal(); renderWork(); updateBadges(); toast(editingTaskId?'تم الحفظ ✅':'تم إضافة التاسك ✅');
@@ -1739,6 +1824,7 @@ function autoSyncTaskToDay(task, ent) {
     // No overlapping block — add as standalone once-block for today
     const newBlock=dayNorm({id:uid(),title:task.title,notes:`من شغلي — ${ent.name}`,start_time:'09:00',end_time:'10:00',color:ent.color||'#a855f7',repeat_mode:'once',block_date:today,tasks:[],links:[]});
     DAY.blocks.push(newBlock); daySaveLocal();
+    if(sb) sb.from('recurring_blocks').upsert({...newBlock,user_id:OWNER,updated_at:new Date().toISOString()}).then(()=>{}).catch(()=>{});
     notif({icon:'📅',title:'تاسك جديد أُضيف لليوم',sub:`"${task.title}" ظهر في جدولك`,actions:[{label:'عرض',cls:'primary',fn:()=>go('day')}]});
   }
   markWrite('day');
@@ -1748,11 +1834,12 @@ async function workToggleTask(tid, eid) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); const task=ent?.tasks?.find(t=>t.id===tid); if(!task)return;
   task.completed=!task.completed; task.completed_at=task.completed?new Date().toISOString():null;
   workSaveLocal(); markWrite('work');
+  if(sb)try{await sb.from('tasks').update({completed:task.completed,completed_at:task.completed_at,updated_at:new Date().toISOString()}).eq('id',tid);}catch(_){}
   renderWork(); updateBadges(); toast(task.completed?'✅ منجز!':'تم إلغاء الإنجاز');
 }
 async function workDelTask(tid, eid) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); if(ent)ent.tasks=ent.tasks.filter(t=>t.id!==tid);
-  workSaveLocal();
+  workSaveLocal(); if(sb)try{await sb.from('tasks').delete().eq('id',tid);}catch(_){}
   renderWork(); updateBadges();
 }
 
@@ -1761,137 +1848,9 @@ async function workDelTask(tid, eid) {
    ===================================================== */
 function finSaveLocal() { localStorage.setItem('ms_fin',JSON.stringify({banks:FIN.banks,gold:FIN.gold,salary:FIN.salary,expenses:FIN.expenses,subscriptions:FIN.subscriptions,debts:FIN.debts,increases:FIN.increases})); }
 async function finLoad() {
-  const c = JSON.parse(localStorage.getItem('ms_fin')||'null');
-  if(c) Object.assign(FIN, c);
+  const c=JSON.parse(localStorage.getItem('ms_fin')||'null'); if(c) Object.assign(FIN,c);
+  if(sb){try{const tables=['banks','gold_items','salary_items','expenses','subscriptions','debts','monthly_increases'];const res=await Promise.all(tables.map(t=>sb.from(t).select('*')));FIN.banks=res[0].data||FIN.banks;FIN.gold=res[1].data||FIN.gold;FIN.salary=res[2].data||FIN.salary;FIN.expenses=res[3].data||FIN.expenses;FIN.subscriptions=res[4].data||FIN.subscriptions;FIN.debts=res[5].data||FIN.debts;FIN.increases=res[6].data||FIN.increases;finSaveLocal();}catch(_){}}
 }
-
-/* ===== FINANCE MODAL (add/edit) ===== */
-let finModalKey=null, finModalId=null;
-
-function finAdd(key) { openFinModal(key, null); }
-function closeFinModal(){ document.getElementById('finEntryModal').classList.add('hidden'); }
-
-function openFinModal(key, id) {
-  finModalKey=key; finModalId=id;
-  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
-            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[key];
-  const existing = id ? FIN[sk].find(r=>r.id===id) : null;
-  const configs = {
-    banks:{title:'بنك',fields:[
-      {id:'fm_name',label:'اسم البنك',type:'text',placeholder:'مثلاً: CIB',val:existing?.name||''},
-      {id:'fm_balEGP',label:'رصيد (جنيه EGP)',type:'number',val:existing?.balance_egp??existing?.balance??0,dir:'ltr'},
-      {id:'fm_balUSD',label:'رصيد (دولار USD)',type:'number',val:existing?.balance_usd??0,dir:'ltr'},
-      {id:'fm_note',label:'ملاحظة',type:'text',placeholder:'اختياري',val:existing?.note||''},
-    ]},
-    gold:{title:'ذهب',fields:[
-      {id:'fm_name',label:'الصنف',type:'text',placeholder:'مثلاً: سبيكة 21k',val:existing?.name||''},
-      {id:'fm_grams',label:'الوزن (جرام)',type:'number',val:existing?.grams??0,dir:'ltr'},
-      {id:'fm_ppg',label:'سعر الجرام (EGP)',type:'number',val:existing?.price_per_gram??0,dir:'ltr'},
-    ]},
-    salary:{title:'مرتب/دخل',fields:[
-      {id:'fm_name',label:'المصدر',type:'text',placeholder:'مثلاً: شركة X',val:existing?.name||''},
-      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',val:existing?.amount??0,dir:'ltr'},
-      {id:'fm_paid',label:'تم الاستلام؟',type:'checkbox',val:existing?.paid??false},
-    ]},
-    expenses:{title:'مصروف',fields:[
-      {id:'fm_name',label:'اسم المصروف',type:'text',placeholder:'مثلاً: إيجار',val:existing?.name||''},
-      {id:'fm_amount',label:'المبلغ الكلي (EGP)',type:'number',val:existing?.amount??0,dir:'ltr'},
-      {id:'fm_paid_amount',label:'المدفوع (EGP)',type:'number',val:existing?.paid_amount??0,dir:'ltr'},
-    ]},
-    subscriptions:{title:'اشتراك',fields:[
-      {id:'fm_name',label:'الاشتراك',type:'text',placeholder:'مثلاً: Netflix',val:existing?.name||''},
-      {id:'fm_usd',label:'السعر (USD/شهر)',type:'number',val:existing?.usd??0,dir:'ltr'},
-      {id:'fm_paid',label:'تم الدفع؟',type:'checkbox',val:existing?.paid??false},
-    ]},
-    debts:{title:'دين',fields:[
-      {id:'fm_name',label:'الدين / لمن',type:'text',placeholder:'مثلاً: قرض البنك',val:existing?.name||''},
-      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',val:existing?.amount??0,dir:'ltr'},
-      {id:'fm_paid',label:'تم السداد؟',type:'checkbox',val:existing?.paid??false},
-    ]},
-    increases:{title:'زيادة دخل',fields:[
-      {id:'fm_name',label:'المصدر',type:'text',placeholder:'مثلاً: بونص',val:existing?.name||''},
-      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',val:existing?.amount??0,dir:'ltr'},
-      {id:'fm_note',label:'السبب',type:'text',placeholder:'اختياري',val:existing?.note||''},
-      {id:'fm_paid',label:'تم الاستلام؟',type:'checkbox',val:existing?.paid??false},
-    ]},
-  };
-  const cfg=configs[key]; if(!cfg)return;
-  const fieldsHtml=cfg.fields.map(f=>{
-    if(f.type==='checkbox') return `<div class="mf-row" style="flex-direction:row;align-items:center;gap:10px"><input type="checkbox" id="${f.id}" ${f.val?'checked':''} style="width:18px;height:18px;accent-color:var(--success)"><label for="${f.id}" style="font-size:13px;font-weight:700">${f.label}</label></div>`;
-    return `<div class="mf-row"><label>${f.label}</label><input class="mf-inp" id="${f.id}" type="${f.type}" value="${typeof f.val==='string'?f.val.replace(/"/g,'&quot;'):f.val}" placeholder="${f.placeholder||''}" ${f.dir?'dir="'+f.dir+'"':''}></div>`;
-  }).join('');
-  document.getElementById('finEntryTitle').textContent=(id?'تعديل ':'إضافة ')+cfg.title;
-  document.getElementById('finEntryFields').innerHTML=fieldsHtml;
-  document.getElementById('finEntryDelBtn').classList.toggle('hidden',!id);
-  document.getElementById('finEntryModal').classList.remove('hidden');
-  setTimeout(()=>document.getElementById('fm_name')?.focus(),60);
-}
-
-function saveFinEntry() {
-  const key=finModalKey, id=finModalId;
-  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
-            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[key];
-  const name=document.getElementById('fm_name')?.value?.trim();
-  if(!name) return toast('اكتب الاسم أولاً');
-  const rate=+document.getElementById('usdRate')?.value||50;
-  let row={};
-  if(key==='banks'){
-    const egp=+document.getElementById('fm_balEGP')?.value||0;
-    const usd=+document.getElementById('fm_balUSD')?.value||0;
-    row={name,balance_egp:egp,balance_usd:usd,balance:egp+(usd*rate),note:document.getElementById('fm_note')?.value?.trim()||''};
-  } else if(key==='gold'){
-    row={name,grams:+document.getElementById('fm_grams')?.value||0,price_per_gram:+document.getElementById('fm_ppg')?.value||0};
-  } else if(key==='salary'){
-    row={name,amount:+document.getElementById('fm_amount')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
-  } else if(key==='expenses'){
-    const amt=+document.getElementById('fm_amount')?.value||0,pa=+document.getElementById('fm_paid_amount')?.value||0;
-    row={name,amount:amt,paid_amount:pa,paid:pa>=amt&&amt>0};
-  } else if(key==='subscriptions'){
-    row={name,usd:+document.getElementById('fm_usd')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
-  } else if(key==='debts'){
-    row={name,amount:+document.getElementById('fm_amount')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
-  } else if(key==='increases'){
-    row={name,amount:+document.getElementById('fm_amount')?.value||0,note:document.getElementById('fm_note')?.value?.trim()||'',paid:document.getElementById('fm_paid')?.checked||false};
-  }
-  if(id) {
-    const existing=FIN[sk].find(r=>r.id===id);
-    if(existing) Object.assign(existing, row);
-  } else {
-    FIN[sk].push({id:uid(), user_id:OWNER, ...row});
-  }
-  finSaveLocal();
-  closeFinModal();
-  finRender();
-  toast(id?'تم التعديل ✅':'تم الإضافة ✅');
-}
-
-function deleteFinEntry() {
-  if(!finModalKey||!finModalId)return;
-  if(!confirm('هتحذف هذا العنصر؟'))return;
-  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
-            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[finModalKey];
-  FIN[sk]=FIN[sk].filter(r=>r.id!==finModalId);
-  finSaveLocal();
-  closeFinModal();
-  finRender();
-  toast('تم الحذف');
-}
-
-function finUpd(key, id, patch) {
-  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
-            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[key];
-  const row=FIN[sk].find(r=>r.id===id);
-  if(row) Object.assign(row,patch);
-  finSaveLocal();
-}
-function finDel(key, id) {
-  const sk={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',
-            subscriptions:'subscriptions',debts:'debts',increases:'increases'}[key];
-  FIN[sk]=FIN[sk].filter(r=>r.id!==id);
-  finSaveLocal();
-  finRender();
-}
-
 const FIN_TABS=[['banks','🏦','بنوك','linear-gradient(135deg,#2563eb,#7c3aed)'],['gold','🥇','ذهب','linear-gradient(135deg,#b45309,#f59e0b)'],['salary','💵','مرتبات','linear-gradient(135deg,#047857,#10b981)'],['expenses','📊','مصاريف','linear-gradient(135deg,#7c3aed,#a855f7)'],['debts','💳','ديون','linear-gradient(135deg,#b91c1c,#ef4444)'],['increases','📈','زيادات','linear-gradient(135deg,#0f766e,#06b6d4)']];
 const FIN_TBL_MAP={banks:'banks',gold:'gold_items',salary:'salary_items',expenses:'expenses',subscriptions:'subscriptions',debts:'debts',increases:'monthly_increases'};
 const FIN_STATE_KEY={banks:'banks',gold:'gold',salary:'salary',expenses:'expenses',subscriptions:'subscriptions',debts:'debts',increases:'increases'};
@@ -1936,40 +1895,40 @@ function finRenderSection(rate=50) {
       <div class="fin-sum-card"><div class="fin-sum-label">عدد البنوك</div><div class="fin-sum-val">${FIN.banks.length}</div></div>
       <div class="fin-sum-card"><div class="fin-sum-label">الإجمالي</div><div class="fin-sum-val" style="color:var(--fin-accent)">${fmtEGP(tot)}</div></div>
       <div class="fin-sum-card"><div class="fin-sum-label">المتوسط</div><div class="fin-sum-val">${fmtEGP(FIN.banks.length?tot/FIN.banks.length:0)}</div></div>
-    </div>${wrapStart}<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>البنك</th><th>الرصيد</th><th>ملاحظة</th><th></th></tr></thead><tbody id="banksBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('banks',null)">+ إضافة بنك</button></div>${wrapEnd}`;
+    </div>${wrapStart}<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>البنك</th><th>الرصيد</th><th>ملاحظة</th><th></th></tr></thead><tbody id="banksBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('banks')">+ إضافة بنك</button></div>${wrapEnd}`;
     document.getElementById('banksBody').innerHTML=FIN.banks.map((b,i)=>{const c=BK[i%BK.length];return `<tr class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(b.name)}" style="color:${c};font-weight:800" onchange="finUpd('banks','${b.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+b.balance||0}" style="font-weight:800" onchange="finUpd('banks','${b.id}',{balance:+this.value});finRender()" dir="ltr"></td><td><input class="fin-inp" value="${esc(b.note||'')}" placeholder="ملاحظة..." onchange="finUpd('banks','${b.id}',{note:this.value})"></td><td class="del-cell"><button class="del-btn" onclick="finDel('banks','${b.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='gold') {
     const tot=FIN.gold.reduce((s,g)=>s+((+g.grams||0)*(+g.price_per_gram||0)),0), totG=FIN.gold.reduce((s,g)=>s+(+g.grams||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الجرامات</div><div class="fin-sum-val">${fmtGrams(totG)} جم</div></div><div class="fin-sum-card"><div class="fin-sum-label">القيمة الإجمالية</div><div class="fin-sum-val" style="color:#fbbf24">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متوسط سعر الجرام</div><div class="fin-sum-val">${fmtEGP(totG?tot/totG:0)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الصنف</th><th>الوزن (جم)</th><th>سعر الجرام</th><th>الإجمالي</th><th></th></tr></thead><tbody id="goldBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('gold',null)">+ إضافة ذهب</button></div>`;
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الصنف</th><th>الوزن (جم)</th><th>سعر الجرام</th><th>الإجمالي</th><th></th></tr></thead><tbody id="goldBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('gold')">+ إضافة ذهب</button></div>`;
     document.getElementById('goldBody').innerHTML=FIN.gold.map((g,i)=>{const c=['#fbbf24','#f59e0b','#fcd34d','#d97706'][i%4];const v=(+g.grams||0)*(+g.price_per_gram||0);return `<tr class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(g.name)}" style="color:${c};font-weight:800" onchange="finUpd('gold','${g.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+g.grams||0}" dir="ltr" onchange="finUpd('gold','${g.id}',{grams:+this.value});finRender()"></td><td><input class="fin-inp" type="number" value="${+g.price_per_gram||0}" dir="ltr" onchange="finUpd('gold','${g.id}',{price_per_gram:+this.value});finRender()"></td><td style="font-weight:800;color:${c};direction:ltr">${fmtEGP(v)}</td><td class="del-cell"><button class="del-btn" onclick="finDel('gold','${g.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='salary') {
     const tot=FIN.salary.reduce((s,r)=>s+(+r.amount||0),0),paid=FIN.salary.filter(r=>r.paid).reduce((s,r)=>s+(+r.amount||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">الإجمالي</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصدر</th><th>المبلغ</th><th>استلمت؟</th><th></th></tr></thead><tbody id="salBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('salary',null)">+ إضافة مرتب</button></div>`;
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصدر</th><th>المبلغ</th><th>استلمت؟</th><th></th></tr></thead><tbody id="salBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('salary')">+ إضافة مرتب</button></div>`;
     document.getElementById('salBody').innerHTML=FIN.salary.map((r,i)=>{const c=['#34d399','#10b981','#6ee7b7'][i%3];return `<tr ${r.paid?'class="paid-row"':''} style="${r.paid?'':''}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('salary','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('salary','${r.id}',{amount:+this.value});finRender()"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('salary','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('salary','${r.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='expenses') {
     const expTot=FIN.expenses.reduce((s,e)=>s+(+e.amount||0),0),expPaid=FIN.expenses.reduce((s,e)=>s+(+e.paid_amount||0),0),subUSD=FIN.subscriptions.reduce((s,r)=>s+(+r.usd||0),0),subEGP=subUSD*rate,grandTot=expTot+subEGP,grandPaid=expPaid+FIN.subscriptions.filter(r=>r.paid).reduce((s,r)=>s+(+r.usd*rate||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">مصاريف</div><div class="fin-sum-val">${fmtEGP(expTot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">اشتراكات</div><div class="fin-sum-val">${fmtEGP(subEGP)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--danger)">${fmtEGP(grandTot-grandPaid)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصروف</th><th>المبلغ</th><th>مدفوع</th><th>متبقي</th><th>✓</th><th></th></tr></thead><tbody id="expBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('expenses',null)">+ إضافة مصروف</button></div>
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصروف</th><th>المبلغ</th><th>مدفوع</th><th>متبقي</th><th>✓</th><th></th></tr></thead><tbody id="expBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('expenses')">+ إضافة مصروف</button></div>
     <div style="font-size:13px;font-weight:800;margin:14px 0 10px;color:var(--text-m)">الاشتراكات الشهرية</div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاشتراك</th><th>USD</th><th>EGP</th><th>✓</th><th></th></tr></thead><tbody id="subBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('subscriptions',null)">+ إضافة اشتراك</button></div>`;
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاشتراك</th><th>USD</th><th>EGP</th><th>✓</th><th></th></tr></thead><tbody id="subBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('subscriptions')">+ إضافة اشتراك</button></div>`;
     document.getElementById('expBody').innerHTML=FIN.expenses.map((r,i)=>{const c=['#a78bfa','#818cf8','#c4b5fd'][i%3];const rem=Math.max(0,(+r.amount||0)-(+r.paid_amount||0));const done=r.paid||(+r.paid_amount>=(+r.amount)&&+r.amount>0);return `<tr ${done?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('expenses','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('expenses','${r.id}',{amount:+this.value});finRender()"></td><td><input class="fin-inp" type="number" value="${+r.paid_amount||0}" dir="ltr" onchange="finUpd('expenses','${r.id}',{paid_amount:+this.value});finRender()"></td><td style="direction:ltr;font-weight:800;color:${rem>0?'var(--warning)':'var(--success)'}">${fmtEGP(rem)}</td><td><input type="checkbox" ${done?'checked':''} onchange="finUpd('expenses','${r.id}',{paid:this.checked,paid_amount:this.checked?${+r.amount||0}:0});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('expenses','${r.id}')">×</button></td></tr>`;}).join('');
     document.getElementById('subBody').innerHTML=FIN.subscriptions.map((r,i)=>{const c=['#38bdf8','#0ea5e9','#22d3ee'][i%3];const egp=(+r.usd||0)*rate;return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('subscriptions','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.usd||0}" dir="ltr" onchange="finUpd('subscriptions','${r.id}',{usd:+this.value});finRender()"></td><td style="direction:ltr;font-weight:800;color:${c}">${fmtEGP(egp)}</td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('subscriptions','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('subscriptions','${r.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='debts') {
     const tot=FIN.debts.filter(d=>!d.paid).reduce((s,d)=>s+(+d.amount||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">ديون متبقية</div><div class="fin-sum-val" style="color:var(--danger)">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">عدد الديون</div><div class="fin-sum-val">${FIN.debts.filter(d=>!d.paid).length}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مسددة</div><div class="fin-sum-val" style="color:var(--success)">${FIN.debts.filter(d=>d.paid).length}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الدين</th><th>المبلغ</th><th>خلص؟</th><th></th></tr></thead><tbody id="debtsBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('debts',null)">+ إضافة دين</button></div>`;
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الدين</th><th>المبلغ</th><th>خلص؟</th><th></th></tr></thead><tbody id="debtsBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('debts')">+ إضافة دين</button></div>`;
     document.getElementById('debtsBody').innerHTML=FIN.debts.map((r,i)=>{const c=['#f87171','#fb923c','#fca5a5'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('debts','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('debts','${r.id}',{amount:+this.value});finRender()"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('debts','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--danger);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('debts','${r.id}')">×</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='increases') {
     const tot=FIN.increases.reduce((s,r)=>s+(+r.amount||0),0),paid=FIN.increases.filter(r=>r.paid).reduce((s,r)=>s+(+r.amount||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الزيادات</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div>
-    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاسم</th><th>المبلغ</th><th>السبب</th><th>✓</th><th></th></tr></thead><tbody id="incBody"></tbody></table><button class="fin-add-btn" onclick="openFinModal('increases',null)">+ إضافة زيادة</button></div>`;
+    <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاسم</th><th>المبلغ</th><th>السبب</th><th>✓</th><th></th></tr></thead><tbody id="incBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('increases')">+ إضافة زيادة</button></div>`;
     document.getElementById('incBody').innerHTML=FIN.increases.map((r,i)=>{const c=['#06b6d4','#0ea5e9','#22d3ee'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('increases','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('increases','${r.id}',{amount:+this.value});finRender()"></td><td><input class="fin-inp" value="${esc(r.note||'')}" placeholder="السبب..." onchange="finUpd('increases','${r.id}',{note:this.value})"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('increases','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('increases','${r.id}')">×</button></td></tr>`;}).join('');
   }
 }
@@ -1977,14 +1936,17 @@ async function finAdd(key) {
   const id=uid(); const sk=FIN_STATE_KEY[key];
   const defs={banks:{id,user_id:OWNER,name:'بنك جديد',balance:0,note:''},gold:{id,user_id:OWNER,name:'ذهب',grams:0,price_per_gram:0},salary:{id,user_id:OWNER,name:'مرتب',amount:0,paid:false},expenses:{id,user_id:OWNER,name:'مصروف جديد',amount:0,paid_amount:0,paid:false},subscriptions:{id,user_id:OWNER,name:'اشتراك جديد',usd:0,paid:false},debts:{id,user_id:OWNER,name:'دين جديد',amount:0,paid:false},increases:{id,user_id:OWNER,name:'زيادة جديدة',amount:0,note:'',paid:false}};
   FIN[sk].push(defs[key]); finSaveLocal(); markWrite('fin');
+  if(sb)try{await sb.from(FIN_TBL_MAP[key]).insert(defs[key]);}catch(_){}
   finRender();
 }
 async function finUpd(key, id, patch) {
   const sk=FIN_STATE_KEY[key]; const row=FIN[sk].find(r=>r.id===id); if(row)Object.assign(row,patch);
   finSaveLocal(); markWrite('fin');
+  if(sb)try{await sb.from(FIN_TBL_MAP[key]).update(patch).eq('id',id);}catch(_){}
 }
 async function finDel(key, id) {
   const sk=FIN_STATE_KEY[key]; FIN[sk]=FIN[sk].filter(r=>r.id!==id); finSaveLocal(); markWrite('fin');
+  if(sb)try{await sb.from(FIN_TBL_MAP[key]).delete().eq('id',id);}catch(_){}
   finRender();
 }
 
@@ -1993,16 +1955,15 @@ async function finDel(key, id) {
    ===================================================== */
 function goalsSaveLocal() { localStorage.setItem('ms_goals',JSON.stringify({items:GOALS.items,sections:GOALS.sections})); }
 async function goalsLoad() {
-  const c = JSON.parse(localStorage.getItem('ms_goals')||'null');
-  if(c){ GOALS.items=c.items||[]; GOALS.sections=c.sections||[]; }
-  if(!GOALS.sections.length){
-    GOALS.sections=[
-      {id:'personal',name:'شخصي',icon:'🌟',color:'#f472b6'},
-      {id:'work',name:'مهني',icon:'💼',color:'#818cf8'},
-      {id:'health',name:'صحي',icon:'💪',color:'#34d399'},
-    ];
-    goalsSaveLocal();
+  const c=JSON.parse(localStorage.getItem('ms_goals')||'null');
+  if(c){GOALS.items=c.items||[];GOALS.sections=c.sections||[];}
+  if(sb){
+    try{
+      const [{data:gl},{data:sc}]=await Promise.all([sb.from('goals').select('*').eq('user_id',OWNER),sb.from('hub_sections').select('*').eq('user_id',OWNER).order('sort_order')]);
+      if(gl)GOALS.items=gl; if(sc)GOALS.sections=sc; goalsSaveLocal();
+    }catch(_){}
   }
+  if(!GOALS.sections.length){GOALS.sections=[{id:'personal',name:'شخصي',icon:'🌟',color:'#f472b6'},{id:'work',name:'مهني',icon:'💼',color:'#818cf8'},{id:'health',name:'صحي',icon:'💪',color:'#34d399'}];goalsSaveLocal();}
 }
 
 function renderGoals() {
@@ -2057,6 +2018,7 @@ function renderGoalCard(g) {
 async function toggleGoal(gid) {
   const g=GOALS.items.find(x=>x.id===gid); if(!g)return;
   g.completed=!g.completed; g.updated_at=new Date().toISOString(); goalsSaveLocal(); markWrite('goals');
+  if(sb)try{await sb.from('goals').update({completed:g.completed,updated_at:g.updated_at}).eq('id',gid);}catch(_){}
   if(g.completed) toast('🎉 مبروك! تم تحقيق الهدف!');
   renderGoals(); updateBadges();
 }
@@ -2065,6 +2027,7 @@ async function toggleGoalStep(gid, idx, val) {
   g.steps=Array.isArray(g.steps)?g.steps:[];
   if(g.steps[idx]) g.steps[idx].done=val;
   g.updated_at=new Date().toISOString(); goalsSaveLocal(); markWrite('goals');
+  if(sb)try{await sb.from('goals').update({steps:g.steps,updated_at:g.updated_at}).eq('id',gid);}catch(_){}
   renderGoals();
 }
 
@@ -2121,10 +2084,12 @@ async function saveGoal() {
   if(editingGoalId) { const idx=GOALS.items.findIndex(x=>x.id===editingGoalId); if(idx>=0)GOALS.items[idx]=g; else GOALS.items.push(g); }
   else { GOALS.items.push(g); notif({icon:'🎯',title:`هدف جديد: "${title}"`,sub:'تمت الإضافة لقائمة أهدافك',color:g.color,persist:true}); }
   goalsSaveLocal(); markWrite('goals');
+  if(sb)try{await sb.from('goals').upsert({...g,user_id:OWNER});}catch(_){}
   closeGoalModal(); renderGoals(); updateBadges(); toast(editingGoalId?'تم التعديل ✅':'تم إضافة الهدف ✅');
 }
 async function delGoal(gid) {
   GOALS.items=GOALS.items.filter(x=>x.id!==gid); goalsSaveLocal(); markWrite('goals');
+  if(sb)try{await sb.from('goals').delete().eq('id',gid);}catch(_){}
   closeGoalModal(); renderGoals(); updateBadges(); toast('تم الحذف');
 }
 
@@ -2134,14 +2099,15 @@ async function saveSection() {
   const name=document.getElementById('secName').value.trim(); if(!name)return toast('اكتب اسم القسم');
   const sec={id:uid(),name,icon:document.getElementById('secIcon').value||'📌',color:document.getElementById('secColor').value,sort_order:GOALS.sections.length,user_id:OWNER};
   GOALS.sections.push(sec); goalsSaveLocal();
+  if(sb)try{await sb.from('hub_sections').insert(sec);}catch(_){}
   closeSectionModal(); renderGoals(); toast('تم إضافة القسم ✅');
 }
 
 /* ===== KEYBOARD & MISC ===== */
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();closeFinModal();const nc=document.getElementById('notifCenter');if(nc.classList.contains('open'))toggleNotifCenter();}
+  if(e.key==='Escape'){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();const nc=document.getElementById('notifCenter');if(nc.classList.contains('open'))toggleNotifCenter();}
 });
-['settingsModal','dayModal','taskModal','entityModal','goalModal','sectionModal','customModModal','finEntryModal'].forEach(id=>{
+['settingsModal','dayModal','taskModal','entityModal','goalModal','sectionModal'].forEach(id=>{
   document.getElementById(id)?.addEventListener('click',function(e){if(e.target===this){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();}});
 });
 document.getElementById('notifCenter').addEventListener('click',e=>{if(!e.target.closest('.notif-center')&&e.target.id!=='notifCenter')return;});
@@ -2149,24 +2115,43 @@ document.getElementById('notifCenter').addEventListener('click',e=>{if(!e.target
 function checkMobile() { const m=window.innerWidth<=960; document.getElementById('bottomNav').style.display=m?'flex':'none'; }
 window.addEventListener('resize',checkMobile); checkMobile();
 
-
+document.addEventListener('visibilitychange',()=>{
+  if(!sb)return;
+  if(document.hidden){stopPoll();}
+  else{lastSeen={day:new Date(0).toISOString(),work:new Date(0).toISOString(),fin:new Date(0).toISOString(),goals:new Date(0).toISOString()};startPoll();}
+});
 
 /* ===== BOOT ===== */
 async function boot() {
   isDark = localStorage.getItem('sys_theme')!=='light'; applyTheme();
   startClock();
-  setSyncStatus('ok','محفوظ');
-  await loadAll();
+  // Step 1: Load from localStorage immediately (works offline, instant)
+  await loadLocal();
   renderHub();
   updateBadges();
+  // Step 2: Connect to Supabase in background (don't block UI)
+  const url=localStorage.getItem('sb_url')||SB_URL, key=localStorage.getItem('sb_key')||SB_KEY;
+  connect(url, key).then(() => {
+    if (sb) {
+      loadAll().then(() => {
+        renderHub();
+        if(cur==='day') renderDay();
+        if(cur==='work') renderWork();
+        if(cur==='finance') renderFin();
+        if(cur==='goals') renderGoals();
+        updateBadges();
+      });
+    }
+  });
+  // Init layout controls from localStorage
   const dl=localStorage.getItem('ms_day_layout')||'list'; DAY.layout=dl;
   document.querySelectorAll('#dayLayoutToggle .vt-btn').forEach((b,i)=>b.classList.toggle('active',['list','grid','side'][i]===dl));
   const ds=parseInt(localStorage.getItem('ms_day_scale')||'100'); DAY.scale=ds;
   const sl=document.getElementById('dayScale'); if(sl)sl.value=ds;
   document.getElementById('dayScaleLbl').textContent=ds+'%';
+  // Run notifications checker every 5 mins
   setInterval(checkNotifications, 300000);
   setTimeout(checkNotifications, 3000);
-  renderCustomNav();
 }
 boot();
 </script>
