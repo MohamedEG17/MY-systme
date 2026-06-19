@@ -154,13 +154,6 @@ body[data-theme="light"] .bottom-nav{background:rgba(248,250,255,.92)}
 .bnav-item.active .bnav-icon{transform:scale(1.18) translateY(-2px)}
 .bnav-badge{position:absolute;top:4px;right:15%;width:15px;height:15px;border-radius:99px;background:var(--danger);color:#fff;font-size:8px;font-weight:900;display:grid;place-items:center}
 
-
-/* ===== MOBILE THEME TOGGLE ===== */
-.mobile-theme-btn{display:none;position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:130;min-width:74px;height:42px;padding:0 12px;border-radius:14px;background:rgba(10,14,26,.88);border:1px solid var(--border2);color:var(--text);font-size:12px;font-weight:900;align-items:center;justify-content:center;gap:6px;box-shadow:var(--shadow-sm);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.mobile-theme-btn:active{transform:scale(.96)}
-body[data-theme="light"] .mobile-theme-btn{background:rgba(255,255,255,.92);color:var(--text);border-color:var(--border2)}
-@media(max-width:960px){.mobile-theme-btn{display:flex}}
-
 /* ===== TOAST ===== */
 #toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(12,18,36,.94);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:var(--r-md);font-size:13px;font-weight:700;z-index:999;max-width:90vw;text-align:center;box-shadow:var(--shadow-sm);backdrop-filter:blur(20px);display:none;animation:toastIn .25s var(--ease)}
 #toast.show{display:block}
@@ -549,9 +542,20 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
   .week-grid{grid-template-columns:repeat(2,1fr)}
   .goal-dates{flex-direction:column;gap:6px}
 }
+
+
+/* ===== MOBILE THEME TOGGLE — SAFE UI ONLY ===== */
+.mobile-theme-btn{display:none;position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:130;min-width:74px;height:40px;padding:0 12px;border-radius:14px;background:rgba(10,14,26,.88);border:1px solid var(--border2);color:var(--text);font-size:12px;font-weight:900;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.mobile-theme-btn:active{transform:scale(.96)}
+body[data-theme="light"] .mobile-theme-btn{background:rgba(255,255,255,.92);color:var(--text);border-color:var(--border2)}
+@media(max-width:960px){.mobile-theme-btn{display:flex}}
+
 </style>
 </head>
 <body>
+<!-- MOBILE LIGHT / DARK TOGGLE - does not touch sync -->
+<button class="mobile-theme-btn" id="mobileThemeBtn" onclick="toggleTheme()" title="تغيير الإضاءة" aria-label="تغيير الإضاءة">☀ نهار</button>
+
 <div class="orbs" aria-hidden="true"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
 <!-- Cross-module notif -->
 <div id="crossNotif" role="alert">
@@ -717,10 +721,6 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
     </section>
   </main>
 </div>
-
-<!-- MOBILE LIGHT / DARK TOGGLE -->
-<button class="mobile-theme-btn" id="mobileThemeBtn" onclick="toggleTheme()" title="تغيير الإضاءة" aria-label="تغيير الإضاءة">☀ نهار</button>
-
 <!-- MOBILE BOTTOM NAV -->
 <nav class="bottom-nav" id="bottomNav">
   <div class="bnav-item active" data-mod="hub" onclick="go('hub')"><span class="bnav-icon">🏠</span><span>الرئيسية</span></div>
@@ -1016,6 +1016,19 @@ function cleanSupabaseUrl(raw) {
   try { return new URL(url).origin; } catch(_) { return ''; }
 }
 function cleanAnonKey(raw) { return String(raw || '').replace(/\s+/g,'').trim(); }
+function bootCloudConfig() {
+  const savedUrl = localStorage.getItem('sb_url');
+  const savedKey = localStorage.getItem('sb_key');
+  const url = cleanSupabaseUrl(savedUrl || SB_URL);
+  const key = cleanAnonKey(savedKey || SB_KEY);
+  if(!url || !key || key.split('.').length < 3) return {url:SB_URL, key:SB_KEY};
+  return {url, key};
+}
+function resetToDefaultCloudConfig() {
+  cloudUrl = SB_URL; cloudKey = SB_KEY;
+  localStorage.setItem('sb_url', SB_URL);
+  localStorage.setItem('sb_key', SB_KEY);
+}
 function apiHeaders(extra={}) { return { apikey: cloudKey, Authorization: 'Bearer ' + cloudKey, ...extra }; }
 function apiBase() { return cleanSupabaseUrl(cloudUrl).replace(/\/+$/,'') + '/rest/v1/' + STATE_TABLE; }
 function connStatus(text) { const el=document.getElementById('connStatus'); if(el) el.textContent=text; }
@@ -1036,8 +1049,9 @@ function parsePayloadError(status, txt) {
 }
 
 function openSettings() {
-  document.getElementById('cfgUrl').value = localStorage.getItem('sb_url') || SB_URL;
-  document.getElementById('cfgKey').value = localStorage.getItem('sb_key') || SB_KEY;
+  const cfg = bootCloudConfig();
+  document.getElementById('cfgUrl').value = cfg.url || SB_URL;
+  document.getElementById('cfgKey').value = cfg.key || SB_KEY;
   const sid=document.getElementById('cfgSystemId'); if(sid) sid.value = SYSTEM_ID;
   document.getElementById('settingsModal').classList.remove('hidden');
 }
@@ -1061,7 +1075,7 @@ function clearConfig() {
 }
 function copySql() { navigator.clipboard.writeText(SQL_SETUP).then(()=>toast('تم نسخ SQL ✅')).catch(()=>toast('انسخ SQL يدويًا من الصندوق')); }
 
-async function connect(rawUrl, rawKey) {
+async function connect(rawUrl, rawKey, triedFallback=false) {
   cloudUrl=cleanSupabaseUrl(rawUrl || SB_URL); cloudKey=cleanAnonKey(rawKey || SB_KEY);
   sb=null; // مهم: إيقاف نظام الجداول القديمة بالكامل
   if(!cloudUrl || !cloudKey) { cloudReady=false; setSyncStatus('err','بيانات ناقصة'); connStatus('URL أو Key ناقص'); return false; }
@@ -1077,9 +1091,15 @@ async function connect(rawUrl, rawKey) {
     return true;
   } catch(e) {
     cloudReady=false; stopPoll();
-    setSyncStatus('err','فشل الاتصال');
     const msg=dbErrText(e);
-    if(String(msg).includes('Failed to fetch')) connStatus('فشل وصول للشبكة: تأكد أن Project URL صحيح والمشروع ليس Paused والإنترنت شغال');
+    const usingDefault = cleanSupabaseUrl(cloudUrl) === cleanSupabaseUrl(SB_URL) && cleanAnonKey(cloudKey) === cleanAnonKey(SB_KEY);
+    if(!triedFallback && !usingDefault) {
+      resetToDefaultCloudConfig();
+      connStatus('إعادة ضبط الربط للنسخة الأصلية...');
+      return connect(SB_URL, SB_KEY, true);
+    }
+    setSyncStatus('err','فشل الاتصال');
+    if(String(msg).includes('Failed to fetch')) connStatus('فشل وصول للشبكة: جرّب تحديث الصفحة أو تأكد أن الإنترنت شغال');
     else if(String(msg).toLowerCase().includes('schema cache') || String(msg).includes('mysystem_state')) connStatus('جدول mysystem_state غير موجود — شغّل SQL الموجود في الأسفل مرة واحدة');
     else connStatus('خطأ: '+msg);
     console.error('Supabase connect error:', e);
@@ -1209,12 +1229,12 @@ function applyTheme() {
     document.body.removeAttribute('data-theme');
     if(meta) meta.content='#080c18';
     if(b) b.textContent='☾';
-    if(mb){ mb.textContent='☀ نهار'; mb.title='تغيير إلى نهار'; mb.setAttribute('aria-label','تغيير إلى نهار'); }
+    if(mb) mb.textContent='☀ نهار';
   } else {
     document.body.setAttribute('data-theme','light');
     if(meta) meta.content='#f0f4ff';
     if(b) b.textContent='☀';
-    if(mb){ mb.textContent='☾ ليل'; mb.title='تغيير إلى ليل'; mb.setAttribute('aria-label','تغيير إلى ليل'); }
+    if(mb) mb.textContent='☾ ليل';
   }
 }
 
@@ -2245,8 +2265,8 @@ async function boot() {
   renderHub();
   updateBadges();
   // Step 2: Connect to Supabase single-table sync in background (no old tables)
-  const url=localStorage.getItem('sb_url')||SB_URL, key=localStorage.getItem('sb_key')||SB_KEY;
-  connect(url, key).then((ok) => {
+  const cfg=bootCloudConfig();
+  connect(cfg.url, cfg.key).then((ok) => {
     if (ok) {
       pullCloud(true, true).then(() => {
         renderHub();
