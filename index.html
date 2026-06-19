@@ -662,6 +662,61 @@ body[data-theme="light"] .fin-card::after{color:#0f172a;opacity:.055}
   .fin-card-title{font-size:18px!important}.bank-grid .fin-card-title,#expensesView .fin-card-title,#subsView .fin-card-title{font-size:19px!important}.fin-card-total{font-size:18px!important}
 }
 
+
+
+/* ===== PATCH V4: finance per-section layout, salary USD/EGP, improved day blocks ===== */
+.fin-layout-row{display:flex;justify-content:flex-end;margin:0 0 10px;gap:8px;align-items:center}
+.fin-layout-row::before{content:'طريقة عرض هذا القسم فقط';font-size:11px;color:var(--text-d);font-weight:800;margin-inline-end:4px}
+.fin-table th,.fin-table td{vertical-align:middle!important}
+.fin-table td[data-num],.fin-table th[data-num]{text-align:left!important;direction:ltr!important}
+.salary-total-chip{display:inline-flex;align-items:center;justify-content:center;direction:ltr;font-weight:950;color:var(--row-color,#10b981);font-size:14px;white-space:nowrap}
+.fin-card-total .usd-mini{display:block;font-size:11px;color:var(--text-d);margin-top:3px;font-weight:800}
+.fin-card-title{font-size:17px!important;font-weight:950!important;line-height:1.25}
+.fin-name-cell .fin-inp{font-size:15px!important;font-weight:950!important}
+
+.block-card{padding:16px 16px 14px!important;border-radius:24px!important;position:relative}
+.block-card::after{content:'';position:absolute;inset:auto 14px 8px 14px;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--block-color,#6366f1) 40%,transparent),transparent);opacity:.55;pointer-events:none}
+.block-card-head{align-items:center!important;margin-bottom:12px!important}
+.block-title-row{display:flex;align-items:center;gap:10px}
+.block-done-toggle{width:36px;height:36px;border-radius:12px;border:2px solid color-mix(in srgb,var(--block-color,#6366f1) 70%,var(--border));background:color-mix(in srgb,var(--block-color,#6366f1) 10%,var(--panel));display:grid;place-items:center;font-size:18px;font-weight:950;color:var(--block-color,#6366f1);box-shadow:0 10px 24px color-mix(in srgb,var(--block-color,#6366f1) 16%,transparent);transition:transform .18s,background .18s,opacity .18s;flex-shrink:0}
+.block-done-toggle:hover{transform:translateY(-1px) scale(1.04)}
+.block-done-toggle.done{background:linear-gradient(135deg,var(--success),#16a34a);border-color:var(--success);color:#fff}
+.block-done-toggle.missed{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.6);color:var(--danger);opacity:.78}
+.block-card.missed{filter:saturate(.72);opacity:.72}
+.block-card.missed .block-title,.block-card.missed .block-notes,.block-card.missed .block-task-list{opacity:.72}
+.block-time-range{margin:12px 0 0!important;padding:12px!important;border-radius:18px!important;display:grid!important;grid-template-columns:1fr auto 1fr!important;align-items:center!important;gap:10px!important;background:linear-gradient(135deg,color-mix(in srgb,var(--block-color,#6366f1) 18%,var(--field)),color-mix(in srgb,var(--block-color,#6366f1) 6%,var(--panel)))!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--block-color,#6366f1) 18%,transparent)}
+.btr-from,.btr-to{min-height:68px;border-radius:14px;background:rgba(255,255,255,.045);display:grid!important;place-items:center;padding:8px;position:relative;overflow:hidden}
+.btr-from::before,.btr-to::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top right,color-mix(in srgb,var(--block-color,#6366f1) 18%,transparent),transparent 62%);opacity:.9}
+.btr-label{font-size:10px!important;letter-spacing:.8px!important;position:relative;z-index:1}
+.btr-time{font-size:26px!important;font-weight:950!important;letter-spacing:-1px!important;position:relative;z-index:1;animation:timeGlow 2.6s ease-in-out infinite alternate}
+.btr-period{font-size:11px!important;position:relative;z-index:1}
+.btr-arrow{width:34px;height:34px;border-radius:12px;background:color-mix(in srgb,var(--block-color,#6366f1) 16%,var(--field));display:grid;place-items:center;font-size:18px!important;color:var(--block-color,#6366f1)!important;animation:arrowPulse 1.8s ease-in-out infinite}
+@keyframes timeGlow{from{text-shadow:0 0 0 transparent}to{text-shadow:0 0 14px color-mix(in srgb,var(--block-color,#6366f1) 40%,transparent)}}
+@keyframes arrowPulse{0%,100%{transform:translateX(0);opacity:.78}50%{transform:translateX(-3px);opacity:1}}
+.block-task-item{border:1px solid color-mix(in srgb,var(--block-color,#6366f1) 12%,transparent);background:color-mix(in srgb,var(--block-color,#6366f1) 6%,var(--field))!important}
+.block-task-main{display:flex;align-items:center;gap:8px;width:100%}
+.block-subtask-list{margin:5px 25px 0 0;display:flex;flex-direction:column;gap:4px;width:calc(100% - 25px)}
+.block-subtask-item{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.045);font-size:11px;color:var(--text-m)}
+.block-subtask-item input{width:14px;height:14px;accent-color:var(--block-color,#6366f1)}
+.block-subtask-item span.checked{text-decoration:line-through;opacity:.58}
+.work-subtasks-preview{margin-top:6px;display:flex;flex-direction:column;gap:4px}
+.work-subtask-line{font-size:10px;color:var(--text-d);background:var(--field);border-radius:7px;padding:4px 7px}
+
+
+
+/* ===== HUB V5: interactive important-only dashboard ===== */
+.hub-wrap{padding:clamp(16px,2.2vw,30px);background:radial-gradient(circle at 18% 8%,rgba(124,92,255,.08),transparent 30%),radial-gradient(circle at 82% 10%,rgba(56,189,248,.08),transparent 28%)}
+.hub-header{align-items:flex-start;margin-bottom:16px}.hub-greeting h2{font-size:clamp(28px,3vw,42px)!important;line-height:1.05}.hub-greeting p{font-size:13px!important;color:var(--text-d)}
+.dashboard-v2{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr)!important;gap:16px!important;margin-bottom:16px!important}.dash-hero-card{min-height:220px;border-radius:32px;padding:24px;position:relative;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 70px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.16);background:linear-gradient(135deg,rgba(99,102,241,.26),rgba(14,165,233,.16) 48%,rgba(236,72,153,.13));transition:transform .22s var(--ease),box-shadow .22s var(--ease)}
+.dash-hero-card:hover{transform:translateY(-3px);box-shadow:0 30px 90px rgba(99,102,241,.22)}.dash-hero-card.danger{background:linear-gradient(135deg,rgba(239,68,68,.25),rgba(124,58,237,.15),rgba(15,23,42,.04))}.dash-hero-card.warn{background:linear-gradient(135deg,rgba(251,191,36,.2),rgba(99,102,241,.16),rgba(14,165,233,.08))}.dash-hero-card.calm{background:linear-gradient(135deg,rgba(34,197,94,.18),rgba(14,165,233,.14),rgba(124,58,237,.08))}.dash-hero-glow{position:absolute;width:240px;height:240px;left:-70px;top:-70px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.24),transparent 62%);filter:blur(2px);pointer-events:none}.dash-hero-card::after{content:"";position:absolute;inset:auto -80px -120px auto;width:310px;height:310px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 62%);pointer-events:none}
+.dash-hero-top{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.dash-kicker{display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);font-size:11px;font-weight:900;color:var(--text-m)}.dash-hero-top h3{font-size:clamp(28px,3.2vw,48px);font-weight:950;letter-spacing:-1.6px;line-height:1.05;margin:0 0 8px}.dash-hero-top p{font-size:15px;color:var(--text-m);font-weight:800;line-height:1.7;max-width:740px}.dash-hero-top p span{display:block;font-size:12px;color:var(--text-d);font-weight:700;margin-top:2px;direction:ltr;text-align:right}.dash-hero-icon{width:74px;height:74px;border-radius:24px;display:grid;place-items:center;font-size:34px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.18);flex-shrink:0;animation:floatIcon 2.6s ease-in-out infinite}@keyframes floatIcon{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-3deg)}}
+.dash-meter{height:10px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;margin:28px 0 16px;position:relative;z-index:1}.dash-meter span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fff,rgba(255,255,255,.55));box-shadow:0 0 24px rgba(255,255,255,.35);transition:width .55s var(--ease)}.dash-hero-bottom{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.dash-hero-bottom div{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:11px 12px}.dash-hero-bottom b{display:block;font-size:22px;font-weight:950;direction:ltr}.dash-hero-bottom span{display:block;margin-top:2px;color:var(--text-d);font-size:10px;font-weight:800}
+.dash-key-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.dash-key-card{min-height:104px;text-align:right;border-radius:24px;padding:16px;background:var(--panel);border:1px solid var(--border);position:relative;overflow:hidden;transition:transform .18s var(--ease),background .18s}.dash-key-card:hover{transform:translateY(-3px);background:var(--panel2)}.dash-key-card::before{content:"";position:absolute;inset:auto -30px -40px auto;width:110px;height:110px;border-radius:50%;opacity:.14}.dash-key-card.day::before{background:#6366f1}.dash-key-card.work::before{background:#ef4444}.dash-key-card.fin::before{background:#0ea5e9}.dash-key-card.goals::before{background:#ec4899}.dk-icon{display:block;font-size:22px;margin-bottom:7px}.dk-label{display:block;font-size:10px;font-weight:900;color:var(--text-d);margin-bottom:3px}.dash-key-card strong{display:block;font-size:21px;font-weight:950;letter-spacing:-.8px;direction:ltr;text-align:right}.dash-key-card small{display:block;font-size:10px;color:var(--text-d);font-weight:800;margin-top:2px}
+.dashboard-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:16px!important;margin-bottom:16px!important}.dash-panel{border-radius:28px!important;background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.11)!important;box-shadow:0 12px 42px rgba(0,0,0,.12);overflow:hidden}.dash-panel .hub-panel-head{margin-bottom:14px}.dash-panel .hub-panel-head h3{font-size:15px!important;font-weight:950}.dash-focus-row,.dash-task-row{display:flex;align-items:center;gap:12px;border-radius:18px;padding:12px 13px;margin-bottom:8px;background:linear-gradient(90deg,color-mix(in srgb,var(--row-color,#6366f1) 12%,var(--field)),var(--field));border:1px solid color-mix(in srgb,var(--row-color,#6366f1) 22%,var(--border));cursor:pointer;transition:transform .16s,background .16s}.dash-focus-row:hover,.dash-task-row:hover{transform:translateX(-3px);background:var(--panel2)}.dash-focus-row.is-live{box-shadow:inset 4px 0 0 var(--row-color,#6366f1)}.dash-focus-mark{width:30px;height:30px;border-radius:12px;display:grid;place-items:center;background:var(--row-color,#6366f1);color:#fff;font-weight:950;box-shadow:0 8px 24px color-mix(in srgb,var(--row-color,#6366f1) 34%,transparent)}.dash-focus-main,.dash-task-main{flex:1;min-width:0}.dash-focus-main b,.dash-task-main b{display:block;font-size:14px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dash-focus-main span,.dash-task-main span{display:block;font-size:10px;color:var(--text-d);font-weight:800;margin-top:2px;direction:ltr;text-align:right}.dash-focus-tag,.dash-task-chip{padding:5px 9px;border-radius:999px;background:var(--panel2);border:1px solid var(--border);font-size:10px;font-weight:900;color:var(--text-m);flex-shrink:0}.dash-task-row{background:var(--field);border-color:var(--border)}.dash-task-row.danger{border-color:rgba(239,68,68,.28);background:rgba(239,68,68,.08)}.dash-task-row.warn{border-color:rgba(251,191,36,.26);background:rgba(251,191,36,.07)}.dash-task-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 5px rgba(255,255,255,.05)}.dash-task-row.danger .dash-task-chip{background:rgba(239,68,68,.15);color:var(--danger)}.dash-task-row.warn .dash-task-chip{background:rgba(251,191,36,.13);color:var(--warning)}
+.finance-focus{margin-top:0!important}.dash-fin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.dash-fin-card{min-height:104px;border-radius:22px;padding:16px;position:relative;overflow:hidden;background:var(--field);border:1px solid var(--border);cursor:pointer;transition:transform .18s}.dash-fin-card:hover{transform:translateY(-3px)}.dash-fin-card::after{content:"";position:absolute;width:120px;height:120px;left:-42px;bottom:-52px;border-radius:50%;opacity:.14}.dash-fin-card.wealth::after{background:#38bdf8}.dash-fin-card.salary::after{background:#22c55e}.dash-fin-card.expense::after{background:#a855f7}.dash-fin-card.debt::after{background:#ef4444}.dash-fin-card span{display:block;font-size:10px;font-weight:900;color:var(--text-d);margin-bottom:8px}.dash-fin-card b{display:block;font-size:18px;font-weight:950;direction:ltr;text-align:right;letter-spacing:-.5px}.dash-fin-card small{display:block;font-size:10px;color:var(--text-d);font-weight:800;margin-top:4px}.dash-goals-strip{margin-top:14px;border-top:1px solid var(--border);padding-top:13px}.dash-strip-title{font-size:12px;font-weight:950;color:var(--text-m);margin-bottom:8px}.dash-mini-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:14px;background:var(--field);margin-bottom:6px;cursor:pointer}.dash-mini-row span{font-size:16px}.dash-mini-row b{flex:1;font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dash-mini-row small{font-size:10px;color:var(--text-d);font-weight:800}
+@media(max-width:980px){.dashboard-v2{grid-template-columns:1fr!important}.dashboard-grid{grid-template-columns:1fr!important}.dash-fin-grid{grid-template-columns:1fr 1fr}.dash-hero-card{min-height:210px}.dash-hero-top h3{font-size:30px}.dash-hero-icon{width:60px;height:60px;font-size:28px}.dash-hero-bottom b{font-size:18px}}
+@media(max-width:540px){.hub-wrap{padding:14px}.dash-key-grid{grid-template-columns:1fr 1fr;gap:9px}.dash-key-card{min-height:92px;padding:13px}.dash-hero-card{padding:18px;border-radius:24px}.dash-hero-top{gap:10px}.dash-hero-top h3{font-size:25px}.dash-hero-top p{font-size:13px}.dash-hero-bottom{grid-template-columns:1fr}.dash-fin-grid{grid-template-columns:1fr}.hub-greeting h2{font-size:28px!important}}
+
 </style>
 </head>
 <body>
@@ -1466,76 +1521,132 @@ function updateBadges() {
    HUB DASHBOARD
    ===================================================== */
 function renderHub() {
-  // Quick cards
-  const blocks=dayVisibleBlocks();
-  const done=blocks.filter(b=>dayStatus(b.id)==='done').length;
-  const allT=WORK.data.company.concat(WORK.data.client).flatMap(e=>e.tasks||[]);
-  const pending=allT.filter(t=>!t.completed).length;
-  const overdue=allT.filter(t=>!t.completed&&t.deadline&&daysUntil(t.deadline)<0).length;
+  const hq=document.getElementById('hubQuick');
+  const hp=document.getElementById('hubPanels');
+  const hf=document.getElementById('hubFinPanel');
+  if(!hq||!hp||!hf) return;
+  hq.className='hub-quick dashboard-v2';
+  hp.className='hub-panels dashboard-grid';
+  hf.className='hub-panel dash-panel finance-focus';
+
+  const todayBlocks=dayVisibleBlocks().slice().sort((a,b)=>(a.start_time||'00:00').localeCompare(b.start_time||'00:00'));
+  const totalBlocks=todayBlocks.length;
+  const doneBlocks=todayBlocks.filter(b=>dayStatus(b.id)==='done').length;
+  const missedBlocks=todayBlocks.filter(b=>dayStatus(b.id)==='missed').length;
+  const now=new Date();
+  const nowMin=now.getHours()*60+now.getMinutes();
+  const toMin=t=>{ const a=(t||'00:00').slice(0,5).split(':').map(Number); return (a[0]||0)*60+(a[1]||0); };
+  const currentBlock=todayBlocks.find(b=>toMin(b.start_time)<=nowMin && nowMin<toMin(b.end_time));
+  const nextBlock=todayBlocks.find(b=>toMin(b.end_time)>=nowMin) || todayBlocks[0] || null;
+  const activeBlock=currentBlock || nextBlock;
+  const activeTitle=activeBlock ? esc(activeBlock.title||'بلوك') : 'لا يوجد بلوك مهم الآن';
+  const activeSub=activeBlock ? `${fmtTime(activeBlock.start_time)} → ${fmtTime(activeBlock.end_time)} · ${currentBlock?'شغال الآن':'التالي'}` : 'يومك فاضي، اضغط لإضافة بلوك';
+  const completionPct=totalBlocks ? Math.round(doneBlocks/totalBlocks*100) : 0;
+
+  const allTasks=WORK.data.company.concat(WORK.data.client).flatMap(e=>(e.tasks||[]).map(t=>({...t,_ent:e})));
+  const pendingTasks=allTasks.filter(t=>!t.completed);
+  const overdueTasks=pendingTasks.filter(t=>t.deadline&&daysUntil(t.deadline)<0);
+  const dueToday=pendingTasks.filter(t=>t.deadline&&daysUntil(t.deadline)===0);
+  const urgentTasks=pendingTasks
+    .filter(t=>t.priority==='high'||(t.deadline&&daysUntil(t.deadline)<=2))
+    .sort((a,b)=>(a.deadline?daysUntil(a.deadline):99)-(b.deadline?daysUntil(b.deadline):99))
+    .slice(0,4);
+
   normalizeFinanceData();
+  const rate=getUsdRate ? getUsdRate() : 50;
   const banks=FIN.banks.reduce((s,b)=>s+bankTotalEGP(b),0);
   const gold=FIN.gold.reduce((s,g)=>s+((+g.grams||0)*(+g.price_per_gram||0)),0);
-  const total=banks+gold;
-  const goalsActive=GOALS.items.filter(g=>!g.completed).length;
-  const goalsDone=GOALS.items.filter(g=>g.completed).length;
+  const salaryTotal=(FIN.salary||[]).reduce((s,r)=>s+(typeof salaryTotalEGP==='function'?salaryTotalEGP(r,rate):(+r.amount||0)),0);
+  const salaryPaid=(FIN.salary||[]).filter(s=>s.paid).reduce((sum,r)=>sum+(typeof salaryTotalEGP==='function'?salaryTotalEGP(r,rate):(+r.amount||0)),0);
+  const expPaid=FIN.expenses.reduce((s,e)=>s+(+e.paid_amount||0),0);
+  const debtsLeft=FIN.debts.filter(d=>!d.paid).reduce((s,d)=>s+(+d.amount||0),0);
+  const wealth=banks+gold;
+  const activeGoals=GOALS.items.filter(g=>!g.completed);
+  const closeGoals=activeGoals.filter(g=>g.end_date&&daysUntil(g.end_date)<=7&&daysUntil(g.end_date)>=0).slice(0,3);
+  const importantCount=(currentBlock?1:0)+overdueTasks.length+dueToday.length+closeGoals.length;
 
-  document.getElementById('hubQuick').innerHTML=`
-    <div class="hub-quick-card c-day" onclick="go('day')" style="animation-delay:.05s">
-      <div class="hq-icon">📅</div><div class="hq-label">بلوكات اليوم</div>
-      <div class="hq-val">${blocks.length}</div>
-      <div class="hq-sub">${done} تم · ${blocks.length-done} باقي</div>
+  const priorityLabel = overdueTasks.length ? `${overdueTasks.length} تاسك متأخر` : currentBlock ? 'ركز في البلوك الحالي' : dueToday.length ? `${dueToday.length} تاسك اليوم` : 'اليوم هادي';
+  const priorityClass = overdueTasks.length ? 'danger' : currentBlock ? 'live' : dueToday.length ? 'warn' : 'calm';
+  const heroIcon = overdueTasks.length ? '🚨' : currentBlock ? '⚡' : dueToday.length ? '⏰' : '✨';
+
+  const keyCards=[
+    {icon:'📅',label:'إنجاز اليوم',val:`${doneBlocks}/${totalBlocks}`,sub:`${completionPct}% مكتمل`,go:'day',tone:'day'},
+    {icon:'🔥',label:'العاجل',val:String(overdueTasks.length+dueToday.length),sub:overdueTasks.length?`${overdueTasks.length} متأخر`:`${dueToday.length} اليوم`,go:'work',tone:'work'},
+    {icon:'🏦',label:'الثروة',val:fmtEGP(wealth,true),sub:`بنوك + ذهب`,go:'finance',tone:'fin'},
+    {icon:'🎯',label:'أهداف قريبة',val:String(closeGoals.length),sub:`من ${activeGoals.length} هدف نشط`,go:'goals',tone:'goals'}
+  ];
+
+  hq.innerHTML=`
+    <div class="dash-hero-card ${priorityClass}" onclick="go('day')">
+      <div class="dash-hero-glow"></div>
+      <div class="dash-hero-top">
+        <div>
+          <div class="dash-kicker">الأهم دلوقتي</div>
+          <h3>${heroIcon} ${priorityLabel}</h3>
+          <p>${activeTitle} <span>${activeSub}</span></p>
+        </div>
+        <div class="dash-hero-icon">${heroIcon}</div>
+      </div>
+      <div class="dash-meter"><span style="width:${completionPct}%"></span></div>
+      <div class="dash-hero-bottom">
+        <div><b>${completionPct}%</b><span>إنجاز اليوم</span></div>
+        <div><b>${pendingTasks.length}</b><span>تاسكات معلقة</span></div>
+        <div><b>${importantCount}</b><span>مهم الآن</span></div>
+      </div>
     </div>
-    <div class="hub-quick-card c-work" onclick="go('work')" style="animation-delay:.1s">
-      <div class="hq-icon">💼</div><div class="hq-label">تاسكات معلقة</div>
-      <div class="hq-val">${pending}</div>
-      <div class="hq-sub">${overdue>0?'🚨 '+overdue+' متأخرة':'لا يوجد متأخر ✅'}</div>
-    </div>
-    <div class="hub-quick-card c-fin" onclick="go('finance')" style="animation-delay:.15s">
-      <div class="hq-icon">🏦</div><div class="hq-label">إجمالي الثروة</div>
-      <div class="hq-val" style="font-size:18px">${fmtEGP(total,true)}</div>
-      <div class="hq-sub">بنوك: ${fmtEGP(banks,true)}</div>
-    </div>
-    <div class="hub-quick-card c-goals" onclick="go('goals')" style="animation-delay:.2s">
-      <div class="hq-icon">🎯</div><div class="hq-label">أهدافي</div>
-      <div class="hq-val">${goalsActive}</div>
-      <div class="hq-sub">${goalsDone} تم تحقيقه ✅</div>
-    </div>
-    <div class="hub-quick-card c-notif" onclick="toggleNotifCenter()" style="animation-delay:.25s">
-      <div class="hq-icon">🔔</div><div class="hq-label">إشعارات</div>
-      <div class="hq-val">${NOTIFS.items.length}</div>
-      <div class="hq-sub">اضغط للعرض</div>
+    <div class="dash-key-grid">
+      ${keyCards.map(c=>`<button class="dash-key-card ${c.tone}" onclick="go('${c.go}')">
+        <span class="dk-icon">${c.icon}</span>
+        <span class="dk-label">${c.label}</span>
+        <strong>${c.val}</strong>
+        <small>${c.sub}</small>
+      </button>`).join('')}
     </div>`;
 
-  // Two panels
-  const bHtml = blocks.slice(0,5).map(b=>`<div class="hub-block-row" style="--block-color:${b.color||'#6366f1'}" onclick="go('day')">
-    <div style="flex:1"><div style="font-size:12px;font-weight:800">${esc(b.title)}</div></div>
-    <div style="font-size:10px;color:var(--text-d);font-weight:700">${fmtTime(b.start_time)} → ${fmtTime(b.end_time)}</div>
-    <div style="font-size:13px">${dayStatus(b.id)==='done'?'✅':dayStatus(b.id)==='missed'?'❌':'⏳'}</div>
-  </div>`).join('')||'<div class="hub-empty">لا توجد بلوكات اليوم</div>';
+  const blockRows=(currentBlock?[currentBlock]:todayBlocks.filter(b=>dayStatus(b.id)!=='done').slice(0,4)).map(b=>{
+    const st=dayStatus(b.id); const isLive=currentBlock&&currentBlock.id===b.id;
+    return `<div class="dash-focus-row ${isLive?'is-live':''}" style="--row-color:${b.color||'#6366f1'}" onclick="go('day')">
+      <div class="dash-focus-mark">${st==='done'?'✓':st==='missed'?'×':isLive?'●':'○'}</div>
+      <div class="dash-focus-main"><b>${esc(b.title||'بلوك')}</b><span>${fmtTime(b.start_time)} → ${fmtTime(b.end_time)}</span></div>
+      <div class="dash-focus-tag">${isLive?'الآن':st==='missed'?'فات':'التالي'}</div>
+    </div>`;
+  }).join('') || `<div class="hub-empty">مفيش بلوكات مهمة حاليًا</div>`;
 
-  const urgent=WORK.data.company.concat(WORK.data.client).flatMap(e=>(e.tasks||[]).map(t=>({...t,_ent:e}))).filter(t=>!t.completed&&(t.priority==='high'||(t.deadline&&daysUntil(t.deadline)<=2))).sort((a,b)=>(daysUntil(a.deadline)??99)-(daysUntil(b.deadline)??99)).slice(0,5);
-  const wHtml=urgent.map(t=>{const ov=t.deadline&&daysUntil(t.deadline)<0; return `<div class="hub-task-row" onclick="go('work')">
-    <div style="width:7px;height:7px;border-radius:50%;background:${t._ent?.color||'#6366f1'};flex-shrink:0"></div>
-    <div style="flex:1;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.title)} <span style="font-size:10px;color:var(--text-d)">· ${esc(t._ent?.name||'')}</span></div>
-    ${ov?'<span class="deadline-badge db-red">متأخر</span>':t.deadline&&daysUntil(t.deadline)===0?'<span class="deadline-badge db-yellow">اليوم</span>':''}
-  </div>`;}).join('')||'<div class="hub-empty">لا توجد تاسكات عاجلة 🎉</div>';
+  const taskRows=urgentTasks.map(t=>{
+    const d=t.deadline?daysUntil(t.deadline):null;
+    const chip=d!==null && d<0?'متأخر':d===0?'اليوم':d===1?'بكرة':t.priority==='high'?'مهم':'قريب';
+    const cls=d!==null && d<0?'danger':d===0?'warn':'normal';
+    return `<div class="dash-task-row ${cls}" onclick="go('work')">
+      <div class="dash-task-dot" style="background:${t._ent?.color||'#8b5cf6'}"></div>
+      <div class="dash-task-main"><b>${esc(t.title||'تاسك')}</b><span>${esc(t._ent?.name||'')}</span></div>
+      <div class="dash-task-chip">${chip}</div>
+    </div>`;
+  }).join('') || `<div class="hub-empty">مفيش تاسكات حرجة 🎉</div>`;
 
-  document.getElementById('hubPanels').innerHTML=`
-    <div class="hub-panel">
-      <div class="hub-panel-head"><h3>📅 جدول اليوم</h3><span class="hub-see" onclick="go('day')">عرض الكل</span></div>
-      ${bHtml}
+  const goalRows=closeGoals.map(g=>`<div class="dash-mini-row" onclick="go('goals')"><span>${g.icon||'🎯'}</span><b>${esc(g.title||'هدف')}</b><small>${g.end_date?daysUntil(g.end_date)+' يوم':''}</small></div>`).join('') || `<div class="hub-empty">مفيش أهداف قريبة</div>`;
+
+  hp.innerHTML=`
+    <div class="hub-panel dash-panel important-panel">
+      <div class="hub-panel-head"><h3>⚡ مهم اليوم</h3><span class="hub-see" onclick="go('day')">تفاصيل</span></div>
+      ${blockRows}
     </div>
-    <div class="hub-panel">
-      <div class="hub-panel-head"><h3>🔥 تاسكات عاجلة</h3><span class="hub-see" onclick="go('work')">عرض الكل</span></div>
-      ${wHtml}
+    <div class="hub-panel dash-panel important-panel">
+      <div class="hub-panel-head"><h3>🔥 عاجل الشغل</h3><span class="hub-see" onclick="go('work')">تفاصيل</span></div>
+      ${taskRows}
     </div>`;
 
-  const sal=FIN.salary.filter(s=>s.paid).reduce((s,r)=>s+(+r.amount||0),0);
-  const exp=FIN.expenses.reduce((s,e)=>s+(+e.paid_amount||0),0);
-  const debts=FIN.debts.filter(d=>!d.paid).reduce((s,d)=>s+(+d.amount||0),0);
-  document.getElementById('hubFinPanel').innerHTML=`
-    <div class="hub-panel-head"><h3>💰 ملخص مالي</h3><span class="hub-see" onclick="go('finance')">تفاصيل</span></div>
-    ${[['💵 مرتبات مستلمة',fmtEGP(sal)],['📊 مصاريف مدفوعة',fmtEGP(exp)],['💳 ديون متبقية',fmtEGP(debts)],['🏦 بنوك',fmtEGP(banks)],['🥇 ذهب',fmtEGP(gold)]].map(([l,v])=>`<div class="hub-fin-row"><div style="font-size:12px;color:var(--text-m);font-weight:600">${l}</div><div style="font-size:13px;font-weight:800;direction:ltr">${v}</div></div>`).join('')}`;
+  hf.innerHTML=`
+    <div class="hub-panel-head"><h3>💎 المختصر المهم</h3><span class="hub-see" onclick="openSettings()">تخصيص</span></div>
+    <div class="dash-fin-grid">
+      <div class="dash-fin-card wealth" onclick="go('finance')"><span>صافي الثروة</span><b>${fmtEGP(wealth,true)}</b><small>بنوك + ذهب</small></div>
+      <div class="dash-fin-card salary" onclick="go('finance')"><span>مرتبات مستلمة</span><b>${fmtEGP(salaryPaid,true)}</b><small>من ${fmtEGP(salaryTotal,true)}</small></div>
+      <div class="dash-fin-card expense" onclick="go('finance')"><span>مصروف مدفوع</span><b>${fmtEGP(expPaid,true)}</b><small>اليوم / الشهر</small></div>
+      <div class="dash-fin-card debt" onclick="go('finance')"><span>ديون متبقية</span><b>${fmtEGP(debtsLeft,true)}</b><small>${debtsLeft>0?'راجعها':'تمام'}</small></div>
+    </div>
+    <div class="dash-goals-strip">
+      <div class="dash-strip-title">🎯 أقرب أهداف</div>
+      ${goalRows}
+    </div>`;
 
   document.getElementById('hubGreet').textContent = greet();
   document.getElementById('hubDate').textContent = new Date().toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -2639,6 +2750,158 @@ const _renderFinVisual=renderFin;
 renderFin=function(){ _renderFinVisual(); setTimeout(attachFinanceColorControls,0); };
 const _finRenderVisual=finRender;
 finRender=function(){ _finRenderVisual(); setTimeout(attachFinanceColorControls,0); };
+
+
+
+/* ===== PATCH V4: isolated UI/business behavior; Supabase connection untouched ===== */
+const FIN_LAYOUTS_STORE='ms_fin_layouts_v2';
+function finLayouts(){
+  try{ FIN.layouts = FIN.layouts || JSON.parse(localStorage.getItem(FIN_LAYOUTS_STORE)||'{}') || {}; }catch(_){ FIN.layouts = FIN.layouts || {}; }
+  return FIN.layouts;
+}
+function finGetLayout(tab=FIN.tab){ const ls=finLayouts(); return ls[tab] || FIN.layout || 'list'; }
+function updateFinLayoutToggle(){
+  const l=finGetLayout(FIN.tab); FIN.layout=l;
+  document.querySelectorAll('#finLayoutToggle .vt-btn').forEach((b,i)=>b.classList.toggle('active',['list','grid'][i]===l));
+}
+finSetLayout=function(l){
+  const ls=finLayouts(); ls[FIN.tab]=l; FIN.layout=l; localStorage.setItem(FIN_LAYOUTS_STORE,JSON.stringify(ls));
+  updateFinLayoutToggle(); finRender();
+};
+finTab=function(k){ FIN.tab=k; FIN.layout=finGetLayout(k); renderFin(); updateFinLayoutToggle(); };
+const __normalizeFinanceV4=normalizeFinanceData;
+normalizeFinanceData=function(){
+  __normalizeFinanceV4();
+  FIN.salary=(FIN.salary||[]).map((r,i)=>{ r=r||{}; if(!r.id)r.id=uid(); if(r.usd===undefined)r.usd=0; if(r.egp===undefined)r.egp=(r.amount!==undefined?numVal(r.amount):0); r.amount=salaryTotalEGP(r,getUsdRate()); itemColor(r,i); return r; });
+};
+function salaryUsd(r){ return numVal(r?.usd); }
+function salaryEgp(r){ return r && r.egp!==undefined ? numVal(r.egp) : numVal(r?.amount); }
+function salaryTotalEGP(r,rate=getUsdRate()){ return salaryEgp(r)+salaryUsd(r)*rate; }
+function renderSalarySectionV4(rate=50){
+  const el=document.getElementById('fsec-salary'); if(!el)return;
+  const layout=finGetLayout('salary');
+  const tot=FIN.salary.reduce((s,r)=>s+salaryTotalEGP(r,rate),0);
+  const usdTot=FIN.salary.reduce((s,r)=>s+salaryUsd(r),0);
+  const egpTot=FIN.salary.reduce((s,r)=>s+salaryEgp(r),0);
+  const paid=FIN.salary.filter(r=>r.paid).reduce((s,r)=>s+salaryTotalEGP(r,rate),0);
+  el.innerHTML=`<div class="fin-layout-row"><div class="view-toggle"><div class="vt-btn ${layout==='list'?'active':''}" onclick="finSetLayout('list')">☰ ليست</div><div class="vt-btn ${layout==='grid'?'active':''}" onclick="finSetLayout('grid')">⊞ جريد</div></div></div><div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الرواتب بالجنيه</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الدولار</div><div class="fin-sum-val" style="color:#38bdf8">${fmtUSD(usdTot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الجنيه المباشر</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(egpTot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div><div id="salaryView"></div>`;
+  const host=document.getElementById('salaryView');
+  if(layout==='grid'){
+    host.innerHTML=`<div class="fin-card-grid">${FIN.salary.map((r,i)=>{const c=itemColor(r,i),total=salaryTotalEGP(r,rate);return `<div class="fin-card ${r.paid?'paid-row':''}" style="--row-color:${c}"><div class="fin-card-head"><div class="fin-card-title">${finNameTitle(r,'salary',i,r.name||'مرتب')}</div>${finDelBtn('salary',r.id)}</div><div class="fin-card-total">${fmtEGP(total)}<span class="usd-mini">${fmtUSD(salaryUsd(r))} + ${fmtEGP(salaryEgp(r))}</span></div><div class="fin-card-fields">${finCardField('المصدر',`<input value="${esc(r.name||'')}" onchange="finUpd('salary','${r.id}',{name:this.value})">`,'name full')}${finCardField('USD',`<input type="number" value="${salaryUsd(r)}" onchange="finUpd('salary','${r.id}',{usd:+this.value,amount:salaryTotalEGP({...rowByKey('salary','${r.id}'),usd:+this.value},getUsdRate())});finRender()">`)}${finCardField('EGP',`<input type="number" value="${salaryEgp(r)}" onchange="finUpd('salary','${r.id}',{egp:+this.value,amount:salaryTotalEGP({...rowByKey('salary','${r.id}'),egp:+this.value},getUsdRate())});finRender()">`)}${finCardField('الناتج بالجنيه',`<div class="fin-read success">${fmtEGP(total)}</div>`,'full')}${finCardField('استلمت؟',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('salary','${r.id}',{paid:this.checked});finRender()" style="width:19px;height:19px;accent-color:var(--success)">`)}</div></div>`;}).join('')}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('salary')">+ إضافة مرتب</button>`;
+  } else {
+    host.innerHTML=`<div class="fin-table-wrap"><table class="fin-table"><colgroup><col style="width:28%"><col style="width:16%"><col style="width:16%"><col style="width:22%"><col style="width:12%"><col style="width:6%"></colgroup><thead><tr><th>المصدر</th><th data-num>USD</th><th data-num>EGP</th><th data-num>الناتج بالجنيه</th><th>استلمت؟</th><th></th></tr></thead><tbody id="salBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('salary')">+ إضافة مرتب</button></div>`;
+    document.getElementById('salBody').innerHTML=FIN.salary.map((r,i)=>{const c=itemColor(r,i),total=salaryTotalEGP(r,rate);return `<tr class="${r.paid?'paid-row ':''}fin-row-highlight" style="--row-color:${c}">${td('المصدر',`<input class="fin-inp" value="${esc(r.name||'')}" style="color:${c};font-weight:950" onchange="finUpd('salary','${r.id}',{name:this.value})">`)}${td('USD',`<input class="fin-inp" type="number" value="${salaryUsd(r)}" onchange="finUpd('salary','${r.id}',{usd:+this.value,amount:salaryTotalEGP({...rowByKey('salary','${r.id}'),usd:+this.value},getUsdRate())});finRender()">`,'data-num')}${td('EGP',`<input class="fin-inp" type="number" value="${salaryEgp(r)}" onchange="finUpd('salary','${r.id}',{egp:+this.value,amount:salaryTotalEGP({...rowByKey('salary','${r.id}'),egp:+this.value},getUsdRate())});finRender()">`,'data-num')}${td('الناتج بالجنيه',`<span class="salary-total-chip">${fmtEGP(total)}</span>`,'data-num')}${td('استلمت؟',`<input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('salary','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px">`)}${td('',finDelBtn('salary',r.id),'class="del-cell"')}</tr>`;}).join('');
+  }
+}
+const __finRenderSectionV4=finRenderSection;
+finRenderSection=function(rate=50){ FIN.layout=finGetLayout(FIN.tab); if(FIN.tab==='salary') return renderSalarySectionV4(rate); const r=__finRenderSectionV4(rate); updateFinLayoutToggle(); return r; };
+const __renderFinV4=renderFin;
+renderFin=function(){ FIN.layout=finGetLayout(FIN.tab); __renderFinV4(); updateFinLayoutToggle(); };
+const __finRenderV4=finRender;
+finRender=function(){ FIN.layout=finGetLayout(FIN.tab); __finRenderV4(); updateFinLayoutToggle(); };
+
+/* Finance add/edit modal: salary now supports USD + EGP */
+openFinanceItemModal=function(key,id=null,editVisual=false){
+  normalizeFinanceData(); financeModalKey=key; financeModalId=id;
+  const sk=FIN_STATE_KEY[key]; const arr=FIN[sk]||[]; const row=id?arr.find(r=>r.id===id):null;
+  const label=FIN_LABELS[key]||'عنصر'; const color=itemColor(row||{},arr.length); financePickedIcon=itemIcon(row,key,arr.length);
+  const name=row?.name || (key==='banks'?'بنك جديد':key==='gold'?'ذهب':key==='salary'?'مرتب':key==='expenses'?'مصروف جديد':key==='subscriptions'?'اشتراك جديد':key==='debts'?'دين جديد':'زيادة جديدة');
+  document.getElementById('financeItemModalTitle').textContent=(id?'تعديل شكل/بيانات ':'إضافة ')+label;
+  let fields='';
+  if(key==='banks') fields=`<div class="mg2"><div class="mf-row"><label>USD</label><input class="mf-inp" id="fiUsd" type="number" value="${bankUsd(row||{})}" dir="ltr"></div><div class="mf-row"><label>EGP</label><input class="mf-inp" id="fiEgp" type="number" value="${bankEgp(row||{})}" dir="ltr"></div></div><div class="mf-row"><label>ملاحظة</label><input class="mf-inp" id="fiNote" value="${esc(row?.note||'')}"></div>`;
+  else if(key==='gold') fields=`<div class="mg2"><div class="mf-row"><label>الوزن بالجرام</label><input class="mf-inp" id="fiGrams" type="number" value="${+row?.grams||0}" dir="ltr"></div><div class="mf-row"><label>سعر الجرام</label><input class="mf-inp" id="fiPrice" type="number" value="${+row?.price_per_gram||0}" dir="ltr"></div></div>`;
+  else if(key==='salary') fields=`<div class="mg2"><div class="mf-row"><label>الراتب بالدولار USD</label><input class="mf-inp" id="fiUsd" type="number" value="${salaryUsd(row||{})}" dir="ltr"></div><div class="mf-row"><label>الراتب بالجنيه EGP</label><input class="mf-inp" id="fiEgp" type="number" value="${salaryEgp(row||{})}" dir="ltr"></div></div>`;
+  else if(key==='subscriptions') fields=`<div class="mf-row"><label>القيمة بالدولار USD</label><input class="mf-inp" id="fiUsd" type="number" value="${+row?.usd||0}" dir="ltr"></div>`;
+  else if(key==='increases') fields=`<div class="mg2"><div class="mf-row"><label>المبلغ</label><input class="mf-inp" id="fiAmount" type="number" value="${+row?.amount||0}" dir="ltr"></div><div class="mf-row"><label>السبب</label><input class="mf-inp" id="fiNote" value="${esc(row?.note||'')}"></div></div>`;
+  else fields=`<div class="mf-row"><label>المبلغ</label><input class="mf-inp" id="fiAmount" type="number" value="${+row?.amount||0}" dir="ltr"></div>`;
+  document.getElementById('financeItemModalBody').innerHTML=`<div id="financeVisualPreview" class="visual-preview-card"></div><div class="mf-row"><label>الاسم</label><input class="mf-inp" id="fiName" value="${esc(name)}" oninput="refreshFinancePreview()" autofocus></div><div class="mf-row"><label>اللون</label><input class="mf-inp" id="fiColor" type="color" value="${color}" oninput="refreshFinancePreview()"></div><div class="mf-row"><label>الأيقونة اختياري</label><div class="visual-modal-note">اختار أيقونة أو اضغط "بدون".</div>${iconGridHtml(financePickedIcon,key)}</div>${fields}<div class="modal-actions"><button class="btn btn-primary" onclick="saveFinanceItemModal()">${id?'حفظ':'إضافة'}</button><button class="btn btn-ghost" onclick="closeFinanceItemModal()">إلغاء</button></div>`;
+  document.getElementById('financeItemModal').classList.remove('hidden'); refreshFinancePreview(); setTimeout(()=>document.getElementById('fiName')?.focus(),60);
+};
+saveFinanceItemModal=async function(){
+  const key=financeModalKey; if(!key)return; const sk=FIN_STATE_KEY[key]; const id=financeModalId||uid(); const isEdit=!!financeModalId;
+  const existing=(FIN[sk]||[]).find(r=>r.id===id) || {};
+  const color=document.getElementById('fiColor')?.value||uiColor((FIN[sk]||[]).length); const name=document.getElementById('fiName')?.value.trim()||FIN_LABELS[key]||'عنصر';
+  let patch={id,user_id:OWNER,name,color,icon:financePickedIcon||''};
+  if(key==='banks') { patch.usd=+document.getElementById('fiUsd')?.value||0; patch.egp=+document.getElementById('fiEgp')?.value||0; patch.balance=patch.egp+patch.usd*getUsdRate(); patch.note=document.getElementById('fiNote')?.value||''; }
+  else if(key==='gold') { patch.grams=+document.getElementById('fiGrams')?.value||0; patch.price_per_gram=+document.getElementById('fiPrice')?.value||0; }
+  else if(key==='salary') { patch.usd=+document.getElementById('fiUsd')?.value||0; patch.egp=+document.getElementById('fiEgp')?.value||0; patch.amount=salaryTotalEGP(patch,getUsdRate()); patch.paid=!!existing.paid; }
+  else if(key==='expenses') { patch.amount=+document.getElementById('fiAmount')?.value||0; patch.paid_amount=existing.paid_amount||0; patch.paid=!!existing.paid; }
+  else if(key==='subscriptions') { patch.usd=+document.getElementById('fiUsd')?.value||0; patch.paid=!!existing.paid; }
+  else if(key==='debts') { patch.amount=+document.getElementById('fiAmount')?.value||0; patch.paid=!!existing.paid; }
+  else if(key==='increases') { patch.amount=+document.getElementById('fiAmount')?.value||0; patch.note=document.getElementById('fiNote')?.value||''; patch.paid=!!existing.paid; }
+  if(isEdit){ const row=(FIN[sk]||[]).find(r=>r.id===id); if(row) Object.assign(row,patch); } else { FIN[sk].push(patch); }
+  normalizeFinanceData(); finSaveLocal(); markWrite('fin');
+  if(sb)try{ if(isEdit) await sb.from(FIN_TBL_MAP[key]).update(patch).eq('id',id); else await sb.from(FIN_TBL_MAP[key]).insert(patch); }catch(_){}
+  closeFinanceItemModal(); finRender(); toast(isEdit?'تم حفظ الشكل ✅':'تمت الإضافة ✅');
+};
+
+/* Work task modal: time range + subtasks, synced inside day blocks only */
+let tSubtasks=[];
+function taskSubHtml(i){return `<div id="tsub-${i}" style="display:flex;gap:6px;margin-bottom:6px"><input class="mf-inp" style="flex:1" placeholder="تاسك فرعي" value="${esc(tSubtasks[i]?.text||'')}" oninput="tSubtasks[${i}].text=this.value"><button type="button" class="btn btn-danger" style="padding:6px 10px" onclick="tSubtasks.splice(${i},1);rerenderTaskSubs()">✕</button></div>`;}
+function rerenderTaskSubs(){const box=document.getElementById('tSubsBox'); if(box) box.innerHTML=tSubtasks.map((_,i)=>taskSubHtml(i)).join('');}
+function addTaskSub(){tSubtasks.push({id:'sub-'+uid().slice(0,8),text:''}); rerenderTaskSubs();}
+openTaskModal=function(taskId, entId, isFreelance=false){
+  editingTaskId=taskId; editingEntId=entId; isFreelanceTask=isFreelance; tLinks=[]; tSubtasks=[];
+  const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===entId); const task=taskId?(ent?.tasks||[]).find(t=>t.id===taskId):null;
+  document.getElementById('taskModalTitle').textContent=task?'تعديل التاسك':'تاسك جديد';
+  tLinks=Array.isArray(task?.links)?task.links.map(l=>({...l})):[]; tSubtasks=Array.isArray(task?.subtasks)?task.subtasks.map(st=>({id:st.id||'sub-'+uid().slice(0,8),text:st.text||''})):[];
+  document.getElementById('taskModalBody').innerHTML=`
+    <div class="mf-row"><label>اسم التاسك *</label><input class="mf-inp" id="tTitle" value="${esc(task?.title||'')}" placeholder="مثلاً: مونتاج فيديو" autofocus></div>
+    <div class="mf-row"><label>الأيقونة اختياري</label><div class="optional-icon-row"><input class="mf-inp" id="tIcon" maxlength="2" value="${esc(task?.icon||'')}" placeholder="مثلاً 🎬"><button class="icon-clear-btn" onclick="document.getElementById('tIcon').value=''">بدون</button></div></div>
+    <div class="mf-row"><label>الوصف</label><textarea class="mf-inp" id="tDesc" placeholder="تفاصيل...">${esc(task?.description||'')}</textarea></div>
+    <div class="mg3"><div class="mf-row"><label>تاريخ التاسك</label><input class="mf-inp" id="tDeadline" type="date" value="${task?.deadline?.slice(0,10)||dateKey()}"></div><div class="mf-row"><label>من</label><input class="mf-inp" id="tStart" type="time" value="${(task?.start_time||'10:00').slice(0,5)}"></div><div class="mf-row"><label>إلى</label><input class="mf-inp" id="tEnd" type="time" value="${(task?.end_time||'11:00').slice(0,5)}"></div></div>
+    <div class="mg2"><div class="mf-row"><label>الأولوية</label><select class="mf-inp" id="tPriority"><option value="low" ${task?.priority==='low'?'selected':''}>عادي</option><option value="medium" ${(!task||task.priority==='medium')?'selected':''}>متوسط</option><option value="high" ${task?.priority==='high'?'selected':''}>عاجل 🔥</option></select></div><div class="mf-row"><label>لون التاسك</label><input class="mf-inp" id="tColor" type="color" value="${task?.color||ent?.color||WORK_PAL[0]}"></div></div>
+    ${isFreelance?`<div class="mf-row"><label>السعر (EGP)</label><input class="mf-inp" id="tPrice" type="number" value="${task?.price||''}" dir="ltr"></div>`:''}
+    <div class="mf-row"><label>تاسكات فرعية اختيارية</label><div id="tSubsBox">${tSubtasks.map((_,i)=>taskSubHtml(i)).join('')}</div><button type="button" class="add-task-row" onclick="addTaskSub()">+ تاسك فرعي</button></div>
+    <div class="mf-row"><label>روابط</label><div id="tLinksBox">${tLinks.map((_,i)=>tLinkHtml(i)).join('')}</div><button type="button" class="add-task-row" onclick="addTLink()">+ رابط</button></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="saveTask()">${task?'حفظ':'إضافة'}</button><button class="btn btn-ghost" onclick="closeTaskModal()">إلغاء</button>${task?`<button class="btn btn-danger" onclick="workDelTask('${taskId}','${entId}');closeTaskModal()">حذف</button>`:''}</div>`;
+  tLinks.forEach((l,i)=>{ const r=document.getElementById('tlink-'+i); if(r){r.querySelector('[data-ln]').value=l.name||'';r.querySelector('[data-lu]').value=l.url||'';} });
+  document.getElementById('taskModal').classList.remove('hidden'); setTimeout(()=>document.getElementById('tTitle')?.focus(),60);
+};
+saveTask=async function(){
+  const title=document.getElementById('tTitle').value.trim(); if(!title)return toast('اكتب اسم التاسك');
+  const links=tLinks.filter(l=>l.url.trim()).map(l=>({name:l.name||l.url,url:l.url.startsWith('http')?l.url:'https://'+l.url}));
+  const subtasks=tSubtasks.filter(st=>String(st.text||'').trim()).map(st=>({id:st.id||'sub-'+uid().slice(0,8),text:st.text.trim()}));
+  const tData={id:editingTaskId||uid(),title,description:document.getElementById('tDesc').value.trim()||null,deadline:document.getElementById('tDeadline').value||dateKey(),start_time:document.getElementById('tStart')?.value||null,end_time:document.getElementById('tEnd')?.value||null,priority:document.getElementById('tPriority').value,price:isFreelanceTask?(+document.getElementById('tPrice')?.value||null):null,color:document.getElementById('tColor')?.value || '#6366f1',icon:document.getElementById('tIcon')?.value.trim()||'',links,subtasks,completed:false,day_synced:false};
+  const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===editingEntId); if(!ent)return;
+  if(editingTaskId){ const idx=ent.tasks.findIndex(t=>t.id===editingTaskId); if(idx>=0){tData.completed=ent.tasks[idx].completed;tData.completed_at=ent.tasks[idx].completed_at;ent.tasks[idx]=tData;} }
+  else ent.tasks.push(tData);
+  if(sb){ try{ if(editingTaskId) await sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,color:tData.color,icon:tData.icon}).eq('id',editingTaskId); else { const {data:ins}=await sb.from('tasks').insert({entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,color:tData.color,icon:tData.icon,day_synced:false}).select().single(); if(ins){tData.id=ins.id;} } }catch(_){} }
+  if(!editingTaskId) autoSyncTaskToDay(tData, ent); else autoSyncTaskToDay(tData, ent, true);
+  workSaveLocal(); markWrite('work'); closeTaskModal(); renderWork(); updateBadges(); toast(editingTaskId?'تم الحفظ ✅':'تم إضافة التاسك ✅');
+};
+function minOfTime(t){ if(!t)return null; const [h,m]=String(t).slice(0,5).split(':').map(Number); if(!Number.isFinite(h))return null; return h*60+(Number.isFinite(m)?m:0); }
+function rangesOverlap(s1,e1,s2,e2){ if(s1==null)return false; if(e1==null)e1=s1+30; if(e1<=s1)e1=s1+30; return s1<e2 && e1>s2; }
+autoSyncTaskToDay=function(task,ent,forceUpdate=false){
+  const targetDate=task.deadline||dateKey(); const blocks=dayVisibleBlocks(targetDate); if(!blocks.length){toast('مفيش بلوك في اليوم ده عشان أحط التاسك جواه');return;}
+  const ts=minOfTime(task.start_time), te=minOfTime(task.end_time);
+  let targetBlock=null;
+  if(ts!=null){ targetBlock=blocks.find(b=>rangesOverlap(ts,te,minOfTime(b.start_time)??0,minOfTime(b.end_time)??1440)); }
+  if(!targetBlock){ targetBlock=blocks[0]; }
+  const ovKey=`${targetBlock.id}_${targetDate}`; const existing=DAY.overrides[ovKey]||{...targetBlock}; const existTasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(targetBlock.tasks||[])];
+  const sub=(task.subtasks||[]).filter(st=>st.text).map((st,i)=>({id:`${task.id}-sub-${st.id||i}`,text:st.text,source:task.id}));
+  const textTime=task.start_time?` — ${fmtTime(task.start_time)}${task.end_time?' لـ '+fmtTime(task.end_time):''}`:'';
+  const newItem={id:`w-${task.id}`,text:task.title+textTime,source:task.id,sourceEnt:ent.name,subtasks:sub,color:task.color||ent.color||targetBlock.color};
+  const idx=existTasks.findIndex(t=>t.source===task.id || t.id===newItem.id);
+  if(idx>=0) existTasks[idx]={...existTasks[idx],...newItem}; else existTasks.push(newItem);
+  DAY.overrides[ovKey]={...existing,tasks:existTasks}; daySaveLocal(); markWrite('day');
+  notif({icon:'📅',title:'تم وضع التاسك داخل بلوك اليوم',sub:`"${task.title}" تحت "${targetBlock.title}"`,color:'#818cf8'});
+};
+
+/* Day blocks: checkbox instead of status buttons, auto-missed when time passes */
+function isPastDateKey(d){ return d < dateKey(new Date()); }
+function isFutureDateKey(d){ return d > dateKey(new Date()); }
+function isBlockPast(b,d=dateKey(DAY.date)){ if(isPastDateKey(d))return true; if(isFutureDateKey(d))return false; const end=minOfTime(b.end_time); const now=new Date(); const nm=now.getHours()*60+now.getMinutes(); return end!=null && nm>end; }
+const __dayStatusV4=dayStatus;
+dayStatus=function(bid,d=dateKey(DAY.date)){ const explicit=DAY.completions[`${bid}_${d}`]; if(explicit && explicit!=='pending')return explicit; const b=dayVisibleBlocks(d).find(x=>x.id===bid); if(b && isBlockPast(b,d))return 'missed'; return explicit||'pending'; };
+renderBlock=function(b){
+  const st=dayStatus(b.id), stCls=st==='done'?'done':st==='missed'?'missed':''; const c=b.color||'#6366f1';
+  const tasks=(b.tasks||[]).map(t=>{ const chk=dayTaskChecked(b.id,t.id); const subs=(t.subtasks||[]).map(sta=>{const sid=sta.id||(`${t.id}-sub-${String(sta.text||'').slice(0,8)}`); const sch=dayTaskChecked(b.id,sid); return `<label class="block-subtask-item"><input type="checkbox" ${sch?'checked':''} onchange="toggleTask('${b.id}','${sid}',this.checked)"><span class="${sch?'checked':''}">${esc(sta.text||'')}</span></label>`;}).join(''); return `<div class="block-task-item"><div style="width:100%"><div class="block-task-main"><input type="checkbox" ${chk?'checked':''} onchange="toggleTask('${b.id}','${t.id}',this.checked)"><span class="${chk?'checked':''}">${esc(t.text)}</span>${t.sourceEnt?`<span class="block-task-source">💼 ${esc(t.sourceEnt)}</span>`:t.source?`<span class="block-task-source">📌 من شغلي</span>`:''}</div>${subs?`<div class="block-subtask-list">${subs}</div>`:''}</div></div>`; }).join('');
+  const links=(b.links||[]).map(l=>`<a class="link-chip" href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.name||l.url)}</a>`).join('');
+  const fromH=parseInt((b.start_time||'09:00').split(':')[0]); const fromM=(b.start_time||'09:00').split(':')[1]; const toH=parseInt((b.end_time||'10:00').split(':')[0]); const toM=(b.end_time||'10:00').split(':')[1];
+  const fromPer=fromH<12?'صباحاً':'مساءاً', toPer=toH<12?'صباحاً':'مساءاً', from12=fromH%12||12, to12=toH%12||12;
+  return `<div class="block-card ${stCls}" style="--block-color:${c}"><div class="block-card-head"><div class="block-title-row"><button class="block-done-toggle ${st}" onclick="setDayStatus('${b.id}','${st==='done'?'pending':'done'}')" title="${st==='done'?'تم':st==='missed'?'فات معاده':'علّم كتم'}">${st==='done'?'✓':st==='missed'?'×':''}</button><div><div class="block-title" style="color:${c}">${b.icon?`<span class="block-icon-badge" style="--block-color:${c}">${esc(b.icon)}</span>`:''}${esc(b.title)}</div>${b.notes?`<div class="block-notes">${esc(b.notes)}</div>`:''}</div></div><div class="block-card-actions"><button class="block-mini-btn" onclick="openDayModal('${b.id}')" title="تعديل">✏️</button></div></div>${tasks?`<div class="block-task-list">${tasks}</div>`:''}${links?`<div style="margin-bottom:8px">${links}</div>`:''}<div class="block-time-range" style="--block-color:${c}"><div class="btr-from"><div class="btr-label">من</div><div class="btr-time">${String(from12).padStart(2,'0')}:${fromM}</div><div class="btr-period">${fromPer}</div></div><div class="btr-arrow">←</div><div class="btr-to"><div class="btr-label">إلى</div><div class="btr-time">${String(to12).padStart(2,'0')}:${toM}</div><div class="btr-period">${toPer}</div></div></div></div>`;
+};
 
 /* ===== KEYBOARD & MISC ===== */
 document.addEventListener('keydown',e=>{
