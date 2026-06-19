@@ -523,6 +523,19 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
   .week-grid{grid-template-columns:repeat(2,1fr)}
   .goal-dates{flex-direction:column;gap:6px}
 }
+
+/* ===== CUSTOM MODULES ===== */
+.nav-add-btn{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--r-md);font-size:13px;font-weight:700;color:var(--text-d);cursor:pointer;border:1.5px dashed var(--border);transition:all .18s;margin-top:6px;background:transparent}
+.nav-add-btn:hover{border-color:var(--border2);color:var(--text-m);background:var(--panel)}
+.cm-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cm-section-header h3{font-size:15px;font-weight:800}
+.cm-field-card{border-radius:var(--r-lg);padding:13px;background:var(--panel);border:1px solid var(--border);margin-bottom:10px;position:relative}
+.cm-field-card .cm-field-label{font-size:11px;font-weight:800;color:var(--text-d);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.cm-custom-wrap{flex:1;overflow-y:auto;padding:20px}
+.cm-entry-card{border-radius:var(--r-xl);padding:16px;background:color-mix(in srgb,var(--cm-color,#6366f1) 7%,var(--panel));border:1px solid color-mix(in srgb,var(--cm-color,#6366f1) 22%,var(--border));border-right:4px solid var(--cm-color,#6366f1);margin-bottom:10px;animation:fadeUp .25s var(--ease);cursor:pointer;transition:transform .18s}
+.cm-entry-card:hover{transform:translateY(-2px)}
+.cm-entry-title{font-size:16px;font-weight:800;margin-bottom:6px}
+.cm-entry-field{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-m);margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -557,6 +570,8 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
       <div class="nav-item" data-mod="finance" onclick="go('finance')"><span class="nav-icon">🏦</span><span>ثروتي</span></div>
       <div class="nav-item" data-mod="goals" onclick="go('goals')"><span class="nav-icon">🎯</span><span>أهدافي</span><span class="nav-badge hidden" id="goalsBadge">0</span></div>
     </div>
+    <div id="customNavItems"></div>
+    <button class="nav-add-btn" onclick="openCMModal()"><span style="font-size:18px">＋</span>قسم رئيسي جديد</button>
     <div class="sync-bar">
       <div class="sync-dot loading" id="syncDot"></div>
       <span class="sync-text" id="syncText">جاري الاتصال...</span>
@@ -689,7 +704,8 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
         <div id="goalsBoard"></div>
       </div>
     </section>
-  </main>
+    <div id="customModules"></div>
+</main>
 </div>
 <!-- MOBILE BOTTOM NAV -->
 <nav class="bottom-nav" id="bottomNav">
@@ -797,16 +813,36 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
 <!-- SECTION MODAL -->
 <div id="sectionModal" class="modal-backdrop hidden">
   <div class="modal-box" style="max-width:420px">
-    <div class="modal-head"><h2>📁 قسم جديد</h2><button class="modal-close" onclick="closeSectionModal()">✕</button></div>
+    <div class="modal-head"><h2 id="secModalTitle">📁 قسم جديد</h2><button class="modal-close" onclick="closeSectionModal()">✕</button></div>
     <div class="mf-row"><label>اسم القسم</label><input class="mf-inp" id="secName" placeholder="مثلاً: أهداف مهنية"></div>
     <div class="mg2">
       <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="secIcon" value="📌" maxlength="2"></div>
       <div class="mf-row"><label>اللون</label><input class="mf-inp" id="secColor" type="color" value="#6366f1"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="saveSection()">إضافة</button>
+      <button class="btn btn-primary" onclick="saveSection()">حفظ</button>
       <button class="btn btn-ghost" onclick="closeSectionModal()">إلغاء</button>
+      <button class="btn btn-danger hidden" id="secDelBtn" onclick="deleteSection()">حذف</button>
     </div>
+  </div>
+</div>
+<!-- FINANCE ENTRY MODAL -->
+<div id="finEntryModal" class="modal-backdrop hidden">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-head"><h2 id="finEntryTitle">إضافة</h2><button class="modal-close" onclick="closeFinModal()">✕</button></div>
+    <div id="finEntryFields"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveFinEntry()">حفظ</button>
+      <button class="btn btn-ghost" onclick="closeFinModal()">إلغاء</button>
+      <button class="btn btn-danger hidden" id="finEntryDelBtn" onclick="deleteFinEntry()">حذف</button>
+    </div>
+  </div>
+</div>
+<!-- CUSTOM MODULE MODAL -->
+<div id="customModModal" class="modal-backdrop hidden">
+  <div class="modal-box" style="max-width:560px;max-height:82dvh;overflow-y:auto">
+    <div class="modal-head"><h2 id="cmModalTitle">قسم رئيسي جديد</h2><button class="modal-close" onclick="closeCMModal()">✕</button></div>
+    <div id="cmModalBody"></div>
   </div>
 </div>
 <script>
@@ -848,14 +884,16 @@ const NOTIFS = { items:[] };
 function go(mod) {
   cur = mod;
   document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-  document.getElementById('mod-'+mod).classList.add('active');
+  const el=document.getElementById('mod-'+mod);
+  if(el){el.classList.add('active');}
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.mod===mod));
   document.querySelectorAll('.bnav-item').forEach(n => n.classList.toggle('active', n.dataset.mod===mod));
   if(mod==='hub') renderHub();
-  if(mod==='day') renderDay();
-  if(mod==='work') renderWork();
-  if(mod==='finance') renderFin();
-  if(mod==='goals') renderGoals();
+  else if(mod==='day') renderDay();
+  else if(mod==='work') renderWork();
+  else if(mod==='finance') renderFin();
+  else if(mod==='goals') renderGoals();
+  else if(cmGetMod(mod)) renderCMModule(mod);
 }
 
 /* ===== TOAST ===== */
@@ -1824,25 +1862,40 @@ function finRenderSection(rate=50) {
   const wrapEnd='</div>';
 
   if(FIN.tab==='banks') {
-    const tot=FIN.banks.reduce((s,b)=>s+(+b.balance||0),0);
+    const rate=+document.getElementById('usdRate')?.value||50;
+    const tot=FIN.banks.reduce((s,b)=>s+((+b.balance_egp||+b.balance||0)+(+b.balance_usd||0)*rate),0);
+    const totEGP=FIN.banks.reduce((s,b)=>s+(+b.balance_egp||+b.balance||0),0);
+    const totUSD=FIN.banks.reduce((s,b)=>s+(+b.balance_usd||0),0);
     el.innerHTML=`<div class="fin-summary">
-      <div class="fin-sum-card"><div class="fin-sum-label">عدد البنوك</div><div class="fin-sum-val">${FIN.banks.length}</div></div>
-      <div class="fin-sum-card"><div class="fin-sum-label">الإجمالي</div><div class="fin-sum-val" style="color:var(--fin-accent)">${fmtEGP(tot)}</div></div>
-      <div class="fin-sum-card"><div class="fin-sum-label">المتوسط</div><div class="fin-sum-val">${fmtEGP(FIN.banks.length?tot/FIN.banks.length:0)}</div></div>
-    </div>${wrapStart}<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>البنك</th><th>الرصيد</th><th>ملاحظة</th><th></th></tr></thead><tbody id="banksBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('banks')">+ إضافة بنك</button></div>${wrapEnd}`;
-    document.getElementById('banksBody').innerHTML=FIN.banks.map((b,i)=>{const c=BK[i%BK.length];return `<tr class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(b.name)}" style="color:${c};font-weight:800" onchange="finUpd('banks','${b.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+b.balance||0}" style="font-weight:800" onchange="finUpd('banks','${b.id}',{balance:+this.value});finRender()" dir="ltr"></td><td><input class="fin-inp" value="${esc(b.note||'')}" placeholder="ملاحظة..." onchange="finUpd('banks','${b.id}',{note:this.value})"></td><td class="del-cell"><button class="del-btn" onclick="finDel('banks','${b.id}')">×</button></td></tr>`;}).join('');
+      <div class="fin-sum-card"><div class="fin-sum-label">الإجمالي الكلي</div><div class="fin-sum-val" style="color:var(--fin-accent)">${fmtEGP(tot)}</div></div>
+      <div class="fin-sum-card"><div class="fin-sum-label">جنيه مصري</div><div class="fin-sum-val">${fmtEGP(totEGP)}</div></div>
+      <div class="fin-sum-card"><div class="fin-sum-label">دولار</div><div class="fin-sum-val" style="direction:ltr">$${fmtNum(totUSD)}</div></div>
+    </div>${wrapStart}<div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>البنك</th><th>EGP</th><th>USD</th><th>الإجمالي</th><th>ملاحظة</th><th></th></tr></thead><tbody id="banksBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('banks')">+ إضافة بنك</button></div>${wrapEnd}`;
+    document.getElementById('banksBody').innerHTML=FIN.banks.map((b,i)=>{
+      const c=BK[i%BK.length];
+      const balEGP=+b.balance_egp||+b.balance||0;
+      const balUSD=+b.balance_usd||0;
+      const total=balEGP+(balUSD*rate);
+      return `<tr class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('banks','${b.id}')">
+        <td style="color:${c};font-weight:800">${esc(b.name)}</td>
+        <td style="direction:ltr;font-weight:700">${fmtNum(balEGP)}</td>
+        <td style="direction:ltr;font-weight:700;color:#38bdf8">${balUSD?'$'+fmtNum(balUSD):'—'}</td>
+        <td style="direction:ltr;font-weight:900;color:${c}">${fmtEGP(total)}</td>
+        <td style="color:var(--text-d);font-size:11px">${esc(b.note||'')}</td>
+        <td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('banks','${b.id}')">✏️</button></td>
+      </tr>`;}).join('');
   }
   else if(FIN.tab==='gold') {
     const tot=FIN.gold.reduce((s,g)=>s+((+g.grams||0)*(+g.price_per_gram||0)),0), totG=FIN.gold.reduce((s,g)=>s+(+g.grams||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الجرامات</div><div class="fin-sum-val">${fmtGrams(totG)} جم</div></div><div class="fin-sum-card"><div class="fin-sum-label">القيمة الإجمالية</div><div class="fin-sum-val" style="color:#fbbf24">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متوسط سعر الجرام</div><div class="fin-sum-val">${fmtEGP(totG?tot/totG:0)}</div></div></div>
     <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الصنف</th><th>الوزن (جم)</th><th>سعر الجرام</th><th>الإجمالي</th><th></th></tr></thead><tbody id="goldBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('gold')">+ إضافة ذهب</button></div>`;
-    document.getElementById('goldBody').innerHTML=FIN.gold.map((g,i)=>{const c=['#fbbf24','#f59e0b','#fcd34d','#d97706'][i%4];const v=(+g.grams||0)*(+g.price_per_gram||0);return `<tr class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(g.name)}" style="color:${c};font-weight:800" onchange="finUpd('gold','${g.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+g.grams||0}" dir="ltr" onchange="finUpd('gold','${g.id}',{grams:+this.value});finRender()"></td><td><input class="fin-inp" type="number" value="${+g.price_per_gram||0}" dir="ltr" onchange="finUpd('gold','${g.id}',{price_per_gram:+this.value});finRender()"></td><td style="font-weight:800;color:${c};direction:ltr">${fmtEGP(v)}</td><td class="del-cell"><button class="del-btn" onclick="finDel('gold','${g.id}')">×</button></td></tr>`;}).join('');
+    document.getElementById('goldBody').innerHTML=FIN.gold.map((g,i)=>{const c=['#fbbf24','#f59e0b','#fcd34d','#d97706'][i%4];const v=(+g.grams||0)*(+g.price_per_gram||0);return `<tr class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('gold','${g.id}')"><td style="color:${c};font-weight:800">${esc(g.name)}</td><td style="direction:ltr">${fmtGrams(g.grams)}</td><td style="direction:ltr">${fmtNum(g.price_per_gram)}</td><td style="font-weight:800;color:${c};direction:ltr">${fmtEGP(v)}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('gold','${g.id}')">✏️</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='salary') {
     const tot=FIN.salary.reduce((s,r)=>s+(+r.amount||0),0),paid=FIN.salary.filter(r=>r.paid).reduce((s,r)=>s+(+r.amount||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">الإجمالي</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div>
     <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصدر</th><th>المبلغ</th><th>استلمت؟</th><th></th></tr></thead><tbody id="salBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('salary')">+ إضافة مرتب</button></div>`;
-    document.getElementById('salBody').innerHTML=FIN.salary.map((r,i)=>{const c=['#34d399','#10b981','#6ee7b7'][i%3];return `<tr ${r.paid?'class="paid-row"':''} style="${r.paid?'':''}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('salary','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('salary','${r.id}',{amount:+this.value});finRender()"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('salary','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('salary','${r.id}')">×</button></td></tr>`;}).join('');
+    document.getElementById('salBody').innerHTML=FIN.salary.map((r,i)=>{const c=['#34d399','#10b981','#6ee7b7'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('salary','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:800">${fmtEGP(r.amount)}</td><td>${r.paid?'<span style="color:var(--success);font-size:13px">✅ استلمت</span>':'<span style="color:var(--warning);font-size:13px">⏳ لسه</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('salary','${r.id}')">✏️</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='expenses') {
     const expTot=FIN.expenses.reduce((s,e)=>s+(+e.amount||0),0),expPaid=FIN.expenses.reduce((s,e)=>s+(+e.paid_amount||0),0),subUSD=FIN.subscriptions.reduce((s,r)=>s+(+r.usd||0),0),subEGP=subUSD*rate,grandTot=expTot+subEGP,grandPaid=expPaid+FIN.subscriptions.filter(r=>r.paid).reduce((s,r)=>s+(+r.usd*rate||0),0);
@@ -1850,29 +1903,124 @@ function finRenderSection(rate=50) {
     <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>المصروف</th><th>المبلغ</th><th>مدفوع</th><th>متبقي</th><th>✓</th><th></th></tr></thead><tbody id="expBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('expenses')">+ إضافة مصروف</button></div>
     <div style="font-size:13px;font-weight:800;margin:14px 0 10px;color:var(--text-m)">الاشتراكات الشهرية</div>
     <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاشتراك</th><th>USD</th><th>EGP</th><th>✓</th><th></th></tr></thead><tbody id="subBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('subscriptions')">+ إضافة اشتراك</button></div>`;
-    document.getElementById('expBody').innerHTML=FIN.expenses.map((r,i)=>{const c=['#a78bfa','#818cf8','#c4b5fd'][i%3];const rem=Math.max(0,(+r.amount||0)-(+r.paid_amount||0));const done=r.paid||(+r.paid_amount>=(+r.amount)&&+r.amount>0);return `<tr ${done?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('expenses','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('expenses','${r.id}',{amount:+this.value});finRender()"></td><td><input class="fin-inp" type="number" value="${+r.paid_amount||0}" dir="ltr" onchange="finUpd('expenses','${r.id}',{paid_amount:+this.value});finRender()"></td><td style="direction:ltr;font-weight:800;color:${rem>0?'var(--warning)':'var(--success)'}">${fmtEGP(rem)}</td><td><input type="checkbox" ${done?'checked':''} onchange="finUpd('expenses','${r.id}',{paid:this.checked,paid_amount:this.checked?${+r.amount||0}:0});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('expenses','${r.id}')">×</button></td></tr>`;}).join('');
-    document.getElementById('subBody').innerHTML=FIN.subscriptions.map((r,i)=>{const c=['#38bdf8','#0ea5e9','#22d3ee'][i%3];const egp=(+r.usd||0)*rate;return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('subscriptions','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.usd||0}" dir="ltr" onchange="finUpd('subscriptions','${r.id}',{usd:+this.value});finRender()"></td><td style="direction:ltr;font-weight:800;color:${c}">${fmtEGP(egp)}</td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('subscriptions','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('subscriptions','${r.id}')">×</button></td></tr>`;}).join('');
+    document.getElementById('expBody').innerHTML=FIN.expenses.map((r,i)=>{const c=['#a78bfa','#818cf8','#c4b5fd'][i%3];const rem=Math.max(0,(+r.amount||0)-(+r.paid_amount||0));const done=r.paid||(+r.paid_amount>=(+r.amount)&&+r.amount>0);return `<tr ${done?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('expenses','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:700">${fmtEGP(r.amount)}</td><td style="direction:ltr">${fmtEGP(r.paid_amount)}</td><td style="direction:ltr;font-weight:800;color:${rem>0?'var(--warning)':'var(--success)'}">${fmtEGP(rem)}</td><td>${done?'<span style="color:var(--success)">✅</span>':'<span style="color:var(--warning)">⏳</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('expenses','${r.id}')">✏️</button></td></tr>`;}).join('');
+    document.getElementById('subBody').innerHTML=FIN.subscriptions.map((r,i)=>{const c=['#38bdf8','#0ea5e9','#22d3ee'][i%3];const egp=(+r.usd||0)*rate;return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('subscriptions','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:700">$${fmtNum(r.usd)}</td><td style="direction:ltr;font-weight:800;color:${c}">${fmtEGP(egp)}</td><td>${r.paid?'<span style="color:var(--success)">✅ دُفع</span>':'<span style="color:var(--warning)">⏳ لسه</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('subscriptions','${r.id}')">✏️</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='debts') {
     const tot=FIN.debts.filter(d=>!d.paid).reduce((s,d)=>s+(+d.amount||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">ديون متبقية</div><div class="fin-sum-val" style="color:var(--danger)">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">عدد الديون</div><div class="fin-sum-val">${FIN.debts.filter(d=>!d.paid).length}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مسددة</div><div class="fin-sum-val" style="color:var(--success)">${FIN.debts.filter(d=>d.paid).length}</div></div></div>
     <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الدين</th><th>المبلغ</th><th>خلص؟</th><th></th></tr></thead><tbody id="debtsBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('debts')">+ إضافة دين</button></div>`;
-    document.getElementById('debtsBody').innerHTML=FIN.debts.map((r,i)=>{const c=['#f87171','#fb923c','#fca5a5'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('debts','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('debts','${r.id}',{amount:+this.value});finRender()"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('debts','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--danger);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('debts','${r.id}')">×</button></td></tr>`;}).join('');
+    document.getElementById('debtsBody').innerHTML=FIN.debts.map((r,i)=>{const c=['#f87171','#fb923c','#fca5a5'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('debts','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:800">${fmtEGP(r.amount)}</td><td>${r.paid?'<span style="color:var(--success)">✅ اتسدد</span>':'<span style="color:var(--danger)">⚠️ متبقي</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('debts','${r.id}')">✏️</button></td></tr>`;}).join('');
   }
   else if(FIN.tab==='increases') {
     const tot=FIN.increases.reduce((s,r)=>s+(+r.amount||0),0),paid=FIN.increases.filter(r=>r.paid).reduce((s,r)=>s+(+r.amount||0),0);
     el.innerHTML=`<div class="fin-summary"><div class="fin-sum-card"><div class="fin-sum-label">إجمالي الزيادات</div><div class="fin-sum-val">${fmtEGP(tot)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">مستلم</div><div class="fin-sum-val" style="color:var(--success)">${fmtEGP(paid)}</div></div><div class="fin-sum-card"><div class="fin-sum-label">متبقي</div><div class="fin-sum-val" style="color:var(--warning)">${fmtEGP(tot-paid)}</div></div></div>
     <div class="fin-table-wrap"><table class="fin-table"><thead><tr><th>الاسم</th><th>المبلغ</th><th>السبب</th><th>✓</th><th></th></tr></thead><tbody id="incBody"></tbody></table><button class="fin-add-btn" onclick="finAdd('increases')">+ إضافة زيادة</button></div>`;
-    document.getElementById('incBody').innerHTML=FIN.increases.map((r,i)=>{const c=['#06b6d4','#0ea5e9','#22d3ee'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c}"><td><input class="fin-inp" value="${esc(r.name)}" style="color:${c};font-weight:800" onchange="finUpd('increases','${r.id}',{name:this.value})"></td><td><input class="fin-inp" type="number" value="${+r.amount||0}" dir="ltr" onchange="finUpd('increases','${r.id}',{amount:+this.value});finRender()"></td><td><input class="fin-inp" value="${esc(r.note||'')}" placeholder="السبب..." onchange="finUpd('increases','${r.id}',{note:this.value})"></td><td><input type="checkbox" ${r.paid?'checked':''} onchange="finUpd('increases','${r.id}',{paid:this.checked});finRender()" style="accent-color:var(--success);width:17px;height:17px"></td><td class="del-cell"><button class="del-btn" onclick="finDel('increases','${r.id}')">×</button></td></tr>`;}).join('');
+    document.getElementById('incBody').innerHTML=FIN.increases.map((r,i)=>{const c=['#06b6d4','#0ea5e9','#22d3ee'][i%3];return `<tr ${r.paid?'class="paid-row"':''} class="fin-row-highlight" style="--row-color:${c};cursor:pointer" onclick="openFinModal('increases','${r.id}')"><td style="color:${c};font-weight:800">${esc(r.name)}</td><td style="direction:ltr;font-weight:800">${fmtEGP(r.amount)}</td><td style="color:var(--text-d)">${esc(r.note||'')}</td><td>${r.paid?'<span style="color:var(--success)">✅ استلمت</span>':'<span style="color:var(--warning)">⏳ لسه</span>'}</td><td class="del-cell"><button class="del-btn" onclick="event.stopPropagation();openFinModal('increases','${r.id}')">✏️</button></td></tr>`;}).join('');
   }
 }
-async function finAdd(key) {
-  const id=uid(); const sk=FIN_STATE_KEY[key];
-  const defs={banks:{id,user_id:OWNER,name:'بنك جديد',balance:0,note:''},gold:{id,user_id:OWNER,name:'ذهب',grams:0,price_per_gram:0},salary:{id,user_id:OWNER,name:'مرتب',amount:0,paid:false},expenses:{id,user_id:OWNER,name:'مصروف جديد',amount:0,paid_amount:0,paid:false},subscriptions:{id,user_id:OWNER,name:'اشتراك جديد',usd:0,paid:false},debts:{id,user_id:OWNER,name:'دين جديد',amount:0,paid:false},increases:{id,user_id:OWNER,name:'زيادة جديدة',amount:0,note:'',paid:false}};
-  FIN[sk].push(defs[key]); finSaveLocal(); markWrite('fin');
-  if(sb)try{await sb.from(FIN_TBL_MAP[key]).insert(defs[key]);}catch(_){}
-  finRender();
+function finAdd(key) { openFinModal(key, null); }
+
+let finModalKey=null, finModalId=null;
+function openFinModal(key, id) {
+  finModalKey=key; finModalId=id;
+  const sk=FIN_STATE_KEY[key];
+  const existing=id?FIN[sk].find(r=>r.id===id):null;
+  const configs={
+    banks:{title:'بنك',fields:[
+      {id:'fm_name',label:'اسم البنك',type:'text',placeholder:'مثلاً: CIB',val:existing?.name||''},
+      {id:'fm_balEGP',label:'الرصيد (جنيه)',type:'number',placeholder:'0',val:existing?.balance_egp??existing?.balance??0,dir:'ltr'},
+      {id:'fm_balUSD',label:'الرصيد (دولار)',type:'number',placeholder:'0',val:existing?.balance_usd??0,dir:'ltr'},
+      {id:'fm_note',label:'ملاحظة',type:'text',placeholder:'اختياري',val:existing?.note||''},
+    ]},
+    gold:{title:'ذهب',fields:[
+      {id:'fm_name',label:'الصنف',type:'text',placeholder:'مثلاً: سبيكة 18k',val:existing?.name||''},
+      {id:'fm_grams',label:'الوزن (جرام)',type:'number',placeholder:'0',val:existing?.grams??0,dir:'ltr'},
+      {id:'fm_ppg',label:'سعر الجرام (EGP)',type:'number',placeholder:'0',val:existing?.price_per_gram??0,dir:'ltr'},
+    ]},
+    salary:{title:'مرتب/دخل',fields:[
+      {id:'fm_name',label:'المصدر',type:'text',placeholder:'مثلاً: شركة X',val:existing?.name||''},
+      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',placeholder:'0',val:existing?.amount??0,dir:'ltr'},
+      {id:'fm_paid',label:'تم الاستلام؟',type:'checkbox',val:existing?.paid??false},
+    ]},
+    expenses:{title:'مصروف',fields:[
+      {id:'fm_name',label:'اسم المصروف',type:'text',placeholder:'مثلاً: إيجار',val:existing?.name||''},
+      {id:'fm_amount',label:'المبلغ الكلي (EGP)',type:'number',placeholder:'0',val:existing?.amount??0,dir:'ltr'},
+      {id:'fm_paid_amount',label:'المدفوع (EGP)',type:'number',placeholder:'0',val:existing?.paid_amount??0,dir:'ltr'},
+    ]},
+    subscriptions:{title:'اشتراك',fields:[
+      {id:'fm_name',label:'اسم الاشتراك',type:'text',placeholder:'مثلاً: Netflix',val:existing?.name||''},
+      {id:'fm_usd',label:'السعر (USD/شهر)',type:'number',placeholder:'0',val:existing?.usd??0,dir:'ltr'},
+      {id:'fm_paid',label:'تم الدفع؟',type:'checkbox',val:existing?.paid??false},
+    ]},
+    debts:{title:'دين',fields:[
+      {id:'fm_name',label:'اسم الدين / لمن',type:'text',placeholder:'مثلاً: قرض البنك',val:existing?.name||''},
+      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',placeholder:'0',val:existing?.amount??0,dir:'ltr'},
+      {id:'fm_paid',label:'تم السداد؟',type:'checkbox',val:existing?.paid??false},
+    ]},
+    increases:{title:'زيادة دخل',fields:[
+      {id:'fm_name',label:'المصدر',type:'text',placeholder:'مثلاً: بونص',val:existing?.name||''},
+      {id:'fm_amount',label:'المبلغ (EGP)',type:'number',placeholder:'0',val:existing?.amount??0,dir:'ltr'},
+      {id:'fm_note',label:'السبب',type:'text',placeholder:'اختياري',val:existing?.note||''},
+      {id:'fm_paid',label:'تم الاستلام؟',type:'checkbox',val:existing?.paid??false},
+    ]},
+  };
+  const cfg=configs[key]; if(!cfg)return;
+  const fieldsHtml=cfg.fields.map(f=>{
+    if(f.type==='checkbox') return `<div class="mf-row" style="flex-direction:row;align-items:center;gap:10px"><input type="checkbox" id="${f.id}" ${f.val?'checked':''} style="width:18px;height:18px;accent-color:var(--success)"><label for="${f.id}" style="font-size:13px;font-weight:700">${f.label}</label></div>`;
+    return `<div class="mf-row"><label>${f.label}</label><input class="mf-inp" id="${f.id}" type="${f.type}" value="${typeof f.val==='string'?f.val.replace(/"/g,'&quot;'):f.val}" placeholder="${f.placeholder||''}" ${f.dir?'dir="'+f.dir+'"':''} ${f.type==='text'?'':''}></div>`;
+  }).join('');
+  const el=document.getElementById('finEntryModal');
+  document.getElementById('finEntryTitle').textContent=(id?'تعديل ':'إضافة ')+cfg.title;
+  document.getElementById('finEntryFields').innerHTML=fieldsHtml;
+  document.getElementById('finEntryDelBtn').classList.toggle('hidden',!id);
+  el.classList.remove('hidden');
+  setTimeout(()=>document.getElementById('fm_name')?.focus(),60);
 }
+async function saveFinEntry() {
+  const key=finModalKey, id=finModalId, sk=FIN_STATE_KEY[key];
+  const name=document.getElementById('fm_name')?.value?.trim();
+  if(!name)return toast('اكتب الاسم أولاً');
+  const rate=+document.getElementById('usdRate')?.value||50;
+  let row={};
+  if(key==='banks'){
+    const egp=+document.getElementById('fm_balEGP')?.value||0;
+    const usdVal=+document.getElementById('fm_balUSD')?.value||0;
+    row={name,balance_egp:egp,balance_usd:usdVal,balance:egp+(usdVal*rate),note:document.getElementById('fm_note')?.value?.trim()||''};
+  } else if(key==='gold'){
+    row={name,grams:+document.getElementById('fm_grams')?.value||0,price_per_gram:+document.getElementById('fm_ppg')?.value||0};
+  } else if(key==='salary'){
+    row={name,amount:+document.getElementById('fm_amount')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
+  } else if(key==='expenses'){
+    const amt=+document.getElementById('fm_amount')?.value||0,paid_amt=+document.getElementById('fm_paid_amount')?.value||0;
+    row={name,amount:amt,paid_amount:paid_amt,paid:paid_amt>=amt&&amt>0};
+  } else if(key==='subscriptions'){
+    row={name,usd:+document.getElementById('fm_usd')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
+  } else if(key==='debts'){
+    row={name,amount:+document.getElementById('fm_amount')?.value||0,paid:document.getElementById('fm_paid')?.checked||false};
+  } else if(key==='increases'){
+    row={name,amount:+document.getElementById('fm_amount')?.value||0,note:document.getElementById('fm_note')?.value?.trim()||'',paid:document.getElementById('fm_paid')?.checked||false};
+  }
+  if(id) {
+    const existing=FIN[sk].find(r=>r.id===id); if(existing)Object.assign(existing,row);
+    if(sb)try{await sb.from(FIN_TBL_MAP[key]).update({...row,user_id:OWNER}).eq('id',id);}catch(_){}
+  } else {
+    const newRow={id:uid(),user_id:OWNER,...row};
+    FIN[sk].push(newRow);
+    if(sb)try{const{data}=await sb.from(FIN_TBL_MAP[key]).insert({...newRow}).select().single();if(data&&data.id)newRow.id=data.id;}catch(_){}
+  }
+  finSaveLocal(); markWrite('fin'); closeFinModal(); finRender();
+  toast(id?'تم التعديل ✅':'تم الإضافة ✅');
+}
+async function deleteFinEntry() {
+  if(!finModalKey||!finModalId)return;
+  if(!confirm('هتحذف هذا العنصر؟'))return;
+  const sk=FIN_STATE_KEY[finModalKey]; FIN[sk]=FIN[sk].filter(r=>r.id!==finModalId);
+  finSaveLocal(); markWrite('fin');
+  if(sb)try{await sb.from(FIN_TBL_MAP[finModalKey]).delete().eq('id',finModalId);}catch(_){}
+  closeFinModal(); finRender(); toast('تم الحذف');
+}
+function closeFinModal(){document.getElementById('finEntryModal').classList.add('hidden');}
 async function finUpd(key, id, patch) {
   const sk=FIN_STATE_KEY[key]; const row=FIN[sk].find(r=>r.id===id); if(row)Object.assign(row,patch);
   finSaveLocal(); markWrite('fin');
@@ -1904,7 +2052,7 @@ function renderGoals() {
   // Sections bar
   const secBar=document.getElementById('sectionsBar');
   secBar.innerHTML=`<div class="section-chip ${GOALS.activeSection==='all'?'active':''}" onclick="GOALS.activeSection='all';renderGoals()">🌐 الكل (${GOALS.items.length})</div>`+
-    GOALS.sections.map(s=>{const cnt=GOALS.items.filter(g=>g.section_id===s.id).length;return `<div class="section-chip ${GOALS.activeSection===s.id?'active':''}" onclick="GOALS.activeSection='${s.id}';renderGoals()" style="${GOALS.activeSection===s.id?'border-color:'+s.color+';color:'+s.color:''}">${s.icon} ${esc(s.name)} (${cnt})</div>`;}).join('');
+    GOALS.sections.map(s=>{const cnt=GOALS.items.filter(g=>g.section_id===s.id).length;return `<div class="section-chip ${GOALS.activeSection===s.id?'active':''}" style="${GOALS.activeSection===s.id?'border-color:'+s.color+';color:'+s.color:''}"><span onclick="GOALS.activeSection='${s.id}';renderGoals()">${s.icon} ${esc(s.name)} (${cnt})</span><button onclick="openSectionModal('${s.id}')" style="background:none;border:none;font-size:11px;opacity:.6;cursor:pointer;padding:0 0 0 4px" title="تعديل القسم">✏️</button></div>`;}).join('');
 
   const filtered=GOALS.activeSection==='all'?GOALS.items:GOALS.items.filter(g=>g.section_id===GOALS.activeSection);
   const board=document.getElementById('goalsBoard');
@@ -2027,22 +2175,247 @@ async function delGoal(gid) {
   closeGoalModal(); renderGoals(); updateBadges(); toast('تم الحذف');
 }
 
-function openSectionModal() { document.getElementById('sectionModal').classList.remove('hidden'); setTimeout(()=>document.getElementById('secName')?.focus(),60); }
-function closeSectionModal() { document.getElementById('sectionModal').classList.add('hidden'); }
+let editingSectionId=null;
+function openSectionModal(sid=null) {
+  editingSectionId=sid;
+  const existing=sid?GOALS.sections.find(s=>s.id===sid):null;
+  document.getElementById('secModalTitle').textContent=existing?'تعديل القسم':'📁 قسم جديد';
+  document.getElementById('secName').value=existing?.name||'';
+  document.getElementById('secIcon').value=existing?.icon||'📌';
+  document.getElementById('secColor').value=existing?.color||'#6366f1';
+  document.getElementById('secDelBtn').classList.toggle('hidden',!existing);
+  document.getElementById('sectionModal').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('secName')?.focus(),60);
+}
+function closeSectionModal() { document.getElementById('sectionModal').classList.add('hidden'); editingSectionId=null; }
 async function saveSection() {
   const name=document.getElementById('secName').value.trim(); if(!name)return toast('اكتب اسم القسم');
-  const sec={id:uid(),name,icon:document.getElementById('secIcon').value||'📌',color:document.getElementById('secColor').value,sort_order:GOALS.sections.length,user_id:OWNER};
-  GOALS.sections.push(sec); goalsSaveLocal();
-  if(sb)try{await sb.from('hub_sections').insert(sec);}catch(_){}
-  closeSectionModal(); renderGoals(); toast('تم إضافة القسم ✅');
+  const data={name,icon:document.getElementById('secIcon').value||'📌',color:document.getElementById('secColor').value};
+  if(editingSectionId) {
+    const s=GOALS.sections.find(x=>x.id===editingSectionId); if(s)Object.assign(s,data);
+    if(sb)try{await sb.from('hub_sections').update(data).eq('id',editingSectionId);}catch(_){}
+  } else {
+    const sec={id:uid(),sort_order:GOALS.sections.length,user_id:OWNER,...data};
+    GOALS.sections.push(sec);
+    if(sb)try{await sb.from('hub_sections').insert(sec);}catch(_){}
+  }
+  goalsSaveLocal(); closeSectionModal(); renderGoals(); toast(editingSectionId?'تم تعديل القسم ✅':'تم إضافة القسم ✅');
+}
+async function deleteSection() {
+  if(!editingSectionId)return;
+  if(!confirm('هتحذف القسم ده؟ الأهداف اللي فيه هتتحول لـ "بدون قسم"'))return;
+  GOALS.items.filter(g=>g.section_id===editingSectionId).forEach(g=>g.section_id='personal');
+  GOALS.sections=GOALS.sections.filter(s=>s.id!==editingSectionId);
+  if(sb)try{await sb.from('hub_sections').delete().eq('id',editingSectionId);}catch(_){}
+  goalsSaveLocal(); closeSectionModal();
+  if(GOALS.activeSection===editingSectionId)GOALS.activeSection='all';
+  renderGoals(); toast('تم حذف القسم');
+}
+
+/* =====================================================
+   CUSTOM MODULES SYSTEM
+   ===================================================== */
+const CM = { modules: JSON.parse(localStorage.getItem('ms_custom_mods')||'[]') };
+const FIELD_TYPES = [
+  {id:'text',label:'نص',icon:'📝'},{id:'number',label:'رقم',icon:'🔢'},
+  {id:'date',label:'تاريخ',icon:'📅'},{id:'select',label:'قائمة اختيار',icon:'📋'},
+  {id:'checkbox',label:'صح/غلط',icon:'☑️'},{id:'link',label:'رابط',icon:'🔗'},
+  {id:'currency',label:'مبلغ مالي',icon:'💰'},{id:'rating',label:'تقييم ⭐',icon:'⭐'},
+  {id:'textarea',label:'نص طويل',icon:'📄'},
+];
+
+function cmSave() { localStorage.setItem('ms_custom_mods',JSON.stringify(CM.modules)); }
+function cmGetMod(id) { return CM.modules.find(m=>m.id===id); }
+function cmGetEntries(modId) { return JSON.parse(localStorage.getItem('ms_cm_entries_'+modId)||'[]'); }
+function cmSaveEntries(modId, entries) { localStorage.setItem('ms_cm_entries_'+modId,JSON.stringify(entries)); }
+
+// Render custom nav items in sidebar
+function renderCustomNav() {
+  const el=document.getElementById('customNavItems'); if(!el)return;
+  el.innerHTML=CM.modules.map(m=>`<div class="nav-item ${cur===m.id?'active':''}" data-mod="${m.id}" onclick="go('${m.id}')" style="${cur===m.id?'background:linear-gradient(135deg,'+m.color+'22,'+m.color+'11);color:#fff;border-color:'+m.color+'33':''}">
+    <span class="nav-icon">${m.icon}</span><span>${esc(m.name)}</span>
+    <button onclick="event.stopPropagation();openCMModal('${m.id}')" style="margin-right:auto;font-size:11px;opacity:.5;padding:3px;background:none;border:none;cursor:pointer;color:inherit">⚙️</button>
+  </div>`).join('');
+  // Create/update module sections in main
+  const container=document.getElementById('customModules'); if(!container)return;
+  // Remove old sections
+  container.querySelectorAll('.cm-module-section').forEach(s=>s.remove());
+  CM.modules.forEach(m=>{
+    if(document.getElementById('mod-'+m.id))return;
+    const sec=document.createElement('section');
+    sec.id='mod-'+m.id; sec.className='module cm-module-section';
+    sec.innerHTML=`<div class="cm-custom-wrap" style="--cm-color:${m.color}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <div class="sec-title"><h2>${m.icon} ${esc(m.name)}</h2><p>${esc(m.description||'')}</p></div>
+        <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+          <div class="view-toggle" id="cm-layout-${m.id}">
+            <div class="vt-btn active" onclick="cmSetLayout('${m.id}','list')">☰</div>
+            <div class="vt-btn" onclick="cmSetLayout('${m.id}','grid')">⊞</div>
+          </div>
+          <button class="add-btn" style="background:linear-gradient(135deg,${m.color},${m.color}cc)" onclick="openCMEntryModal('${m.id}',null)">+ ${esc(m.name.slice(0,10))}</button>
+          <button class="icon-btn" onclick="openCMModal('${m.id}')" title="إعدادات القسم">⚙️</button>
+        </div>
+      </div>
+      <div class="stats-row cols-3" id="cm-stats-${m.id}"></div>
+      <div id="cm-board-${m.id}" style="margin-top:14px"></div>
+    </div>`;
+    container.appendChild(sec);
+  });
+}
+
+// CM Module modal (create/edit structure)
+let cmEditingModId=null, cmFields=[];
+function openCMModal(modId=null) {
+  cmEditingModId=modId;
+  const m=modId?cmGetMod(modId):null;
+  cmFields=m?JSON.parse(JSON.stringify(m.fields||[])):[{id:uid().slice(0,8),label:'اسم',type:'text',required:true}];
+  document.getElementById('cmModalTitle').textContent=m?'⚙️ إعدادات '+m.name:'قسم رئيسي جديد';
+  document.getElementById('cmModalBody').innerHTML=`
+    <div class="mg2">
+      <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="cmIcon" value="${m?.icon||'📦'}" maxlength="2"></div>
+      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="cmColor" type="color" value="${m?.color||'#6366f1'}"></div>
+    </div>
+    <div class="mf-row"><label>اسم القسم *</label><input class="mf-inp" id="cmName" value="${esc(m?.name||'')}" placeholder="مثلاً: مشاريع، سفر، كتب..."></div>
+    <div class="mf-row"><label>وصف (اختياري)</label><input class="mf-inp" id="cmDesc" value="${esc(m?.description||'')}" placeholder="وصف مختصر..."></div>
+    <div class="cm-section-header" style="margin-top:16px">
+      <h3>🧩 حقول القسم</h3>
+      <button class="add-btn teal" onclick="cmAddField()" style="font-size:11px;padding:6px 12px">+ حقل جديد</button>
+    </div>
+    <div id="cmFieldsList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveCM()">حفظ</button>
+      <button class="btn btn-ghost" onclick="closeCMModal()">إلغاء</button>
+      ${m?`<button class="btn btn-danger" onclick="deleteCM('${modId}')">حذف القسم</button>`:''}
+    </div>`;
+  renderCMFields();
+  document.getElementById('customModModal').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('cmName')?.focus(),60);
+}
+function closeCMModal(){document.getElementById('customModModal').classList.add('hidden');cmEditingModId=null;cmFields=[];}
+function cmAddField(){cmFields.push({id:uid().slice(0,8),label:'',type:'text',required:false,options:''});renderCMFields();}
+function renderCMFields(){
+  document.getElementById('cmFieldsList').innerHTML=cmFields.map((f,i)=>`
+    <div class="cm-field-card">
+      <div class="cm-field-label"><span>حقل ${i+1}</span><button onclick="cmFields.splice(${i},1);renderCMFields()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:13px">حذف</button></div>
+      <div class="mg2">
+        <div class="mf-row"><label>اسم الحقل</label><input class="mf-inp" value="${esc(f.label)}" placeholder="مثلاً: الميزانية" oninput="cmFields[${i}].label=this.value"></div>
+        <div class="mf-row"><label>النوع</label><select class="mf-inp" onchange="cmFields[${i}].type=this.value;renderCMFields()">
+          ${FIELD_TYPES.map(t=>`<option value="${t.id}" ${f.type===t.id?'selected':''}>${t.icon} ${t.label}</option>`).join('')}
+        </select></div>
+      </div>
+      ${f.type==='select'?`<div class="mf-row"><label>الخيارات (افصل بفاصلة)</label><input class="mf-inp" value="${esc(f.options||'')}" placeholder="خيار1,خيار2,خيار3" oninput="cmFields[${i}].options=this.value"></div>`:''}
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><input type="checkbox" id="fReq${i}" ${f.required?'checked':''} onchange="cmFields[${i}].required=this.checked" style="width:15px;height:15px"><label for="fReq${i}" style="font-size:11px;color:var(--text-m)">حقل إجباري</label></div>
+    </div>`).join('');
+}
+function saveCM(){
+  const name=document.getElementById('cmName').value.trim(); if(!name)return toast('اكتب اسم القسم');
+  const validFields=cmFields.filter(f=>f.label.trim());
+  if(!validFields.length)return toast('أضف حقل واحد على الأقل');
+  const mod={
+    id:cmEditingModId||uid(),name,
+    icon:document.getElementById('cmIcon').value||'📦',
+    color:document.getElementById('cmColor').value||'#6366f1',
+    description:document.getElementById('cmDesc').value.trim(),
+    fields:validFields,layout:'list',
+  };
+  if(cmEditingModId){const idx=CM.modules.findIndex(m=>m.id===cmEditingModId);if(idx>=0)CM.modules[idx]=mod;else CM.modules.push(mod);}
+  else CM.modules.push(mod);
+  cmSave(); closeCMModal(); renderCustomNav(); go(mod.id); renderCMModule(mod.id);
+  toast(cmEditingModId?'تم تعديل القسم ✅':'تم إنشاء القسم ✅');
+}
+function deleteCM(modId){
+  if(!confirm('هتحذف القسم ده وكل بياناته؟'))return;
+  CM.modules=CM.modules.filter(m=>m.id!==modId);
+  localStorage.removeItem('ms_cm_entries_'+modId); cmSave();
+  closeCMModal(); go('hub'); renderCustomNav();
+  // Remove section from DOM
+  document.getElementById('mod-'+modId)?.remove(); toast('تم حذف القسم');
+}
+
+// CM Entry modal (add/edit a record)
+let cmEntryModId=null, cmEntryId=null;
+function openCMEntryModal(modId, entId) {
+  cmEntryModId=modId; cmEntryId=entId;
+  const m=cmGetMod(modId); if(!m)return;
+  const entries=cmGetEntries(modId);
+  const existing=entId?entries.find(e=>e.id===entId):null;
+  const fieldsHtml=m.fields.map(f=>{
+    const val=existing?.[f.id]??'';
+    if(f.type==='checkbox') return `<div class="mf-row" style="flex-direction:row;align-items:center;gap:10px"><input type="checkbox" id="cmef_${f.id}" ${val?'checked':''} style="width:18px;height:18px;accent-color:${m.color}"><label for="cmef_${f.id}" style="font-size:13px;font-weight:700">${esc(f.label)}</label></div>`;
+    if(f.type==='select') return `<div class="mf-row"><label>${esc(f.label)}</label><select class="mf-inp" id="cmef_${f.id}">${(f.options||'').split(',').map(o=>`<option value="${esc(o.trim())}" ${val===o.trim()?'selected':''}>${esc(o.trim())}</option>`).join('')}</select></div>`;
+    if(f.type==='textarea') return `<div class="mf-row"><label>${esc(f.label)}</label><textarea class="mf-inp" id="cmef_${f.id}" placeholder="${esc(f.label)}">${esc(val)}</textarea></div>`;
+    if(f.type==='rating') return `<div class="mf-row"><label>${esc(f.label)}</label><select class="mf-inp" id="cmef_${f.id}">${[1,2,3,4,5].map(n=>`<option value="${n}" ${+val===n?'selected':''}>⭐ ${n}</option>`).join('')}</select></div>`;
+    return `<div class="mf-row"><label>${esc(f.label)}${f.required?'<span style="color:var(--danger)"> *</span>':''}</label><input class="mf-inp" id="cmef_${f.id}" type="${f.type==='currency'?'number':f.type==='link'?'url':f.type}" value="${esc(val)}" placeholder="${esc(f.label)}" ${f.type==='number'||f.type==='currency'||f.type==='link'?'dir="ltr"':''}></div>`;
+  }).join('');
+  document.getElementById('cmModalTitle').textContent=existing?'تعديل':'إضافة إلى '+m.name;
+  document.getElementById('cmModalBody').innerHTML=fieldsHtml+`<div class="modal-actions">
+    <button class="btn btn-primary" onclick="saveCMEntry()">حفظ</button>
+    <button class="btn btn-ghost" onclick="closeCMModal()">إلغاء</button>
+    ${existing?`<button class="btn btn-danger" onclick="deleteCMEntry()">حذف</button>`:''}
+  </div>`;
+  document.getElementById('customModModal').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('cmef_'+m.fields[0]?.id)?.focus(),60);
+}
+function saveCMEntry(){
+  const m=cmGetMod(cmEntryModId); if(!m)return;
+  const entries=cmGetEntries(cmEntryModId);
+  const entry={id:cmEntryId||uid()};
+  for(const f of m.fields){
+    const el=document.getElementById('cmef_'+f.id);
+    if(f.type==='checkbox') entry[f.id]=el?.checked||false;
+    else if(f.type==='number'||f.type==='currency'||f.type==='rating') entry[f.id]=+el?.value||0;
+    else entry[f.id]=el?.value||'';
+    if(f.required&&!entry[f.id]&&entry[f.id]!==0&&entry[f.id]!==false)return toast(f.label+' مطلوب');
+  }
+  entry._created=entry._created||new Date().toISOString();
+  entry._updated=new Date().toISOString();
+  if(cmEntryId){const idx=entries.findIndex(e=>e.id===cmEntryId);if(idx>=0)entries[idx]=entry;}
+  else entries.unshift(entry);
+  cmSaveEntries(cmEntryModId,entries); closeCMModal(); renderCMModule(cmEntryModId);
+  toast(cmEntryId?'تم التعديل ✅':'تم الإضافة ✅');
+}
+function deleteCMEntry(){
+  if(!cmEntryId)return; if(!confirm('هتحذف؟'))return;
+  const entries=cmGetEntries(cmEntryModId).filter(e=>e.id!==cmEntryId);
+  cmSaveEntries(cmEntryModId,entries); closeCMModal(); renderCMModule(cmEntryModId); toast('تم الحذف');
+}
+function cmSetLayout(modId,l){const m=cmGetMod(modId);if(m)m.layout=l;cmSave();document.querySelectorAll('#cm-layout-'+modId+' .vt-btn').forEach((b,i)=>b.classList.toggle('active',['list','grid'][i]===l));renderCMModule(modId);}
+function renderCMModule(modId){
+  const m=cmGetMod(modId); if(!m)return;
+  const entries=cmGetEntries(modId);
+  const statsEl=document.getElementById('cm-stats-'+modId);
+  if(statsEl) statsEl.innerHTML=`<div class="stat-card"><div class="stat-icon">${m.icon}</div><div class="stat-label">الإجمالي</div><div class="stat-val">${entries.length}</div></div>`;
+  const board=document.getElementById('cm-board-'+modId); if(!board)return;
+  const layout=m.layout||'list';
+  let style='display:flex;flex-direction:column;gap:10px';
+  if(layout==='grid') style='display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start';
+  if(!entries.length){board.innerHTML='<div class="hub-empty" style="padding:40px">لا يوجد سجلات. اضغط "+" عشان تضيف.</div>';return;}
+  board.innerHTML=`<div style="${style}">${entries.map(e=>{
+    const mainField=m.fields[0];
+    const mainVal=e[mainField?.id]||'—';
+    const otherFields=m.fields.slice(1,4);
+    return `<div class="cm-entry-card" style="--cm-color:${m.color}" onclick="openCMEntryModal('${modId}','${e.id}')">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+        <div class="cm-entry-title" style="color:${m.color}">${esc(String(mainVal))}</div>
+        <div style="font-size:10px;color:var(--text-d)">${new Date(e._created||Date.now()).toLocaleDateString('ar-EG')}</div>
+      </div>
+      ${otherFields.map(f=>`<div class="cm-entry-field"><span style="color:var(--text-d);font-size:10px">${esc(f.label)}:</span><span>${
+        f.type==='checkbox'?(e[f.id]?'✅':'❌'):
+        f.type==='rating'?'⭐'.repeat(+e[f.id]||0):
+        f.type==='currency'?fmtEGP(e[f.id]):
+        f.type==='link'?`<a href="${esc(e[f.id])}" onclick="event.stopPropagation()" target="_blank" style="color:#a5b4fc">🔗 رابط</a>`:
+        esc(String(e[f.id]||'—'))
+      }</span></div>`).join('')}
+    </div>`;
+  }).join('')}</div>`;
 }
 
 /* ===== KEYBOARD & MISC ===== */
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();const nc=document.getElementById('notifCenter');if(nc.classList.contains('open'))toggleNotifCenter();}
+  if(e.key==='Escape'){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();closeCMModal();closeFinModal();const nc=document.getElementById('notifCenter');if(nc.classList.contains('open'))toggleNotifCenter();}
 });
-['settingsModal','dayModal','taskModal','entityModal','goalModal','sectionModal'].forEach(id=>{
-  document.getElementById(id)?.addEventListener('click',function(e){if(e.target===this){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();}});
+['settingsModal','dayModal','taskModal','entityModal','goalModal','sectionModal','customModModal','finEntryModal'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('click',function(e){if(e.target===this){closeSettings();closeDayModal();closeTaskModal();closeEntityModal();closeGoalModal();closeSectionModal();closeCMModal();closeFinModal();}});
 });
 document.getElementById('notifCenter').addEventListener('click',e=>{if(!e.target.closest('.notif-center')&&e.target.id!=='notifCenter')return;});
 
@@ -2073,6 +2446,8 @@ async function boot() {
   // Run notifications checker every 5 mins
   setInterval(checkNotifications, 300000);
   setTimeout(checkNotifications, 3000);
+  // Custom modules
+  renderCustomNav();
 }
 boot();
 </script>
