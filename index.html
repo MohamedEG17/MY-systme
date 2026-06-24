@@ -1462,6 +1462,13 @@ body:not([data-theme="light"]) .block-time-range{
       </div>
     </div>
 
+
+    <div class="settings-section">
+      <h3>🧩 إدارة أقسام السيستم</h3>
+      <p style="font-size:12px;color:var(--text-m);margin-bottom:10px">من هنا تقدر تعدل أسماء الأقسام الأساسية وتضيف أقسام رئيسية جديدة مثل مواعيد العلاج أو التمرين.</p>
+      <button class="btn btn-primary" onclick="openSystemSectionsManager()">فتح لوحة الأقسام</button>
+    </div>
+
     <div class="settings-section">
       <h3>🗄️ SQL Setup</h3>
       <pre class="sql-box" id="sqlBox" style="max-height:160px"></pre>
@@ -1568,6 +1575,15 @@ body:not([data-theme="light"]) .block-time-range{
     </div>
   </div>
 </div>
+
+<!-- SYSTEM SECTIONS / DYNAMIC SECTION ITEM MODAL -->
+<div id="systemSectionsModal" class="modal-backdrop hidden">
+  <div class="modal-box system-sections-modal">
+    <div class="modal-head"><h2 id="systemSectionsModalTitle">إدارة أقسام السيستم</h2><button class="modal-close" onclick="closeSystemSectionsModal()">✕</button></div>
+    <div id="systemSectionsModalBody"></div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    MY SYSTEM — Complete JS Engine
@@ -3603,5 +3619,1349 @@ async function boot() {
 }
 boot();
 </script>
+
+<script id="system-dynamic-sections-v13-final">
+/* ===== V13 Final: real main sections, editable core section names, dynamic section items linked to Day ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+  const NAV_KEY='ms_nav_custom_labels_v13';
+  let pendingDynSectionId=null, pendingDynItemIndex=null;
+
+  const coreDefaults={
+    hub:{icon:'🏠',name:'الرئيسية'}, day:{icon:'📅',name:'يومي'}, work:{icon:'💼',name:'شغلي'}, finance:{icon:'🏦',name:'ثروتي'}, goals:{icon:'🎯',name:'أهدافي'}
+  };
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function escx(s){return (typeof esc==='function'?esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function today(){return (typeof dateKey==='function'?dateKey(new Date()):new Date().toISOString().slice(0,10));}
+  function makeId(){return 'sec_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function navCfg(){return parse(localStorage.getItem(NAV_KEY),{})}
+  function setNavCfg(v){localStorage.setItem(NAV_KEY,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud();}
+  function dynSections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function setDynSections(v){localStorage.setItem(DYN_KEY,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud();}
+  function label(mod){const c=navCfg()[mod]||{}; const d=coreDefaults[mod]||{icon:'📌',name:mod}; return {icon:c.icon||d.icon,name:c.name||d.name};}
+  function timeMin(t){if(!t)return null; const [h,m]=String(t).slice(0,5).split(':').map(Number); if(!Number.isFinite(h))return null; return h*60+(Number.isFinite(m)?m:0);}
+  function rangeOverlap(s1,e1,s2,e2){ if(s1==null||s2==null)return false; if(e1==null)e1=s1+60; if(e2==null)e2=s2+60; return s1<e2 && e1>s2; }
+  function timeText(i){ if(!i.start_time&&!i.end_time)return 'بدون وقت'; return `${i.start_time||'--:--'}${i.end_time?' → '+i.end_time:''}`; }
+
+  function patchCloudState(){
+    if(window.__dynCloudPatchedV13) return; window.__dynCloudPatchedV13=true;
+    const oldSnap=window.stateSnapshot;
+    if(oldSnap){
+      window.stateSnapshot=function(){
+        const s=oldSnap();
+        s.dynamicSections={ sections:dynSections(), nav:navCfg() };
+        return s;
+      }
+    }
+    const oldApply=window.applyRemoteState;
+    if(oldApply){
+      window.applyRemoteState=function(data){
+        oldApply(data);
+        if(data?.dynamicSections){
+          if(Array.isArray(data.dynamicSections.sections)) localStorage.setItem(DYN_KEY,JSON.stringify(data.dynamicSections.sections));
+          if(data.dynamicSections.nav) localStorage.setItem(NAV_KEY,JSON.stringify(data.dynamicSections.nav));
+        }
+        setTimeout(()=>{renderDynamicShell();applyNavLabels();},50);
+      }
+    }
+    const oldSaveRaw=window.saveAllLocalRaw;
+    if(oldSaveRaw){
+      window.saveAllLocalRaw=function(){
+        oldSaveRaw();
+        localStorage.setItem(DYN_KEY,JSON.stringify(dynSections()));
+        localStorage.setItem(NAV_KEY,JSON.stringify(navCfg()));
+      }
+    }
+  }
+
+  function applyNavLabels(){
+    Object.keys(coreDefaults).forEach(mod=>{
+      const l=label(mod);
+      document.querySelectorAll(`.nav-item[data-mod="${mod}"]`).forEach(el=>{
+        const ic=el.querySelector('.nav-icon'); if(ic)ic.textContent=l.icon;
+        const txt=[...el.querySelectorAll('span')].find(s=>!s.className.includes('nav-icon')&&!s.className.includes('nav-badge')); if(txt)txt.textContent=l.name;
+      });
+      document.querySelectorAll(`.bnav-item[data-mod="${mod}"]`).forEach(el=>{
+        const ic=el.querySelector('.bnav-icon'); if(ic)ic.textContent=l.icon;
+        const txt=[...el.querySelectorAll('span')].find(s=>!s.className.includes('bnav-icon')&&!s.className.includes('bnav-badge')); if(txt)txt.textContent=l.name;
+      });
+    });
+  }
+
+  function renderDynamicShell(){
+    const main=document.querySelector('main.main');
+    const navItems=document.querySelector('.sidebar .nav-items');
+    const bottom=document.getElementById('bottomNav');
+    if(!main||!navItems)return;
+
+    document.querySelectorAll('[data-dyn-module-v13="1"],[data-dyn-nav-v13="1"]').forEach(el=>el.remove());
+
+    dynSections().forEach(sec=>{
+      const mod='dyn_'+sec.id;
+      const nav=document.createElement('div');
+      nav.className='nav-item'; nav.dataset.mod=mod; nav.dataset.dynNavV13='1';
+      nav.setAttribute('onclick',`go('${mod}')`);
+      nav.innerHTML=`<span class="nav-icon">${escx(sec.icon||'📌')}</span><span>${escx(sec.name||'قسم')}</span>`;
+      navItems.appendChild(nav);
+
+      if(bottom){
+        const b=document.createElement('div');
+        b.className='bnav-item'; b.dataset.mod=mod; b.dataset.dynNavV13='1';
+        b.setAttribute('onclick',`go('${mod}')`);
+        b.innerHTML=`<span class="bnav-icon">${escx(sec.icon||'📌')}</span><span>${escx(sec.name||'قسم')}</span>`;
+        bottom.appendChild(b);
+      }
+
+      const s=document.createElement('section');
+      s.id='mod-'+mod; s.className='module'; s.dataset.dynModuleV13='1';
+      s.innerHTML=`<div class="dyn-page-wrap">
+        <div class="dyn-page-hero" style="--dyn-color:${sec.color||'#6366f1'}">
+          <div class="dyn-page-icon">${escx(sec.icon||'📌')}</div>
+          <div class="dyn-page-title"><h2>${escx(sec.name||'قسم')}</h2><p>${escx(sec.desc||'قسم رئيسي مخصص، يمكن ربط عناصره ببلوكات يومي حسب التاريخ والوقت.')}</p></div>
+          <div class="dyn-page-actions">
+            <button class="add-btn" onclick="openDynItemEditor('${sec.id}')">+ عنصر جديد</button>
+            <button class="add-btn teal" onclick="openSystemSectionsManager()">⚙️ تعديل الأقسام</button>
+          </div>
+        </div>
+        <div id="dynBoard_${sec.id}"></div>
+      </div>`;
+      main.appendChild(s);
+    });
+  }
+
+  function renderDynamicBoard(id){
+    const sec=dynSections().find(x=>x.id===id); if(!sec)return;
+    const board=document.getElementById('dynBoard_'+id); if(!board)return;
+    const items=Array.isArray(sec.items)?sec.items:[];
+    board.innerHTML=`<div class="dyn-summary-row">
+      <div><b>${items.length}</b><span>إجمالي العناصر</span></div>
+      <div><b>${items.filter(x=>x.date && x.date>=today()).length}</b><span>قادم</span></div>
+      <div><b>${items.filter(x=>x.link_day).length}</b><span>مربوط بيومي</span></div>
+      <div><b>${items.filter(x=>!x.start_time&&!x.end_time).length}</b><span>بدون وقت</span></div>
+    </div>
+    <div class="dyn-items-grid">
+      ${items.map((it,i)=>`<div class="dyn-item-card" style="--dyn-color:${it.color||sec.color||'#6366f1'}">
+        <div class="dyn-item-head">
+          <div class="dyn-item-name"><span>${escx(it.icon||sec.icon||'📌')}</span><div><b>${escx(it.title||'عنصر')}</b><small>${it.date?'📅 '+it.date:'📅 بدون تاريخ'} • ⏱ ${escx(timeText(it))}</small></div></div>
+          <div class="dyn-item-actions"><button onclick="openDynItemEditor('${sec.id}',${i})">✏️</button><button class="danger-mini" onclick="deleteDynItem('${sec.id}',${i})">✕</button></div>
+        </div>
+        ${it.desc?`<p>${escx(it.desc)}</p>`:''}
+        <div class="dyn-tags">${it.repeat?`<span>🔁 ${escx(it.repeat)}</span>`:''}${it.link_day?`<span>🔗 يسمع في يومي</span>`:''}${it.deadline?`<span>🏁 ${escx(it.deadline)}</span>`:''}</div>
+        ${(it.links||[]).length?`<div class="dyn-links">${(it.links||[]).map(l=>`<a href="${escx(l.url)}" target="_blank" rel="noopener">🔗 ${escx(l.name||l.url)}</a>`).join('')}</div>`:''}
+      </div>`).join('') || `<div class="goals-empty"><div class="ge-icon">${escx(sec.icon||'📌')}</div><h3>لا يوجد عناصر بعد</h3><p>اضف عنصر، وحدد هل يسمع في يومي أم لا.</p></div>`}
+    </div>`;
+  }
+
+  function patchGo(){
+    if(window.__dynGoPatchedV13)return; window.__dynGoPatchedV13=true;
+    window.go=function(mod){
+      cur=mod;
+      document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+      let target=document.getElementById('mod-'+mod);
+      if(!target && String(mod).startsWith('dyn_')){ renderDynamicShell(); target=document.getElementById('mod-'+mod); }
+      if(target) target.classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.mod===mod));
+      document.querySelectorAll('.bnav-item').forEach(n=>n.classList.toggle('active', n.dataset.mod===mod));
+      if(mod==='hub') renderHub();
+      if(mod==='day') renderDay();
+      if(mod==='work') renderWork();
+      if(mod==='finance') renderFin();
+      if(mod==='goals') renderGoals();
+      if(String(mod).startsWith('dyn_')) renderDynamicBoard(String(mod).slice(4));
+    }
+  }
+
+  window.openSystemSectionsManager=function(){
+    const body=document.getElementById('systemSectionsModalBody');
+    const secs=dynSections();
+    document.getElementById('systemSectionsModalTitle').textContent='إدارة أقسام السيستم بالكامل';
+    body.innerHTML=`<div class="sys-admin-hero">
+      <div><h3>لوحة تعديل كل أقسام السيستم</h3><p>عدل أسماء الأقسام الأساسية، واضف أقسام رئيسية جديدة حقيقية جنب يومي وشغلي وثروتي وأهدافي.</p></div>
+      <button class="add-btn teal" onclick="openDynSectionEditor()">+ قسم رئيسي جديد</button>
+    </div>
+    <div class="sys-admin-grid">
+      <div class="sys-admin-panel"><h4>الأقسام الأساسية</h4>${Object.keys(coreDefaults).map(mod=>{const l=label(mod);return `<div class="sys-row"><span>${l.icon}</span><b>${l.name}</b><small>${mod}</small><button onclick="openCoreEditor('${mod}')">تعديل</button></div>`}).join('')}</div>
+      <div class="sys-admin-panel"><h4>الأقسام الجديدة</h4>${secs.map(s=>`<div class="sys-row" style="--dyn-color:${s.color||'#6366f1'}"><span>${s.icon||'📌'}</span><b>${escx(s.name)}</b><small>${(s.items||[]).length} عناصر</small><button onclick="openDynSectionEditor('${s.id}')">تعديل</button><button class="danger-mini" onclick="deleteDynSection('${s.id}')">حذف</button></div>`).join('')||'<p class="hub-empty">لا يوجد أقسام جديدة</p>'}</div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إغلاق</button></div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+  window.closeSystemSectionsModal=function(){document.getElementById('systemSectionsModal')?.classList.add('hidden')}
+
+  window.openCoreEditor=function(mod){
+    const l=label(mod); const body=document.getElementById('systemSectionsModalBody');
+    document.getElementById('systemSectionsModalTitle').textContent='تعديل قسم أساسي';
+    body.innerHTML=`<div class="pro-form-grid"><div class="mf-row"><label>اسم القسم</label><input class="mf-inp" id="coreName" value="${escx(l.name)}"></div><div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="coreIcon" maxlength="2" value="${escx(l.icon)}"></div></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="saveCoreEditor('${mod}')">حفظ</button><button class="btn btn-ghost" onclick="openSystemSectionsManager()">رجوع</button></div>`;
+  }
+  window.saveCoreEditor=function(mod){
+    const cfg=navCfg();
+    cfg[mod]={name:document.getElementById('coreName').value.trim()||coreDefaults[mod].name,icon:document.getElementById('coreIcon').value||coreDefaults[mod].icon};
+    setNavCfg(cfg); applyNavLabels(); toast('تم تعديل القسم ✅'); openSystemSectionsManager();
+  }
+
+  window.openDynSectionEditor=function(id=''){
+    const sec=id?dynSections().find(x=>x.id===id):null;
+    const body=document.getElementById('systemSectionsModalBody');
+    document.getElementById('systemSectionsModalTitle').textContent=sec?'تعديل قسم رئيسي':'قسم رئيسي جديد';
+    body.innerHTML=`<div class="pro-form-grid">
+      <div class="mf-row"><label>اسم القسم *</label><input class="mf-inp" id="dsName" value="${escx(sec?.name||'')}" placeholder="مثلاً: مواعيد التمرين"></div>
+      <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="dsIcon" maxlength="2" value="${escx(sec?.icon||'🏋️')}"></div>
+      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="dsColor" type="color" value="${sec?.color||'#14b8a6'}"></div>
+    </div>
+    <div class="mf-row"><label>وصف القسم</label><textarea class="mf-inp" id="dsDesc" placeholder="مثلاً: مواعيد التمارين الأسبوعية وربطها بيومي">${escx(sec?.desc||'')}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="saveDynSection('${id}')">حفظ</button><button class="btn btn-ghost" onclick="openSystemSectionsManager()">رجوع</button>${sec?`<button class="btn btn-danger" onclick="deleteDynSection('${sec.id}')">حذف</button>`:''}</div>`;
+  }
+  window.saveDynSection=function(id=''){
+    const name=document.getElementById('dsName').value.trim(); if(!name)return toast('اكتب اسم القسم');
+    const list=dynSections(); const old=id?list.find(x=>x.id===id):null;
+    const sec={id:id||makeId(),name,icon:document.getElementById('dsIcon').value||'📌',color:document.getElementById('dsColor').value||'#6366f1',desc:document.getElementById('dsDesc').value.trim(),items:old?.items||[]};
+    const i=list.findIndex(x=>x.id===sec.id); if(i>=0)list[i]=sec; else list.push(sec);
+    setDynSections(list); renderDynamicShell(); openSystemSectionsManager(); toast('تم حفظ القسم الرئيسي ✅');
+  }
+  window.deleteDynSection=function(id){
+    if(!confirm('حذف القسم وكل عناصره؟'))return;
+    setDynSections(dynSections().filter(x=>x.id!==id)); renderDynamicShell(); openSystemSectionsManager(); toast('تم حذف القسم');
+  }
+
+  function linkRow(l={}){return `<div class="gms-row dyn-link-row"><input class="mf-inp" data-ln value="${escx(l.name||'')}" placeholder="اسم الرابط"><input class="mf-inp" data-lu value="${escx(l.url||'')}" placeholder="https://..." dir="ltr"><button class="btn btn-danger" style="padding:6px 10px" onclick="this.closest('.gms-row').remove()">✕</button></div>`}
+
+  window.openDynItemEditor=function(sectionId,index=null){
+    pendingDynSectionId=sectionId; pendingDynItemIndex=index;
+    const sec=dynSections().find(x=>x.id===sectionId); if(!sec)return;
+    const it=index!==null?(sec.items||[])[index]:null;
+    document.getElementById('systemSectionsModalTitle').textContent=it?'تعديل عنصر':'إضافة عنصر داخل '+sec.name;
+    document.getElementById('systemSectionsModalBody').innerHTML=`<div class="goal-pro-grid">
+      <div class="mf-row goal-title-wide"><label>اسم العنصر *</label><input class="mf-inp" id="diTitle" value="${escx(it?.title||'')}" placeholder="مثلاً: تمرين رجل / جلسة علاج"></div>
+      <div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="diIcon" maxlength="2" value="${escx(it?.icon||sec.icon||'📌')}"></div>
+      <div class="mf-row"><label>لون</label><input class="mf-inp" id="diColor" type="color" value="${it?.color||sec.color||'#6366f1'}"></div>
+      <div class="mf-row"><label>تاريخ اختياري</label><input class="mf-inp" id="diDate" type="date" value="${it?.date||''}"></div>
+      <div class="mf-row"><label class="switch-line"><input type="checkbox" id="diHasTime" ${it?.start_time||it?.end_time?'checked':''} onchange="toggleDynTime()"> وقت محدد</label><small class="hint-line">ممكن تسيبه بدون وقت</small></div>
+      <div class="mf-row"><label>من</label><input class="mf-inp" id="diStart" type="time" value="${it?.start_time||''}"></div>
+      <div class="mf-row"><label>إلى</label><input class="mf-inp" id="diEnd" type="time" value="${it?.end_time||''}"></div>
+      <div class="mf-row"><label>ديدلاين اختياري</label><input class="mf-inp" id="diDeadline" type="date" value="${it?.deadline||''}"></div>
+      <div class="mf-row"><label>تكرار</label><select class="mf-inp" id="diRepeat"><option value="" ${!it?.repeat?'selected':''}>بدون</option><option value="weekly" ${it?.repeat==='weekly'?'selected':''}>أسبوعي</option><option value="daily" ${it?.repeat==='daily'?'selected':''}>يومي</option></select></div>
+      <div class="mf-row"><label class="switch-line"><input type="checkbox" id="diLinkDay" ${it?.link_day?'checked':''}> يسمع في يومي</label><small class="hint-line">لو الوقت موجود هيتحط داخل البلوك المقابل</small></div>
+    </div>
+    <div class="mf-row"><label>تفاصيل</label><textarea class="mf-inp" id="diDesc">${escx(it?.desc||'')}</textarea></div>
+    <div class="sys-admin-panel"><h4>روابط اختيارية</h4><div id="dynLinks">${(it?.links||[]).map(linkRow).join('')}</div><button class="add-task-row" onclick="addDynLink()">+ رابط</button></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="saveDynItem()">حفظ العنصر</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button>${it?`<button class="btn btn-danger" onclick="deleteDynItem('${sectionId}',${index});closeSystemSectionsModal()">حذف</button>`:''}</div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden'); toggleDynTime();
+  }
+  window.addDynLink=function(){document.getElementById('dynLinks')?.insertAdjacentHTML('beforeend',linkRow())}
+  window.toggleDynTime=function(){const on=document.getElementById('diHasTime')?.checked; ['diStart','diEnd'].forEach(id=>{const el=document.getElementById(id); if(el){el.disabled=!on;if(!on)el.value='';}})}
+
+  window.saveDynItem=function(){
+    const secId=pendingDynSectionId, idx=pendingDynItemIndex;
+    const list=dynSections(); const sec=list.find(x=>x.id===secId); if(!sec)return;
+    const title=document.getElementById('diTitle').value.trim(); if(!title)return toast('اكتب اسم العنصر');
+    const links=[...document.querySelectorAll('#dynLinks .dyn-link-row')].map(r=>({name:r.querySelector('[data-ln]').value.trim(),url:r.querySelector('[data-lu]').value.trim()})).filter(l=>l.url);
+    links.forEach(l=>{if(l.url&&!/^https?:\/\//.test(l.url))l.url='https://'+l.url;if(!l.name)l.name=l.url});
+    const it={id:idx!==null?(sec.items[idx]?.id||makeId()):makeId(),title,icon:document.getElementById('diIcon').value||sec.icon||'📌',color:document.getElementById('diColor').value||sec.color,desc:document.getElementById('diDesc').value.trim(),date:document.getElementById('diDate').value||null,start_time:document.getElementById('diStart').value||null,end_time:document.getElementById('diEnd').value||null,deadline:document.getElementById('diDeadline').value||null,repeat:document.getElementById('diRepeat').value||'',link_day:document.getElementById('diLinkDay').checked,links};
+    if(!Array.isArray(sec.items))sec.items=[];
+    if(idx!==null)sec.items[idx]=it; else sec.items.push(it);
+    setDynSections(list);
+    if(it.link_day) syncDynItemToDay(sec,it);
+    closeSystemSectionsModal(); renderDynamicBoard(secId); toast('تم حفظ العنصر ✅');
+  }
+  window.deleteDynItem=function(secId,idx){
+    const list=dynSections(); const sec=list.find(x=>x.id===secId); if(!sec)return;
+    sec.items.splice(idx,1); setDynSections(list); renderDynamicBoard(secId); toast('تم حذف العنصر');
+  }
+
+  function syncDynItemToDay(sec,it){
+    if(!it.date)return toast('حدد تاريخ عشان العنصر يسمع في يومي');
+    const blocks=(typeof dayVisibleBlocks==='function'?dayVisibleBlocks(it.date):[]);
+    if(!blocks.length)return toast('مفيش بلوك في يومي في التاريخ ده');
+    const ts=timeMin(it.start_time), te=timeMin(it.end_time);
+    let target=null;
+    if(ts!=null){target=blocks.find(b=>rangeOverlap(ts,te,timeMin(b.start_time)??0,timeMin(b.end_time)??1440));}
+    if(!target)target=blocks[0];
+    const key=`${target.id}_${it.date}`;
+    const existing=DAY.overrides[key]||{...target};
+    const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
+    const tid='dyn-'+it.id;
+    const item={id:tid,text:it.title,timeLabel:it.start_time?`${it.start_time}${it.end_time?' → '+it.end_time:''}`:'',source:it.id,sourceEnt:sec.name,subtasks:[],color:it.color||sec.color};
+    const pos=tasks.findIndex(x=>x.id===tid||x.source===it.id);
+    if(pos>=0)tasks[pos]={...tasks[pos],...item}; else tasks.push(item);
+    DAY.overrides[key]={...existing,tasks};
+    if(typeof daySaveLocal==='function')daySaveLocal();
+    toast(`اتضاف في يومي داخل بلوك: ${target.title}`);
+  }
+
+  function addGoalsManagerInside(){
+    const bar=document.getElementById('sectionsBar');
+    if(bar && !document.getElementById('goalsManagerInside')){
+      bar.insertAdjacentHTML('beforeend',`<div id="goalsManagerInside" class="section-chip" onclick="openGoalsAdmin()">⚙️ تعديل أقسام أهدافي</div>`);
+    }
+  }
+  const oldRenderGoals=window.renderGoals;
+  if(oldRenderGoals && !oldRenderGoals.__v13){
+    const fn=function(){oldRenderGoals();addGoalsManagerInside();};
+    fn.__v13=true; window.renderGoals=fn;
+  }
+
+  patchCloudState();
+  patchGo();
+  setTimeout(()=>{renderDynamicShell();applyNavLabels();},120);
+})();
+</script>
+<style id="system-dynamic-sections-v13-style">
+.system-sections-modal{width:min(1180px,96vw)}
+.sys-admin-hero{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:24px;border-radius:30px;background:linear-gradient(135deg,#5b7cff,#8b5cf6 55%,#16b7ff);color:#fff;margin-bottom:16px;box-shadow:0 24px 50px rgba(91,124,255,.28)}
+.sys-admin-hero h3{font-size:28px;margin-bottom:6px}.sys-admin-hero p{font-size:14px;opacity:.9}
+.sys-admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sys-admin-panel{padding:18px;border-radius:26px;background:linear-gradient(180deg,color-mix(in srgb,var(--panel2) 94%,white),color-mix(in srgb,var(--panel) 90%,transparent));box-shadow:var(--shadow-sm)}
+.sys-admin-panel h4{font-size:17px;margin-bottom:12px}
+.sys-row{display:flex;align-items:center;gap:10px;padding:12px;border-radius:17px;background:color-mix(in srgb,var(--dyn-color,#6366f1) 12%,var(--panel2));margin-bottom:9px;border:1px solid color-mix(in srgb,var(--dyn-color,#6366f1) 22%,transparent)}
+.sys-row span{font-size:21px}.sys-row b{font-size:15px;flex:1}.sys-row small{color:var(--text-d);font-size:11px}
+.sys-row button,.dyn-item-actions button{padding:7px 11px;border:0;border-radius:11px;background:var(--panel2);color:var(--text);cursor:pointer}
+.danger-mini{background:rgba(239,68,68,.16)!important;color:#f87171!important}
+.dyn-page-wrap{padding:24px;overflow-y:auto}
+.dyn-page-hero{display:flex;align-items:center;gap:16px;padding:26px;border-radius:34px;background:linear-gradient(135deg,var(--dyn-color,#6366f1),color-mix(in srgb,var(--dyn-color,#6366f1) 50%,#111827));color:#fff;margin-bottom:18px;box-shadow:0 26px 60px color-mix(in srgb,var(--dyn-color,#6366f1) 28%,transparent)}
+.dyn-page-icon{width:78px;height:78px;border-radius:26px;background:rgba(255,255,255,.20);display:grid;place-items:center;font-size:36px}
+.dyn-page-title{flex:1}.dyn-page-title h2{font-size:38px;line-height:1.05}.dyn-page-title p{font-size:14px;opacity:.9}
+.dyn-page-actions{display:flex;gap:8px;flex-wrap:wrap}
+.dyn-summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.dyn-summary-row div{padding:18px;border-radius:24px;background:var(--panel2);box-shadow:var(--shadow-sm)}
+.dyn-summary-row b{display:block;font-size:30px;color:#60a5fa}.dyn-summary-row span{font-size:12px;color:var(--text-m);font-weight:800}
+.dyn-items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.dyn-item-card{border-radius:28px;padding:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--dyn-color,#6366f1) 18%,var(--panel2)),color-mix(in srgb,var(--panel) 90%,transparent));border:1px solid color-mix(in srgb,var(--dyn-color,#6366f1) 28%,transparent);box-shadow:var(--shadow-sm)}
+.dyn-item-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.dyn-item-name{display:flex;gap:10px;align-items:center}.dyn-item-name>span{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--dyn-color,#6366f1),color-mix(in srgb,var(--dyn-color,#6366f1) 55%,#111827));font-size:22px}
+.dyn-item-name b{font-size:20px}.dyn-item-name small{display:block;color:var(--text-d);font-weight:800;margin-top:3px}
+.dyn-item-card p{font-size:13px;color:var(--text-m);line-height:1.65;margin:12px 0}
+.dyn-tags,.dyn-links{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.dyn-tags span,.dyn-links a{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.22);font-size:12px;font-weight:800;color:var(--text);text-decoration:none}
+.pro-form-grid{display:grid;grid-template-columns:2fr .7fr 1fr;gap:10px}.goal-pro-grid{display:grid;grid-template-columns:2fr .7fr .8fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;gap:10px}.goal-title-wide{grid-column:span 2}
+.switch-line{display:flex!important;align-items:center;gap:8px;font-weight:900;color:var(--text);margin-bottom:6px}.switch-line input{width:18px;height:18px;accent-color:#6366f1}.hint-line{font-size:11px;color:var(--text-d)}
+@media(max-width:900px){.sys-admin-grid,.dyn-summary-row{grid-template-columns:1fr}.sys-admin-hero,.dyn-page-hero{align-items:flex-start;flex-direction:column}.dyn-page-actions{width:100%}.dyn-items-grid,.pro-form-grid,.goal-pro-grid{grid-template-columns:1fr}.goal-title-wide{grid-column:auto}}
+</style>
+
+
+<script id="dynamic-sections-plans-v14">
+/* ===== V14: nested dynamic sections, plans, plan days, local file links, independent list/grid views ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+  const NAV_KEY='ms_nav_custom_labels_v13';
+  const VIEW_KEY='ms_view_preferences_v14';
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function escx(s){return (typeof esc==='function'?esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function uidv(){return 'v14_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function today(){return (typeof dateKey==='function'?dateKey(new Date()):new Date().toISOString().slice(0,10));}
+  function getSections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function saveSections(v){localStorage.setItem(DYN_KEY,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud();}
+  function getViews(){return parse(localStorage.getItem(VIEW_KEY),{})||{}}
+  function setViews(v){localStorage.setItem(VIEW_KEY,JSON.stringify(v));}
+  function viewOf(key,def='grid'){const v=getViews(); return v[key]||def}
+  function setView(key,val){const v=getViews(); v[key]=val; setViews(v);}
+  function getNavCfg(){return parse(localStorage.getItem(NAV_KEY),{})||{}}
+  function minOf(t){if(!t)return null; const [h,m]=String(t).slice(0,5).split(':').map(Number); if(!Number.isFinite(h))return null; return h*60+(Number.isFinite(m)?m:0)}
+  function rangesOverlap(s1,e1,s2,e2){if(s1==null||s2==null)return false; if(e1==null)e1=s1+60; if(e2==null)e2=s2+60; return s1<e2 && e1>s2}
+  function addDays(date, n){const d=new Date(date+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10)}
+  function coreLabel(mod){
+    const defs={hub:['🏠','الرئيسية'],day:['📅','يومي'],work:['💼','شغلي'],finance:['🏦','ثروتي'],goals:['🎯','أهدافي']};
+    const cfg=getNavCfg()[mod]||{}, d=defs[mod]||['📌',mod];
+    return {icon:cfg.icon||d[0], name:cfg.name||d[1]};
+  }
+  function normalizeSec(s){
+    s.subsections=Array.isArray(s.subsections)?s.subsections:[];
+    s.items=Array.isArray(s.items)?s.items:[];
+    s.subsections.forEach(ss=>{ss.items=Array.isArray(ss.items)?ss.items:[]; ss.plans=Array.isArray(ss.plans)?ss.plans:[];});
+    return s;
+  }
+  function saveAndRefresh(list, secId){
+    saveSections(list.map(normalizeSec));
+    renderDynamicShellV14();
+    if(secId) renderDynamicBoardV14(secId);
+  }
+  function localHref(path){
+    const p=String(path||'').trim();
+    if(!p)return '#';
+    if(/^https?:\/\//i.test(p) || /^file:\/\//i.test(p)) return p;
+    if(/^[a-zA-Z]:\\/.test(p)) return 'file:///'+p.replace(/\\/g,'/');
+    if(p.startsWith('\\\\')) return 'file:'+p.replace(/\\/g,'/');
+    return p;
+  }
+  window.copyLocalPathV14=function(path){
+    if(navigator.clipboard) navigator.clipboard.writeText(path).then(()=>toast('تم نسخ المسار ✅')).catch(()=>toast('انسخ المسار يدويًا'));
+    else toast(path);
+  }
+
+  window.renderDynamicShellV14=function(){
+    const main=document.querySelector('main.main');
+    const nav=document.querySelector('.sidebar .nav-items');
+    const bottom=document.getElementById('bottomNav');
+    if(!main||!nav)return;
+
+    // update core labels
+    ['hub','day','work','finance','goals'].forEach(mod=>{
+      const l=coreLabel(mod);
+      document.querySelectorAll(`.nav-item[data-mod="${mod}"]`).forEach(el=>{
+        const ic=el.querySelector('.nav-icon'); if(ic)ic.textContent=l.icon;
+        const tx=[...el.querySelectorAll('span')].find(s=>!s.className.includes('nav-icon')&&!s.className.includes('nav-badge')); if(tx)tx.textContent=l.name;
+      });
+      document.querySelectorAll(`.bnav-item[data-mod="${mod}"]`).forEach(el=>{
+        const ic=el.querySelector('.bnav-icon'); if(ic)ic.textContent=l.icon;
+        const tx=[...el.querySelectorAll('span')].find(s=>!s.className.includes('bnav-icon')&&!s.className.includes('bnav-badge')); if(tx)tx.textContent=l.name;
+      });
+    });
+
+    document.querySelectorAll('[data-dyn-module-v13="1"],[data-dyn-nav-v13="1"],[data-dyn-module-v14="1"],[data-dyn-nav-v14="1"]').forEach(el=>el.remove());
+
+    getSections().map(normalizeSec).forEach(sec=>{
+      const mod='dyn_'+sec.id;
+      const n=document.createElement('div');
+      n.className='nav-item';
+      n.dataset.mod=mod;
+      n.dataset.dynNavV14='1';
+      n.onclick=()=>go(mod);
+      n.innerHTML=`<span class="nav-icon">${escx(sec.icon||'📌')}</span><span>${escx(sec.name||'قسم')}</span>`;
+      nav.appendChild(n);
+
+      if(bottom){
+        const b=document.createElement('div');
+        b.className='bnav-item';
+        b.dataset.mod=mod;
+        b.dataset.dynNavV14='1';
+        b.onclick=()=>go(mod);
+        b.innerHTML=`<span class="bnav-icon">${escx(sec.icon||'📌')}</span><span>${escx(sec.name||'قسم')}</span>`;
+        bottom.appendChild(b);
+      }
+
+      const m=document.createElement('section');
+      m.id='mod-'+mod;
+      m.className='module';
+      m.dataset.dynModuleV14='1';
+      m.innerHTML=`<div class="dyn-v14-wrap">
+        <div class="dyn-v14-hero" style="--dyn-color:${sec.color||'#6366f1'}">
+          <div class="dyn-v14-hero-icon">${escx(sec.icon||'📌')}</div>
+          <div class="dyn-v14-hero-text"><h2>${escx(sec.name||'قسم')}</h2><p>${escx(sec.desc||'قسم رئيسي مخصص يحتوي أقسام فرعية وخطط وعناصر قابلة للربط بيومي.')}</p></div>
+          <div class="dyn-v14-hero-actions">
+            <button class="add-btn teal" onclick="openSubsectionEditorV14('${sec.id}')">+ قسم فرعي</button>
+            <button class="add-btn" onclick="openQuickItemEditorV14('${sec.id}',null,null)">+ عنصر سريع</button>
+            <button class="add-btn pink" onclick="openSystemSectionsManager()">⚙️ إدارة الأقسام</button>
+          </div>
+        </div>
+        <div id="dynV14Board_${sec.id}"></div>
+      </div>`;
+      main.appendChild(m);
+    });
+  }
+
+  function layoutToggleHtml(key, current){
+    return `<div class="view-toggle dyn-view-toggle">
+      <div class="vt-btn ${current==='grid'?'active':''}" onclick="setDynViewV14('${key}','grid')">⊞ Grid</div>
+      <div class="vt-btn ${current==='list'?'active':''}" onclick="setDynViewV14('${key}','list')">☰ List</div>
+      <div class="vt-btn ${current==='board'?'active':''}" onclick="setDynViewV14('${key}','board')">▦ Board</div>
+    </div>`;
+  }
+  window.setDynViewV14=function(key,val){
+    setView(key,val);
+    const parts=key.split(':');
+    if(parts[0]==='section') renderDynamicBoardV14(parts[1]);
+    if(parts[0]==='sub') renderSubsectionDetailV14(parts[1],parts[2]);
+  }
+
+  window.renderDynamicBoardV14=function(secId){
+    const sec=getSections().map(normalizeSec).find(x=>x.id===secId); if(!sec)return;
+    const board=document.getElementById('dynV14Board_'+secId); if(!board)return;
+    const view=viewOf('section:'+secId,'grid');
+    const subs=sec.subsections||[], items=sec.items||[];
+    const totalPlans=subs.reduce((a,s)=>a+(s.plans||[]).length,0);
+    const totalTasks=subs.reduce((a,s)=>a+(s.plans||[]).reduce((x,p)=>x+(p.days||[]).length,0)+(s.items||[]).length,0)+items.length;
+    board.innerHTML=`<div class="dyn-v14-toolbar">
+      <div class="dyn-v14-stats">
+        <span><b>${subs.length}</b> أقسام فرعية</span><span><b>${totalPlans}</b> خطط</span><span><b>${totalTasks}</b> مهام/عناصر</span>
+      </div>
+      ${layoutToggleHtml('section:'+secId,view)}
+    </div>
+    <div class="dyn-subsections dyn-layout-${view}">
+      ${subs.map(sub=>subsectionCard(sec,sub)).join('') || `<div class="goals-empty"><div class="ge-icon">${escx(sec.icon||'📌')}</div><h3>لا يوجد أقسام فرعية</h3><p>اضغط + قسم فرعي مثل علاج طبيعي / تأهيل بدني / نظام غذائي.</p></div>`}
+    </div>
+    <div class="dyn-v14-section-block">
+      <div class="dyn-v14-block-head"><h3>عناصر عامة داخل ${escx(sec.name)}</h3><button class="add-task-row" onclick="openQuickItemEditorV14('${sec.id}',null,null)">+ عنصر عام</button></div>
+      <div class="dyn-items-mini">${items.map((it,i)=>quickItemCard(sec,null,it,i)).join('') || '<div class="hub-empty">مفيش عناصر عامة</div>'}</div>
+    </div>`;
+  }
+  function subsectionCard(sec,sub){
+    const plans=sub.plans||[], items=sub.items||[];
+    const totalDays=plans.reduce((a,p)=>a+(p.days||[]).length,0);
+    const doneDays=plans.reduce((a,p)=>a+(p.days||[]).filter(d=>d.done).length,0);
+    const pct=totalDays?Math.round(doneDays/totalDays*100):0;
+    return `<div class="dyn-sub-card" style="--dyn-color:${sub.color||sec.color||'#6366f1'}" onclick="renderSubsectionDetailV14('${sec.id}','${sub.id}')">
+      <div class="dyn-sub-bg">${escx(sub.icon||sec.icon||'📌')}</div>
+      <div class="dyn-sub-head">
+        <div class="dyn-sub-icon">${escx(sub.icon||'📌')}</div>
+        <div><h3>${escx(sub.name||'قسم فرعي')}</h3><p>${escx(sub.desc||'')}</p></div>
+        <div class="dyn-sub-actions" onclick="event.stopPropagation()"><button onclick="openSubsectionEditorV14('${sec.id}','${sub.id}')">✏️</button><button class="danger-mini" onclick="deleteSubsectionV14('${sec.id}','${sub.id}')">✕</button></div>
+      </div>
+      <div class="dyn-progress-line"><span style="width:${pct}%"></span></div>
+      <div class="dyn-sub-meta"><span>${plans.length} خطط</span><span>${items.length} عناصر</span><span>${pct}% إنجاز</span></div>
+    </div>`;
+  }
+
+  window.renderSubsectionDetailV14=function(secId,subId){
+    const sec=getSections().map(normalizeSec).find(x=>x.id===secId); if(!sec)return;
+    const sub=(sec.subsections||[]).find(x=>x.id===subId); if(!sub)return;
+    const board=document.getElementById('dynV14Board_'+secId); if(!board)return;
+    const view=viewOf('sub:'+secId+':'+subId,'grid');
+    const plans=sub.plans||[], items=sub.items||[];
+    board.innerHTML=`<div class="dyn-sub-detail" style="--dyn-color:${sub.color||sec.color||'#6366f1'}">
+      <div class="dyn-sub-detail-head">
+        <button class="btn btn-ghost" onclick="renderDynamicBoardV14('${secId}')">← رجوع</button>
+        <div class="dyn-sub-icon">${escx(sub.icon||'📌')}</div>
+        <div><h2>${escx(sub.name)}</h2><p>${escx(sub.desc||'خطط وعناصر قابلة للمتابعة والربط بيومي')}</p></div>
+      </div>
+      <div class="dyn-v14-hero-actions">
+        <button class="add-btn pink" onclick="openPlanEditorV14('${secId}','${subId}')">+ خطة</button>
+        <button class="add-btn" onclick="openQuickItemEditorV14('${secId}','${subId}',null)">+ عنصر</button>
+        ${layoutToggleHtml('sub:'+secId+':'+subId,view)}
+      </div>
+    </div>
+    <div class="dyn-v14-section-block"><div class="dyn-v14-block-head"><h3>الخطط</h3><span>${plans.length}</span></div>
+      <div class="dyn-plans dyn-layout-${view}">${plans.map((p,i)=>planCard(sec,sub,p,i)).join('') || '<div class="hub-empty">لا يوجد خطط بعد</div>'}</div>
+    </div>
+    <div class="dyn-v14-section-block"><div class="dyn-v14-block-head"><h3>عناصر منفصلة</h3><span>${items.length}</span></div>
+      <div class="dyn-items-mini dyn-layout-${view}">${items.map((it,i)=>quickItemCard(sec,sub,it,i)).join('') || '<div class="hub-empty">لا يوجد عناصر منفصلة</div>'}</div>
+    </div>`;
+  }
+  function planCard(sec,sub,p,pi){
+    const days=p.days||[], done=days.filter(d=>d.done).length, pct=days.length?Math.round(done/days.length*100):0;
+    return `<div class="dyn-plan-card" style="--dyn-color:${p.color||sub.color||sec.color||'#6366f1'}">
+      <div class="dyn-plan-head"><div><h3>${escx(p.icon||'📋')} ${escx(p.title||'خطة')}</h3><p>${escx(p.desc||'')}</p></div><div class="dyn-item-actions"><button onclick="openPlanEditorV14('${sec.id}','${sub.id}',${pi})">✏️</button><button onclick="syncPlanToDayV14('${sec.id}','${sub.id}',${pi})">🔗 يومي</button><button class="danger-mini" onclick="deletePlanV14('${sec.id}','${sub.id}',${pi})">✕</button></div></div>
+      <div class="dyn-plan-progress"><b>${pct}%</b><span><i style="width:${pct}%"></i></span><small>${done}/${days.length} يوم</small></div>
+      <div class="dyn-plan-days">${days.map((d,di)=>dayRow(sec,sub,p,pi,d,di)).join('')}</div>
+    </div>`;
+  }
+  function dayRow(sec,sub,p,pi,d,di){
+    const tasks=d.tasks||[];
+    return `<div class="dyn-day-row ${d.done?'done':''}">
+      <label class="dyn-day-main"><input type="checkbox" ${d.done?'checked':''} onchange="togglePlanDayV14('${sec.id}','${sub.id}',${pi},${di},this.checked)"><span><b>${escx(d.title||('اليوم '+(di+1)))}</b><small>${d.date||''} ${d.deadline?'• deadline '+d.deadline:''}</small></span></label>
+      ${d.details?`<p>${escx(d.details)}</p>`:''}
+      ${tasks.length?`<div class="dyn-day-tasks">${tasks.map((t,ti)=>`<label><input type="checkbox" ${t.done?'checked':''} onchange="togglePlanTaskV14('${sec.id}','${sub.id}',${pi},${di},${ti},this.checked)"><span>${escx(t.text)}</span></label>`).join('')}</div>`:''}
+    </div>`;
+  }
+  function quickItemCard(sec,sub,it,i){
+    return `<div class="dyn-quick-card ${it.done?'done':''}" style="--dyn-color:${it.color||sub?.color||sec.color||'#6366f1'}">
+      <div class="dyn-quick-top"><label><input type="checkbox" ${it.done?'checked':''} onchange="toggleQuickItemV14('${sec.id}','${sub?sub.id:''}',${i},this.checked)"><b>${escx(it.icon||sub?.icon||sec.icon||'📌')} ${escx(it.title)}</b></label><div class="dyn-item-actions"><button onclick="openQuickItemEditorV14('${sec.id}','${sub?sub.id:'null'}',${i})">✏️</button><button class="danger-mini" onclick="deleteQuickItemV14('${sec.id}','${sub?sub.id:''}',${i})">✕</button></div></div>
+      ${it.desc?`<p>${escx(it.desc)}</p>`:''}
+      <div class="dyn-tags">${it.date?`<span>📅 ${it.date}</span>`:''}${it.start_time||it.end_time?`<span>⏱ ${it.start_time||'--'} ${it.end_time?'→ '+it.end_time:''}</span>`:'<span>⏱ مفتوح</span>'}${it.deadline?`<span>🏁 ${it.deadline}</span>`:''}${it.link_day?`<span>🔗 يومي</span>`:''}</div>
+      ${(it.links||[]).length?`<div class="dyn-links">${(it.links||[]).map(link=>renderLink(link)).join('')}</div>`:''}
+    </div>`;
+  }
+  function renderLink(l){
+    const href=localHref(l.url||l.path||'');
+    const label=escx(l.name||l.url||l.path||'رابط');
+    const raw=escx(l.url||l.path||'');
+    return `<span class="dyn-link-pill"><a href="${escx(href)}" target="_blank" rel="noopener">${l.type==='local'?'📁':'🔗'} ${label}</a>${l.type==='local'?`<button onclick="copyLocalPathV14('${raw.replace(/'/g,"\\'")}')">نسخ</button>`:''}</span>`;
+  }
+  function localHref(path){
+    const p=String(path||'').trim(); if(!p)return '#';
+    if(/^https?:\/\//i.test(p)||/^file:\/\//i.test(p))return p;
+    if(/^[a-zA-Z]:\\/.test(p))return 'file:///'+p.replace(/\\/g,'/');
+    return p;
+  }
+
+  window.openSubsectionEditorV14=function(secId,subId=null){
+    const list=getSections().map(normalizeSec), sec=list.find(x=>x.id===secId), sub=subId?(sec?.subsections||[]).find(x=>x.id===subId):null;
+    if(!sec)return;
+    document.getElementById('systemSectionsModalTitle').textContent=sub?'تعديل قسم فرعي':'قسم فرعي جديد';
+    document.getElementById('systemSectionsModalBody').innerHTML=`<div class="pro-form-grid"><div class="mf-row"><label>اسم القسم الفرعي *</label><input class="mf-inp" id="subName" value="${escx(sub?.name||'')}" placeholder="مثلاً: علاج طبيعي"></div><div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="subIcon" maxlength="2" value="${escx(sub?.icon||'🧩')}"></div><div class="mf-row"><label>لون</label><input class="mf-inp" id="subColor" type="color" value="${sub?.color||sec.color||'#6366f1'}"></div></div><div class="mf-row"><label>وصف</label><textarea class="mf-inp" id="subDesc">${escx(sub?.desc||'')}</textarea></div><div class="modal-actions"><button class="btn btn-primary" onclick="saveSubsectionV14('${secId}','${subId||''}')">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button>${sub?`<button class="btn btn-danger" onclick="deleteSubsectionV14('${secId}','${subId}');closeSystemSectionsModal()">حذف</button>`:''}</div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+  window.saveSubsectionV14=function(secId,subId=''){
+    const list=getSections().map(normalizeSec), sec=list.find(x=>x.id===secId); if(!sec)return;
+    const name=document.getElementById('subName').value.trim(); if(!name)return toast('اكتب اسم القسم الفرعي');
+    const old=subId?(sec.subsections||[]).find(x=>x.id===subId):null;
+    const sub={id:subId||uidv(),name,icon:document.getElementById('subIcon').value||'🧩',color:document.getElementById('subColor').value||sec.color,desc:document.getElementById('subDesc').value.trim(),items:old?.items||[],plans:old?.plans||[]};
+    const idx=sec.subsections.findIndex(x=>x.id===sub.id); if(idx>=0)sec.subsections[idx]=sub; else sec.subsections.push(sub);
+    saveAndRefresh(list,secId); closeSystemSectionsModal(); toast('تم حفظ القسم الفرعي ✅');
+  }
+  window.deleteSubsectionV14=function(secId,subId){
+    if(!confirm('حذف القسم الفرعي بكل خططه وعناصره؟'))return;
+    const list=getSections().map(normalizeSec), sec=list.find(x=>x.id===secId); if(!sec)return;
+    sec.subsections=sec.subsections.filter(x=>x.id!==subId);
+    saveAndRefresh(list,secId); toast('تم حذف القسم الفرعي');
+  }
+
+  function linkRows(links=[]){return links.map((l,i)=>`<div class="gms-row dyn-link-row"><select class="mf-inp" data-ltype style="max-width:120px"><option value="web" ${l.type!=='local'?'selected':''}>Web</option><option value="local" ${l.type==='local'?'selected':''}>Local</option></select><input class="mf-inp" data-lname value="${escx(l.name||'')}" placeholder="اسم الرابط"><input class="mf-inp" data-lurl value="${escx(l.url||l.path||'')}" placeholder="https:// أو D:\\Folder\\file.aep" dir="ltr"><button class="btn btn-danger" style="padding:6px 10px" onclick="this.closest('.gms-row').remove()">✕</button></div>`).join('');}
+  window.addDynLinkRowV14=function(){document.getElementById('v14Links')?.insertAdjacentHTML('beforeend',linkRows([{}]));}
+  function readLinks(){return [...document.querySelectorAll('#v14Links .dyn-link-row')].map(r=>{const type=r.querySelector('[data-ltype]').value, name=r.querySelector('[data-lname]').value.trim(), url=r.querySelector('[data-lurl]').value.trim(); return {type,name:name||url,url};}).filter(l=>l.url);}
+
+  window.openQuickItemEditorV14=function(secId,subId=null,index=null){
+    if(subId==='null')subId=null;
+    const list=getSections().map(normalizeSec), sec=list.find(x=>x.id===secId), sub=subId?(sec?.subsections||[]).find(x=>x.id===subId):null;
+    const arr=sub?sub.items:sec?.items; const it=index!==null?arr?.[index]:null; if(!sec)return;
+    document.getElementById('systemSectionsModalTitle').textContent=it?'تعديل عنصر':'عنصر جديد';
+    document.getElementById('systemSectionsModalBody').innerHTML=`<div class="goal-pro-grid"><div class="mf-row goal-title-wide"><label>اسم العنصر *</label><input class="mf-inp" id="qiTitle" value="${escx(it?.title||'')}" placeholder="مثلاً: جلسة علاج / تمرين"></div><div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="qiIcon" maxlength="2" value="${escx(it?.icon||sub?.icon||sec.icon||'📌')}"></div><div class="mf-row"><label>لون</label><input class="mf-inp" id="qiColor" type="color" value="${it?.color||sub?.color||sec.color||'#6366f1'}"></div><div class="mf-row"><label>تاريخ</label><input class="mf-inp" id="qiDate" type="date" value="${it?.date||''}"></div><div class="mf-row"><label class="switch-line"><input type="checkbox" id="qiHasTime" ${it?.start_time||it?.end_time?'checked':''} onchange="toggleQiTimeV14()"> وقت محدد</label></div><div class="mf-row"><label>من</label><input class="mf-inp" id="qiStart" type="time" value="${it?.start_time||''}"></div><div class="mf-row"><label>إلى</label><input class="mf-inp" id="qiEnd" type="time" value="${it?.end_time||''}"></div><div class="mf-row"><label>ديدلاين</label><input class="mf-inp" id="qiDeadline" type="date" value="${it?.deadline||''}"></div><div class="mf-row"><label class="switch-line"><input type="checkbox" id="qiLinkDay" ${it?.link_day?'checked':''}> يسمع في يومي</label></div></div><div class="mf-row"><label>تفاصيل</label><textarea class="mf-inp" id="qiDesc">${escx(it?.desc||'')}</textarea></div><div class="pro-admin-panel"><h4>روابط Web / Local</h4><div id="v14Links">${linkRows(it?.links||[])}</div><button class="add-task-row" onclick="addDynLinkRowV14()">+ رابط</button></div><div class="modal-actions"><button class="btn btn-primary" onclick="saveQuickItemV14('${secId}','${subId||''}',${index===null?'null':index})">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden'); toggleQiTimeV14();
+  }
+  window.toggleQiTimeV14=function(){const on=document.getElementById('qiHasTime')?.checked; ['qiStart','qiEnd'].forEach(id=>{const el=document.getElementById(id); if(el){el.disabled=!on;if(!on)el.value='';}})}
+  window.saveQuickItemV14=function(secId,subId='',index=null){
+    const list=getSections().map(normalizeSec), sec=list.find(x=>x.id===secId), sub=subId?(sec?.subsections||[]).find(x=>x.id===subId):null; if(!sec)return;
+    const title=document.getElementById('qiTitle').value.trim(); if(!title)return toast('اكتب اسم العنصر');
+    const arr=sub?sub.items:sec.items;
+    const old=index!==null?arr[index]:null;
+    const item={id:old?.id||uidv(),title,icon:document.getElementById('qiIcon').value||sub?.icon||sec.icon||'📌',color:document.getElementById('qiColor').value||sub?.color||sec.color,desc:document.getElementById('qiDesc').value.trim(),date:document.getElementById('qiDate').value||null,start_time:document.getElementById('qiStart').value||null,end_time:document.getElementById('qiEnd').value||null,deadline:document.getElementById('qiDeadline').value||null,link_day:document.getElementById('qiLinkDay').checked,links:readLinks(),done:old?.done||false};
+    if(index!==null)arr[index]=item; else arr.push(item);
+    saveSections(list); if(item.link_day)syncItemToDay(sec,sub,item); closeSystemSectionsModal(); sub?renderSubsectionDetailV14(secId,subId):renderDynamicBoardV14(secId); toast('تم حفظ العنصر ✅');
+  }
+  window.toggleQuickItemV14=function(secId,subId,index,val){const list=getSections().map(normalizeSec), sec=list.find(x=>x.id===secId), sub=subId?(sec.subsections||[]).find(x=>x.id===subId):null; const arr=sub?sub.items:sec.items; if(arr[index])arr[index].done=val; saveSections(list); sub?renderSubsectionDetailV14(secId,subId):renderDynamicBoardV14(secId);}
+  window.deleteQuickItemV14=function(secId,subId,index){const list=getSections().map(normalizeSec), sec=list.find(x=>x.id===secId), sub=subId?(sec.subsections||[]).find(x=>x.id===subId):null; const arr=sub?sub.items:sec.items; arr.splice(index,1); saveSections(list); sub?renderSubsectionDetailV14(secId,subId):renderDynamicBoardV14(secId);}
+
+  window.openPlanEditorV14=function(secId,subId,index=null){
+    const list=getSections().map(normalizeSec), sec=list.find(x=>x.id===secId), sub=(sec?.subsections||[]).find(x=>x.id===subId), p=index!==null?sub?.plans?.[index]:null; if(!sub)return;
+    document.getElementById('systemSectionsModalTitle').textContent=p?'تعديل خطة':'خطة جديدة';
+    document.getElementById('systemSectionsModalBody').innerHTML=`<div class="goal-pro-grid"><div class="mf-row goal-title-wide"><label>اسم الخطة *</label><input class="mf-inp" id="plTitle" value="${escx(p?.title||'')}" placeholder="مثلاً: خطة علاج 30 يوم"></div><div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="plIcon" maxlength="2" value="${escx(p?.icon||'📋')}"></div><div class="mf-row"><label>لون</label><input class="mf-inp" id="plColor" type="color" value="${p?.color||sub.color||sec.color||'#6366f1'}"></div><div class="mf-row"><label>تبدأ يوم</label><input class="mf-inp" id="plStart" type="date" value="${p?.start_date||today()}"></div><div class="mf-row"><label>عدد الأيام</label><input class="mf-inp" id="plDaysCount" type="number" min="1" max="365" value="${p?.days?.length||30}"></div><div class="mf-row"><label class="switch-line"><input type="checkbox" id="plHasTime" ${p?.start_time||p?.end_time?'checked':''} onchange="togglePlanTimeV14()"> وقت محدد</label></div><div class="mf-row"><label>من</label><input class="mf-inp" id="plStartTime" type="time" value="${p?.start_time||''}"></div><div class="mf-row"><label>إلى</label><input class="mf-inp" id="plEndTime" type="time" value="${p?.end_time||''}"></div><div class="mf-row"><label class="switch-line"><input type="checkbox" id="plLinkDay" ${p?.link_day?'checked':''}> يسمع في يومي</label></div></div><div class="mf-row"><label>وصف الخطة</label><textarea class="mf-inp" id="plDesc">${escx(p?.desc||'')}</textarea></div><div class="mg2"><div class="mf-row"><label>عنوان يومي افتراضي</label><input class="mf-inp" id="plDayTitle" value="${escx(p?.day_title_template||'تمرين اليوم')}"></div><div class="mf-row"><label>تفاصيل يومية افتراضية</label><input class="mf-inp" id="plDayDetails" value="${escx(p?.day_details_template||'تفاصيل التمرين / الجلسة')}"></div></div><div class="mf-row"><label>تاسكات فرعية افتراضية، كل سطر تاسك</label><textarea class="mf-inp" id="plDefaultTasks" placeholder="إحماء 10 دقائق&#10;تمرين رئيسي&#10;تمدد">${escx((p?.default_tasks||[]).join('\n'))}</textarea></div><div class="modal-actions"><button class="btn btn-primary" onclick="savePlanV14('${secId}','${subId}',${index===null?'null':index})">حفظ/توليد الخطة</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden'); togglePlanTimeV14();
+  }
+  window.togglePlanTimeV14=function(){const on=document.getElementById('plHasTime')?.checked; ['plStartTime','plEndTime'].forEach(id=>{const el=document.getElementById(id); if(el){el.disabled=!on;if(!on)el.value='';}})}
+  window.savePlanV14=function(secId,subId,index=null){
+    const list=getSections().map(normalizeSec), sec=list.find(x=>x.id===secId), sub=(sec?.subsections||[]).find(x=>x.id===subId); if(!sub)return;
+    const title=document.getElementById('plTitle').value.trim(); if(!title)return toast('اكتب اسم الخطة');
+    const old=index!==null?sub.plans[index]:null, count=Math.max(1,Math.min(365,+document.getElementById('plDaysCount').value||30)), start=document.getElementById('plStart').value||today();
+    const defaultTasks=document.getElementById('plDefaultTasks').value.split('\n').map(x=>x.trim()).filter(Boolean);
+    const days=Array.from({length:count},(_,i)=>{const oldDay=old?.days?.[i]; return {id:oldDay?.id||uidv(),date:addDays(start,i),title:oldDay?.title||`${document.getElementById('plDayTitle').value||'اليوم'} ${i+1}`,details:oldDay?.details||document.getElementById('plDayDetails').value||'',deadline:oldDay?.deadline||addDays(start,i),done:oldDay?.done||false,tasks:oldDay?.tasks||defaultTasks.map(t=>({text:t,done:false,deadline:addDays(start,i)}))};});
+    const plan={id:old?.id||uidv(),title,icon:document.getElementById('plIcon').value||'📋',color:document.getElementById('plColor').value||sub.color||sec.color,desc:document.getElementById('plDesc').value.trim(),start_date:start,start_time:document.getElementById('plStartTime').value||null,end_time:document.getElementById('plEndTime').value||null,link_day:document.getElementById('plLinkDay').checked,day_title_template:document.getElementById('plDayTitle').value,day_details_template:document.getElementById('plDayDetails').value,default_tasks:defaultTasks,days};
+    if(index!==null)sub.plans[index]=plan; else sub.plans.push(plan);
+    saveSections(list); if(plan.link_day)syncPlanToDayV14(secId,subId,index!==null?index:sub.plans.length-1); closeSystemSectionsModal(); renderSubsectionDetailV14(secId,subId); toast('تم حفظ الخطة ✅');
+  }
+  window.togglePlanDayV14=function(secId,subId,pi,di,val){const list=getSections().map(normalizeSec), plan=list.find(x=>x.id===secId)?.subsections.find(x=>x.id===subId)?.plans[pi]; if(plan?.days?.[di])plan.days[di].done=val; saveSections(list); renderSubsectionDetailV14(secId,subId);}
+  window.togglePlanTaskV14=function(secId,subId,pi,di,ti,val){const list=getSections().map(normalizeSec), t=list.find(x=>x.id===secId)?.subsections.find(x=>x.id===subId)?.plans[pi]?.days?.[di]?.tasks?.[ti]; if(t)t.done=val; saveSections(list);}
+  window.deletePlanV14=function(secId,subId,pi){if(!confirm('حذف الخطة؟'))return; const list=getSections().map(normalizeSec), sub=list.find(x=>x.id===secId)?.subsections.find(x=>x.id===subId); if(!sub)return; sub.plans.splice(pi,1); saveSections(list); renderSubsectionDetailV14(secId,subId);}
+
+  function syncItemToDay(sec,sub,it){
+    if(!it.date){toast('حدد تاريخ عشان يسمع في يومي');return;}
+    const blocks=dayVisibleBlocks(it.date)||[]; if(!blocks.length){toast('مفيش بلوك في يومي في التاريخ ده');return;}
+    const ts=minOf(it.start_time), te=minOf(it.end_time);
+    let target=ts!=null?blocks.find(b=>rangesOverlap(ts,te,minOf(b.start_time)??0,minOf(b.end_time)??1440)):null;
+    if(!target)target=blocks[0];
+    const key=`${target.id}_${it.date}`, existing=DAY.overrides[key]||{...target};
+    const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
+    const id='dynv14-'+it.id;
+    const newTask={id,text:it.title,timeLabel:it.start_time?`${it.start_time}${it.end_time?' → '+it.end_time:''}`:'',source:it.id,sourceEnt:sub?`${sec.name} / ${sub.name}`:sec.name,subtasks:[],color:it.color||sub?.color||sec.color};
+    const idx=tasks.findIndex(x=>x.id===id||x.source===it.id); if(idx>=0)tasks[idx]={...tasks[idx],...newTask}; else tasks.push(newTask);
+    DAY.overrides[key]={...existing,tasks}; daySaveLocal(); toast(`اتضاف في يومي داخل بلوك: ${target.title}`);
+  }
+  window.syncPlanToDayV14=function(secId,subId,pi){
+    const sec=getSections().map(normalizeSec).find(x=>x.id===secId), sub=sec?.subsections.find(x=>x.id===subId), plan=sub?.plans?.[pi]; if(!plan)return;
+    let count=0;
+    (plan.days||[]).forEach(d=>{const item={id:plan.id+'-'+d.id,title:d.title,desc:d.details,date:d.date,start_time:plan.start_time,end_time:plan.end_time,color:plan.color||sub.color||sec.color,subtasks:d.tasks||[],link_day:true}; syncPlanDay(sec,sub,plan,d,item); count++;});
+    toast(`تم ربط ${count} يوم من الخطة بيومي ✅`);
+  }
+  function syncPlanDay(sec,sub,plan,d,item){
+    const blocks=dayVisibleBlocks(d.date)||[]; if(!blocks.length)return;
+    const ts=minOf(item.start_time), te=minOf(item.end_time);
+    let target=ts!=null?blocks.find(b=>rangesOverlap(ts,te,minOf(b.start_time)??0,minOf(b.end_time)??1440)):null; if(!target)target=blocks[0];
+    const key=`${target.id}_${d.date}`, existing=DAY.overrides[key]||{...target};
+    const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
+    const id='planv14-'+item.id;
+    const newTask={id,text:item.title,timeLabel:item.start_time?`${item.start_time}${item.end_time?' → '+item.end_time:''}`:'',source:item.id,sourceEnt:`${sec.name} / ${sub.name}`,subtasks:(d.tasks||[]).map((t,i)=>({id:id+'-sub-'+i,text:t.text||t,source:id})),color:item.color};
+    const idx=tasks.findIndex(x=>x.id===id||x.source===item.id); if(idx>=0)tasks[idx]={...tasks[idx],...newTask}; else tasks.push(newTask);
+    DAY.overrides[key]={...existing,tasks}; daySaveLocal();
+  }
+
+  // Override dynamic go to render the new nested board
+  const oldGo=window.go;
+  window.go=function(mod){
+    cur=mod;
+    document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+    let target=document.getElementById('mod-'+mod);
+    if(!target && String(mod).startsWith('dyn_')){renderDynamicShellV14(); target=document.getElementById('mod-'+mod);}
+    if(target)target.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.mod===mod));
+    document.querySelectorAll('.bnav-item').forEach(n=>n.classList.toggle('active', n.dataset.mod===mod));
+    if(mod==='hub') renderHub();
+    if(mod==='day') renderDay();
+    if(mod==='work') renderWork();
+    if(mod==='finance') renderFin();
+    if(mod==='goals') renderGoals();
+    if(String(mod).startsWith('dyn_')) renderDynamicBoardV14(String(mod).slice(4));
+  }
+
+  // Put Goals section edit inside Goals page
+  const oldRenderGoals=window.renderGoals;
+  if(oldRenderGoals&&!oldRenderGoals.__v14){
+    const rg=function(){oldRenderGoals(); const bar=document.getElementById('sectionsBar'); if(bar&&!document.getElementById('goalsInsideEditV14'))bar.insertAdjacentHTML('beforeend','<div id="goalsInsideEditV14" class="section-chip" onclick="openGoalsAdmin()">⚙️ تعديل أقسام أهدافي</div>');};
+    rg.__v14=true; window.renderGoals=rg;
+  }
+
+  // Upgrade dynamic section editor to initialize subsections
+  const oldSaveDynSection=window.saveDynSection;
+  if(oldSaveDynSection){
+    window.saveDynSection=function(id=''){
+      oldSaveDynSection(id);
+      setTimeout(()=>{
+        const list=getSections().map(normalizeSec);
+        saveSections(list);
+        renderDynamicShellV14();
+        if(cur&&String(cur).startsWith('dyn_'))renderDynamicBoardV14(String(cur).slice(4));
+      },80);
+    }
+  }
+
+  setTimeout(()=>{renderDynamicShellV14(); if(cur&&String(cur).startsWith('dyn_'))renderDynamicBoardV14(String(cur).slice(4));},300);
+})();
+</script>
+<style id="dynamic-sections-plans-v14-style">
+.dyn-v14-wrap{padding:24px;overflow-y:auto}
+.dyn-v14-hero{display:flex;align-items:center;gap:16px;padding:28px;border-radius:34px;background:linear-gradient(135deg,var(--dyn-color,#6366f1),color-mix(in srgb,var(--dyn-color,#6366f1) 48%,#111827));color:#fff;margin-bottom:18px;box-shadow:0 28px 65px color-mix(in srgb,var(--dyn-color,#6366f1) 30%,transparent)}
+.dyn-v14-hero-icon{width:82px;height:82px;border-radius:28px;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:38px}
+.dyn-v14-hero-text{flex:1}.dyn-v14-hero-text h2{font-size:40px;line-height:1.05}.dyn-v14-hero-text p{opacity:.9;font-size:14px;line-height:1.7}
+.dyn-v14-hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+.dyn-v14-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.dyn-v14-stats{display:flex;gap:8px;flex-wrap:wrap}.dyn-v14-stats span{padding:10px 13px;border-radius:999px;background:var(--panel2);font-size:12px;font-weight:800}.dyn-v14-stats b{font-size:18px;color:#60a5fa}
+.dyn-layout-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.dyn-layout-list{display:flex;flex-direction:column;gap:12px}
+.dyn-layout-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.dyn-sub-card,.dyn-plan-card,.dyn-quick-card{position:relative;overflow:hidden;border-radius:30px;padding:20px;background:linear-gradient(180deg,color-mix(in srgb,var(--dyn-color,#6366f1) 18%,var(--panel2)),color-mix(in srgb,var(--panel) 88%,transparent));border:1px solid color-mix(in srgb,var(--dyn-color,#6366f1) 28%,transparent);box-shadow:var(--shadow-sm)}
+.dyn-sub-card{cursor:pointer}.dyn-sub-bg{position:absolute;left:18px;bottom:-18px;font-size:120px;opacity:.07}
+.dyn-sub-head{position:relative;z-index:1;display:flex;align-items:flex-start;gap:12px}.dyn-sub-icon{width:56px;height:56px;border-radius:19px;display:grid;place-items:center;font-size:26px;color:#fff;background:linear-gradient(135deg,var(--dyn-color,#6366f1),color-mix(in srgb,var(--dyn-color,#6366f1) 50%,#111827))}
+.dyn-sub-head h3{font-size:24px;line-height:1.1}.dyn-sub-head p{font-size:13px;color:var(--text-m);line-height:1.5;margin-top:4px}
+.dyn-sub-actions,.dyn-item-actions{margin-right:auto;display:flex;gap:6px}.dyn-sub-actions button,.dyn-item-actions button{border:0;border-radius:12px;padding:7px 10px;background:var(--panel2);color:var(--text);cursor:pointer;font-weight:900}
+.dyn-progress-line{height:8px;border-radius:999px;background:rgba(255,255,255,.18);margin:18px 0 12px;overflow:hidden}.dyn-progress-line span{display:block;height:100%;background:linear-gradient(90deg,var(--dyn-color,#6366f1),#fff);border-radius:inherit}
+.dyn-sub-meta,.dyn-tags,.dyn-links{display:flex;gap:7px;flex-wrap:wrap}.dyn-sub-meta span,.dyn-tags span,.dyn-links a,.dyn-link-pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.2);font-size:12px;font-weight:800;color:var(--text);text-decoration:none}
+.dyn-v14-section-block{margin-top:18px;padding:18px;border-radius:30px;background:var(--panel);box-shadow:var(--shadow-sm)}
+.dyn-v14-block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.dyn-v14-block-head h3{font-size:20px}
+.dyn-items-mini{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.dyn-sub-detail{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:20px;border-radius:30px;background:linear-gradient(135deg,color-mix(in srgb,var(--dyn-color,#6366f1) 28%,var(--panel2)),color-mix(in srgb,var(--dyn-color,#6366f1) 12%,transparent));box-shadow:var(--shadow-sm);margin-bottom:16px}
+.dyn-sub-detail-head{display:flex;gap:12px;align-items:center}.dyn-sub-detail h2{font-size:30px}.dyn-sub-detail p{font-size:13px;color:var(--text-m)}
+.dyn-plan-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.dyn-plan-head h3{font-size:22px}.dyn-plan-head p{color:var(--text-m);font-size:13px;line-height:1.6}
+.dyn-plan-progress{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin:14px 0}.dyn-plan-progress b{font-size:24px;color:var(--dyn-color,#6366f1)}.dyn-plan-progress span{height:8px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden}.dyn-plan-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--dyn-color,#6366f1),#fff)}.dyn-plan-progress small{font-size:11px;color:var(--text-d);font-weight:800}
+.dyn-plan-days{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto;padding-left:4px}.dyn-day-row{padding:11px;border-radius:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.08)}.dyn-day-row.done{opacity:.62}.dyn-day-main{display:flex;gap:10px;align-items:flex-start}.dyn-day-main input,.dyn-quick-top input{width:18px;height:18px;accent-color:var(--dyn-color,#6366f1)}.dyn-day-main b{font-size:14px}.dyn-day-main small{display:block;font-size:11px;color:var(--text-d);margin-top:2px}.dyn-day-row p{font-size:12px;color:var(--text-m);line-height:1.55;margin:7px 0}
+.dyn-day-tasks{display:flex;flex-direction:column;gap:5px;margin-top:7px;padding-right:26px}.dyn-day-tasks label{display:flex;gap:7px;font-size:12px;color:var(--text-m)}
+.dyn-quick-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.dyn-quick-top label{display:flex;gap:9px;align-items:center}.dyn-quick-top b{font-size:17px}.dyn-quick-card p{font-size:13px;color:var(--text-m);line-height:1.6;margin:10px 0}.dyn-quick-card.done{opacity:.62}
+.dyn-link-pill{display:inline-flex;align-items:center;gap:5px}.dyn-link-pill button{border:0;border-radius:999px;padding:3px 8px;font-size:10px;background:rgba(255,255,255,.2);color:var(--text);cursor:pointer}.dyn-link-pill a{text-decoration:none;color:inherit}
+.pro-form-grid{display:grid;grid-template-columns:2fr .7fr 1fr;gap:10px}.goal-pro-grid{display:grid;grid-template-columns:2fr .7fr .8fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;gap:10px}.goal-title-wide{grid-column:span 2}.switch-line{display:flex!important;align-items:center;gap:8px;font-weight:900;color:var(--text);margin-bottom:6px}.switch-line input{width:18px;height:18px;accent-color:#6366f1}
+@media(max-width:900px){.dyn-v14-hero,.dyn-sub-detail,.dyn-plan-head{align-items:flex-start;flex-direction:column}.dyn-v14-hero-actions{width:100%}.dyn-layout-grid,.dyn-layout-board,.dyn-items-mini{grid-template-columns:1fr}.pro-form-grid,.goal-pro-grid{grid-template-columns:1fr}.goal-title-wide{grid-column:auto}}
+</style>
+
+
+<script id="mega-pro-options-v15">
+/* ===== V15: Mega Professional Editing Studio + Advanced Plan Builder ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+  const VIEW_KEY='ms_view_preferences_v14';
+  const MEGA_KEY='ms_mega_templates_v15';
+
+  let advPlanDaysV15=[], advPlanRulesV15=[], advPlanLinksV15=[], advPlanCtxV15=null;
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function escx(s){return (typeof esc==='function'?esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function uidv(){return 'v15_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function today(){return (typeof dateKey==='function'?dateKey(new Date()):new Date().toISOString().slice(0,10))}
+  function addDays(date,n){const d=new Date((date||today())+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10)}
+  function sections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function saveSections(v){localStorage.setItem(DYN_KEY,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud();}
+  function normalizeSec(s){s.subsections=Array.isArray(s.subsections)?s.subsections:[];s.items=Array.isArray(s.items)?s.items:[];s.subsections.forEach(ss=>{ss.items=Array.isArray(ss.items)?ss.items:[];ss.plans=Array.isArray(ss.plans)?ss.plans:[]});return s}
+  function views(){return parse(localStorage.getItem(VIEW_KEY),{})||{}}
+  function setViews(v){localStorage.setItem(VIEW_KEY,JSON.stringify(v))}
+  function localHref(p){p=String(p||'').trim(); if(!p)return '#'; if(/^https?:\/\//i.test(p)||/^file:\/\//i.test(p))return p; if(/^[a-zA-Z]:\\/.test(p))return 'file:///'+p.replace(/\\/g,'/'); return p}
+  function minOf(t){if(!t)return null; const [h,m]=String(t).slice(0,5).split(':').map(Number); if(!Number.isFinite(h))return null; return h*60+(Number.isFinite(m)?m:0)}
+  function rangesOverlap(s1,e1,s2,e2){if(s1==null||s2==null)return false; if(e1==null)e1=s1+60; if(e2==null)e2=s2+60; return s1<e2 && e1>s2}
+  const WD=[['6','سبت'],['0','أحد'],['1','إثنين'],['2','ثلاثاء'],['3','أربعاء'],['4','خميس'],['5','جمعة']];
+
+  function findSecSub(secId,subId){
+    const list=sections().map(normalizeSec);
+    const sec=list.find(x=>x.id===secId);
+    const sub=sec?.subsections?.find(x=>x.id===subId);
+    return {list,sec,sub};
+  }
+
+  function ruleTemplate(type){
+    if(type==='therapy') return {id:uidv(),name:'علاج طبيعي',days:['6','1','3'],title:'جلسة علاج طبيعي',details:'إحماء خفيف + تمارين مدى الحركة + تقوية تدريجية',tasks:['إحماء 10 دقائق','تمرين رئيسي','ثلج/استشفاء'],start_time:'11:00',end_time:'12:00',priority:'high',tag:'علاج',deadline_offset:0,apply_details:true};
+    if(type==='rehab') return {id:uidv(),name:'تأهيل بدني',days:['0','2','4'],title:'جلسة تأهيل بدني',details:'توازن + تقوية + مشي تدريجي حسب الألم',tasks:['تسجيل مستوى الألم','تمارين توازن','تمارين تقوية'],start_time:'12:00',end_time:'13:00',priority:'medium',tag:'تأهيل',deadline_offset:0,apply_details:true};
+    if(type==='diet') return {id:uidv(),name:'نظام غذائي',days:['6','0','1','2','3','4','5'],title:'متابعة النظام الغذائي',details:'التزام بالمياه والبروتين وتقليل السكريات',tasks:['تسجيل الوزن','مراجعة الوجبات','شرب مياه'],start_time:'',end_time:'',priority:'medium',tag:'غذاء',deadline_offset:0,apply_details:true};
+    return {id:uidv(),name:'قاعدة مخصصة',days:['6','1','3'],title:'مهمة متكررة',details:'تفاصيل تتكرر حسب الأيام المختارة',tasks:['خطوة 1','خطوة 2'],start_time:'',end_time:'',priority:'medium',tag:'',deadline_offset:0,apply_details:true};
+  }
+
+  function renderRule(r,i){
+    const dayChecks=WD.map(([v,n])=>`<label class="weekday-chip ${r.days?.includes(v)?'active':''}"><input type="checkbox" value="${v}" ${r.days?.includes(v)?'checked':''}>${n}</label>`).join('');
+    return `<div class="adv-rule-card" data-rule-index="${i}">
+      <div class="adv-rule-head"><b>🔁 ${escx(r.name||('قاعدة '+(i+1)))}</b><button class="danger-mini" onclick="removeAdvRuleV15(${i})">حذف</button></div>
+      <div class="adv-grid">
+        <div class="mf-row"><label>اسم القاعدة</label><input class="mf-inp" data-r-name value="${escx(r.name||'')}"></div>
+        <div class="mf-row"><label>عنوان اليوم</label><input class="mf-inp" data-r-title value="${escx(r.title||'')}"></div>
+        <div class="mf-row"><label>من</label><input class="mf-inp" data-r-start type="time" value="${r.start_time||''}"></div>
+        <div class="mf-row"><label>إلى</label><input class="mf-inp" data-r-end type="time" value="${r.end_time||''}"></div>
+        <div class="mf-row"><label>أولوية</label><select class="mf-inp" data-r-priority><option value="low" ${r.priority==='low'?'selected':''}>عادي</option><option value="medium" ${(!r.priority||r.priority==='medium')?'selected':''}>متوسط</option><option value="high" ${r.priority==='high'?'selected':''}>مهم جدًا</option></select></div>
+        <div class="mf-row"><label>Tag</label><input class="mf-inp" data-r-tag value="${escx(r.tag||'')}" placeholder="علاج / تمرين"></div>
+      </div>
+      <div class="mf-row"><label>تتكرر في أيام</label><div class="weekday-row" data-r-days>${dayChecks}</div></div>
+      <div class="mf-row"><label>تفاصيل تتكرر</label><textarea class="mf-inp" data-r-details>${escx(r.details||'')}</textarea></div>
+      <div class="mf-row"><label>تاسكات تتكرر - كل سطر Checkbox</label><textarea class="mf-inp" data-r-tasks>${escx((r.tasks||[]).join('\n'))}</textarea></div>
+      <div class="adv-rule-options">
+        <label><input type="checkbox" data-r-apply ${r.apply_details!==false?'checked':''}> طبّق التفاصيل والمهام على الأيام المختارة</label>
+        <label>Deadline Offset <input class="mf-inp tiny-inp" data-r-offset type="number" value="${r.deadline_offset||0}"></label>
+      </div>
+    </div>`;
+  }
+
+  window.addAdvRuleV15=function(type='custom'){ advPlanRulesV15.push(ruleTemplate(type)); renderAdvRulesV15(); }
+  window.removeAdvRuleV15=function(i){ advPlanRulesV15.splice(i,1); renderAdvRulesV15(); }
+  window.renderAdvRulesV15=function(){
+    const box=document.getElementById('advRulesBoxV15'); if(!box)return;
+    box.innerHTML=advPlanRulesV15.map(renderRule).join('') || '<div class="hub-empty">لا يوجد قواعد تكرار. اضف قاعدة للسبت/الإثنين/الأربعاء أو غيرها.</div>';
+  }
+  function readRulesFromDom(){
+    return [...document.querySelectorAll('#advRulesBoxV15 .adv-rule-card')].map(card=>{
+      const days=[...card.querySelectorAll('[data-r-days] input:checked')].map(x=>x.value);
+      return {id:advPlanRulesV15[+card.dataset.ruleIndex]?.id||uidv(),name:card.querySelector('[data-r-name]').value.trim(),days,title:card.querySelector('[data-r-title]').value.trim(),details:card.querySelector('[data-r-details]').value,tasks:card.querySelector('[data-r-tasks]').value.split('\n').map(x=>x.trim()).filter(Boolean),start_time:card.querySelector('[data-r-start]').value||null,end_time:card.querySelector('[data-r-end]').value||null,priority:card.querySelector('[data-r-priority]').value,tag:card.querySelector('[data-r-tag]').value.trim(),deadline_offset:+card.querySelector('[data-r-offset]').value||0,apply_details:card.querySelector('[data-r-apply]').checked};
+    });
+  }
+
+  function dayEditorRow(d,i){
+    const links=(d.links||[]).map((l,li)=>`<div class="mini-link-line"><select data-dlink-type><option value="web" ${l.type!=='local'?'selected':''}>Web</option><option value="local" ${l.type==='local'?'selected':''}>Local</option></select><input data-dlink-name value="${escx(l.name||'')}" placeholder="اسم"><input data-dlink-url value="${escx(l.url||'')}" placeholder="رابط أو مسار"><button onclick="this.closest('.mini-link-line').remove()">×</button></div>`).join('');
+    return `<div class="adv-day-edit-card" data-day-index="${i}">
+      <div class="adv-day-edit-top"><b>اليوم ${i+1}</b><label><input type="checkbox" data-d-done ${d.done?'checked':''}> تم</label><button class="danger-mini" onclick="removeAdvDayV15(${i})">حذف</button></div>
+      <div class="adv-grid">
+        <div class="mf-row"><label>التاريخ</label><input class="mf-inp" data-d-date type="date" value="${d.date||''}"></div>
+        <div class="mf-row"><label>العنوان</label><input class="mf-inp" data-d-title value="${escx(d.title||'')}"></div>
+        <div class="mf-row"><label>من</label><input class="mf-inp" data-d-start type="time" value="${d.start_time||''}"></div>
+        <div class="mf-row"><label>إلى</label><input class="mf-inp" data-d-end type="time" value="${d.end_time||''}"></div>
+        <div class="mf-row"><label>Deadline</label><input class="mf-inp" data-d-deadline type="date" value="${d.deadline||''}"></div>
+        <div class="mf-row"><label>أولوية</label><select class="mf-inp" data-d-priority><option value="low" ${d.priority==='low'?'selected':''}>عادي</option><option value="medium" ${(!d.priority||d.priority==='medium')?'selected':''}>متوسط</option><option value="high" ${d.priority==='high'?'selected':''}>مهم</option></select></div>
+        <div class="mf-row"><label>Tag</label><input class="mf-inp" data-d-tag value="${escx(d.tag||'')}"></div>
+        <div class="mf-row"><label>Location / مكان</label><input class="mf-inp" data-d-location value="${escx(d.location||'')}" placeholder="عيادة / جيم / البيت"></div>
+      </div>
+      <div class="mf-row"><label>تفاصيل اليوم</label><textarea class="mf-inp" data-d-details>${escx(d.details||'')}</textarea></div>
+      <div class="mf-row"><label>Checklist اليوم - كل سطر تاسك</label><textarea class="mf-inp" data-d-tasks>${escx((d.tasks||[]).map(t=>typeof t==='string'?t:t.text).join('\n'))}</textarea></div>
+      <div class="mf-row"><label>روابط اليوم Web / Local</label><div class="mini-links" data-d-links>${links}</div><button class="add-task-row" onclick="addDayLinkV15(${i})">+ رابط لليوم</button></div>
+    </div>`;
+  }
+  window.renderAdvDaysV15=function(){
+    const box=document.getElementById('advDaysBoxV15'); if(!box)return;
+    box.innerHTML=advPlanDaysV15.map(dayEditorRow).join('') || '<div class="hub-empty">اضغط توليد الأيام عشان تظهر هنا وتعدل كل يوم لوحده.</div>';
+  }
+  window.removeAdvDayV15=function(i){advPlanDaysV15.splice(i,1); renderAdvDaysV15();}
+  window.addDayLinkV15=function(i){
+    const row=document.querySelector(`[data-day-index="${i}"] [data-d-links]`);
+    if(row) row.insertAdjacentHTML('beforeend',`<div class="mini-link-line"><select data-dlink-type><option value="web">Web</option><option value="local">Local</option></select><input data-dlink-name placeholder="اسم"><input data-dlink-url placeholder="رابط أو مسار"><button onclick="this.closest('.mini-link-line').remove()">×</button></div>`);
+  }
+  function readDaysFromDom(){
+    return [...document.querySelectorAll('#advDaysBoxV15 .adv-day-edit-card')].map(card=>{
+      const links=[...card.querySelectorAll('[data-d-links] .mini-link-line')].map(r=>({type:r.querySelector('[data-dlink-type]').value,name:r.querySelector('[data-dlink-name]').value.trim(),url:r.querySelector('[data-dlink-url]').value.trim()})).filter(l=>l.url);
+      const taskLines=card.querySelector('[data-d-tasks]').value.split('\n').map(x=>x.trim()).filter(Boolean);
+      const old=advPlanDaysV15[+card.dataset.dayIndex]||{};
+      return {id:old.id||uidv(),date:card.querySelector('[data-d-date]').value||null,title:card.querySelector('[data-d-title]').value.trim(),details:card.querySelector('[data-d-details]').value,start_time:card.querySelector('[data-d-start]').value||null,end_time:card.querySelector('[data-d-end]').value||null,deadline:card.querySelector('[data-d-deadline]').value||null,priority:card.querySelector('[data-d-priority]').value,tag:card.querySelector('[data-d-tag]').value.trim(),location:card.querySelector('[data-d-location]').value.trim(),done:card.querySelector('[data-d-done]').checked,links,tasks:taskLines.map((t,idx)=>{const oldT=old.tasks?.[idx]; return {text:t,done:oldT?.done||false,deadline:card.querySelector('[data-d-deadline]').value||null};})};
+    });
+  }
+
+  window.generateAdvDaysV15=function(){
+    advPlanRulesV15=readRulesFromDom();
+    const start=document.getElementById('advStartDateV15').value||today();
+    const count=Math.max(1,Math.min(365,+document.getElementById('advDaysCountV15').value||30));
+    const defaultTitle=document.getElementById('advDefaultTitleV15').value||'مهمة اليوم';
+    const defaultDetails=document.getElementById('advDefaultDetailsV15').value||'';
+    const defaultTasks=document.getElementById('advDefaultTasksV15').value.split('\n').map(x=>x.trim()).filter(Boolean);
+    advPlanDaysV15=Array.from({length:count},(_,i)=>{
+      const date=addDays(start,i);
+      const wd=String(new Date(date+'T00:00:00').getDay());
+      const matched=advPlanRulesV15.filter(r=>r.days.includes(wd) && r.apply_details);
+      const main=matched[matched.length-1];
+      const mergedTasks=[...defaultTasks,...matched.flatMap(r=>r.tasks||[])];
+      return {id:uidv(),date,title:main?.title||`${defaultTitle} ${i+1}`,details:main?.details||defaultDetails,start_time:main?.start_time||null,end_time:main?.end_time||null,deadline:addDays(date,main?.deadline_offset||0),priority:main?.priority||'medium',tag:main?.tag||'',location:'',done:false,links:[],tasks:mergedTasks.map(t=>({text:t,done:false,deadline:date}))};
+    });
+    renderAdvDaysV15();
+    toast('تم توليد الأيام حسب القواعد ✅');
+  }
+
+  window.addManualAdvDayV15=function(){
+    advPlanDaysV15=readDaysFromDom();
+    advPlanDaysV15.push({id:uidv(),date:today(),title:'يوم مخصص',details:'',deadline:null,priority:'medium',tag:'',location:'',links:[],tasks:[]});
+    renderAdvDaysV15();
+  }
+
+  function openAdvancedPlan(secId,subId,index=null){
+    const {list,sec,sub}=findSecSub(secId,subId); if(!sub)return;
+    const old=index!==null?sub.plans?.[index]:null;
+    advPlanCtxV15={secId,subId,index};
+    advPlanRulesV15=Array.isArray(old?.rules)?old.rules.map(r=>({...r,days:[...(r.days||[])]})):[ruleTemplate('custom')];
+    advPlanDaysV15=Array.isArray(old?.days)?old.days.map(d=>({...d,tasks:(d.tasks||[]).map(t=>typeof t==='string'?{text:t,done:false}:t),links:[...(d.links||[])]})):[];
+    advPlanLinksV15=Array.isArray(old?.links)?old.links:[];
+    document.getElementById('systemSectionsModalTitle').textContent=old?'تعديل خطة احترافي':'خطة جديدة احترافية';
+    document.getElementById('systemSectionsModalBody').innerHTML=`<div class="mega-plan-builder">
+      <div class="mega-plan-tabs">
+        <button class="active" onclick="switchMegaPlanTabV15('basics',this)">1 الأساسيات</button>
+        <button onclick="switchMegaPlanTabV15('rules',this)">2 قواعد التكرار</button>
+        <button onclick="switchMegaPlanTabV15('days',this)">3 تعديل الأيام</button>
+        <button onclick="switchMegaPlanTabV15('links',this)">4 روابط وملفات</button>
+      </div>
+
+      <div class="mega-plan-pane active" data-pane="basics">
+        <div class="goal-pro-grid">
+          <div class="mf-row goal-title-wide"><label>اسم الخطة *</label><input class="mf-inp" id="advPlanTitleV15" value="${escx(old?.title||'')}" placeholder="مثلاً: خطة علاج طبيعي 30 يوم"></div>
+          <div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="advPlanIconV15" maxlength="2" value="${escx(old?.icon||'📋')}"></div>
+          <div class="mf-row"><label>لون</label><input class="mf-inp" id="advPlanColorV15" type="color" value="${old?.color||sub.color||sec.color||'#6366f1'}"></div>
+          <div class="mf-row"><label>بداية</label><input class="mf-inp" id="advStartDateV15" type="date" value="${old?.start_date||today()}"></div>
+          <div class="mf-row"><label>عدد الأيام</label><input class="mf-inp" id="advDaysCountV15" type="number" min="1" max="365" value="${old?.days?.length||30}"></div>
+          <div class="mf-row"><label>أولوية عامة</label><select class="mf-inp" id="advPlanPriorityV15"><option value="low" ${old?.priority==='low'?'selected':''}>عادي</option><option value="medium" ${(!old||old.priority==='medium')?'selected':''}>متوسط</option><option value="high" ${old?.priority==='high'?'selected':''}>مهم جدًا</option></select></div>
+          <div class="mf-row"><label class="switch-line"><input type="checkbox" id="advPlanLinkDayV15" ${old?.link_day?'checked':''}> ربط الخطة بيومي</label></div>
+          <div class="mf-row"><label>وضع العرض</label><select class="mf-inp" id="advPlanViewV15"><option value="grid" ${old?.view==='grid'?'selected':''}>Grid</option><option value="list" ${old?.view==='list'?'selected':''}>List</option><option value="board" ${old?.view==='board'?'selected':''}>Board</option></select></div>
+        </div>
+        <div class="mf-row"><label>وصف الخطة</label><textarea class="mf-inp" id="advPlanDescV15">${escx(old?.desc||'')}</textarea></div>
+        <div class="mg2">
+          <div class="mf-row"><label>عنوان افتراضي للأيام</label><input class="mf-inp" id="advDefaultTitleV15" value="${escx(old?.day_title_template||'اليوم')}"></div>
+          <div class="mf-row"><label>تفاصيل افتراضية</label><input class="mf-inp" id="advDefaultDetailsV15" value="${escx(old?.day_details_template||'')}"></div>
+        </div>
+        <div class="mf-row"><label>Checklist افتراضي لكل الأيام - كل سطر تاسك</label><textarea class="mf-inp" id="advDefaultTasksV15">${escx((old?.default_tasks||[]).join('\n'))}</textarea></div>
+      </div>
+
+      <div class="mega-plan-pane" data-pane="rules">
+        <div class="mega-quick-templates">
+          <button onclick="addAdvRuleV15('therapy')">+ قالب علاج طبيعي</button>
+          <button onclick="addAdvRuleV15('rehab')">+ قالب تأهيل بدني</button>
+          <button onclick="addAdvRuleV15('diet')">+ قالب نظام غذائي</button>
+          <button onclick="addAdvRuleV15('custom')">+ قاعدة مخصصة</button>
+        </div>
+        <div id="advRulesBoxV15"></div>
+        <button class="btn btn-primary" onclick="generateAdvDaysV15()">توليد الأيام من القواعد</button>
+      </div>
+
+      <div class="mega-plan-pane" data-pane="days">
+        <div class="adv-days-toolbar"><button class="btn btn-primary" onclick="generateAdvDaysV15()">إعادة توليد</button><button class="btn btn-ghost" onclick="addManualAdvDayV15()">+ يوم يدوي</button><span>كل يوم هنا قابل للتعديل بالكامل: تفاصيل، وقت، ديدلاين، مكان، تاسكات وروابط.</span></div>
+        <div id="advDaysBoxV15"></div>
+      </div>
+
+      <div class="mega-plan-pane" data-pane="links">
+        <div class="sys-admin-panel">
+          <h4>روابط الخطة Web / Local</h4>
+          <div id="advPlanLinksV15">${linkRowsV15(advPlanLinksV15)}</div>
+          <button class="add-task-row" onclick="addAdvPlanLinkV15()">+ رابط خطة</button>
+          <p class="hint-line" style="margin-top:8px">للملفات المحلية اكتب المسار مثل D:\\Projects\\file.aep، وسيظهر زر نسخ للمسار.</p>
+        </div>
+      </div>
+
+      <div class="modal-actions sticky-actions">
+        <button class="btn btn-primary" onclick="saveAdvancedPlanV15()">حفظ الخطة الاحترافية</button>
+        <button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button>
+      </div>
+    </div>`;
+    renderAdvRulesV15(); renderAdvDaysV15();
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+  window.openPlanEditorV14=function(secId,subId,index=null){ openAdvancedPlan(secId,subId,index); }
+
+  window.switchMegaPlanTabV15=function(name,btn){
+    document.querySelectorAll('.mega-plan-tabs button').forEach(b=>b.classList.remove('active'));
+    if(btn)btn.classList.add('active');
+    document.querySelectorAll('.mega-plan-pane').forEach(p=>p.classList.toggle('active',p.dataset.pane===name));
+  }
+
+  function linkRowsV15(links=[]){
+    return (links||[]).map(l=>`<div class="gms-row plan-link-row"><select class="mf-inp" data-ltype style="max-width:120px"><option value="web" ${l.type!=='local'?'selected':''}>Web</option><option value="local" ${l.type==='local'?'selected':''}>Local</option></select><input class="mf-inp" data-lname value="${escx(l.name||'')}" placeholder="اسم"><input class="mf-inp" data-lurl value="${escx(l.url||'')}" placeholder="https:// أو D:\\Folder" dir="ltr"><button class="btn btn-danger" style="padding:6px 10px" onclick="this.closest('.gms-row').remove()">✕</button></div>`).join('');
+  }
+  window.addAdvPlanLinkV15=function(){document.getElementById('advPlanLinksV15')?.insertAdjacentHTML('beforeend',linkRowsV15([{}]));}
+  function readPlanLinks(){return [...document.querySelectorAll('#advPlanLinksV15 .plan-link-row')].map(r=>({type:r.querySelector('[data-ltype]').value,name:r.querySelector('[data-lname]').value.trim(),url:r.querySelector('[data-lurl]').value.trim()})).filter(l=>l.url);}
+
+  window.saveAdvancedPlanV15=function(){
+    const {secId,subId,index}=advPlanCtxV15||{};
+    const {list,sec,sub}=findSecSub(secId,subId); if(!sub)return;
+    const title=document.getElementById('advPlanTitleV15').value.trim(); if(!title)return toast('اكتب اسم الخطة');
+    advPlanRulesV15=readRulesFromDom();
+    advPlanDaysV15=readDaysFromDom();
+    if(!advPlanDaysV15.length) generateAdvDaysV15(), advPlanDaysV15=readDaysFromDom();
+    const old=index!==null?sub.plans?.[index]:null;
+    const plan={id:old?.id||uidv(),title,icon:document.getElementById('advPlanIconV15').value||'📋',color:document.getElementById('advPlanColorV15').value||sub.color||sec.color,desc:document.getElementById('advPlanDescV15').value.trim(),start_date:document.getElementById('advStartDateV15').value||today(),priority:document.getElementById('advPlanPriorityV15').value,view:document.getElementById('advPlanViewV15').value,link_day:document.getElementById('advPlanLinkDayV15').checked,day_title_template:document.getElementById('advDefaultTitleV15').value,day_details_template:document.getElementById('advDefaultDetailsV15').value,default_tasks:document.getElementById('advDefaultTasksV15').value.split('\n').map(x=>x.trim()).filter(Boolean),rules:advPlanRulesV15,links:readPlanLinks(),days:advPlanDaysV15};
+    if(index!==null) sub.plans[index]=plan; else sub.plans.push(plan);
+    saveSections(list);
+    const planIndex=index!==null?index:sub.plans.length-1;
+    if(plan.link_day) syncPlanToDayV15(secId,subId,planIndex);
+    closeSystemSectionsModal();
+    if(typeof renderSubsectionDetailV14==='function')renderSubsectionDetailV14(secId,subId);
+    toast('تم حفظ الخطة باحتراف ✅');
+  }
+
+  window.syncPlanToDayV15=function(secId,subId,pi){
+    const {sec,sub}=findSecSub(secId,subId); const plan=sub?.plans?.[pi]; if(!plan)return;
+    let count=0;
+    (plan.days||[]).forEach(d=>{
+      if(!d.date)return;
+      const blocks=(typeof dayVisibleBlocks==='function'?dayVisibleBlocks(d.date):[]);
+      if(!blocks.length)return;
+      const ts=minOf(d.start_time), te=minOf(d.end_time);
+      let target=ts!=null?blocks.find(b=>rangesOverlap(ts,te,minOf(b.start_time)??0,minOf(b.end_time)??1440)):null;
+      if(!target)target=blocks[0];
+      const key=`${target.id}_${d.date}`;
+      const existing=DAY.overrides[key]||{...target};
+      const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
+      const id='planv15-'+plan.id+'-'+d.id;
+      const newTask={id,text:d.title,timeLabel:d.start_time?`${d.start_time}${d.end_time?' → '+d.end_time:''}`:'',source:id,sourceEnt:`${sec.name} / ${sub.name}`,subtasks:(d.tasks||[]).map((t,i)=>({id:id+'-sub-'+i,text:t.text||t,source:id,deadline:t.deadline||d.deadline||null})),color:d.color||plan.color||sub.color||sec.color,details:d.details||'',deadline:d.deadline||null,priority:d.priority||plan.priority||'medium'};
+      const idx=tasks.findIndex(x=>x.id===id||x.source===id); if(idx>=0)tasks[idx]={...tasks[idx],...newTask}; else tasks.push(newTask);
+      DAY.overrides[key]={...existing,tasks}; count++;
+    });
+    if(count && typeof daySaveLocal==='function')daySaveLocal();
+    toast(count?`تم ربط ${count} يوم بيومي ✅`:'لم يتم ربط أيام، راجع التواريخ');
+  }
+  window.syncPlanToDayV14=function(secId,subId,pi){ syncPlanToDayV15(secId,subId,pi); }
+
+  /* Mega Edit Studio */
+  window.openMegaEditStudioV15=function(){
+    const body=document.getElementById('systemSectionsModalBody');
+    document.getElementById('systemSectionsModalTitle').textContent='Mega Edit Studio — لوحة تعديل 95%';
+    const dyn=sections().map(normalizeSec);
+    const finTabs=[['banks','البنوك'],['gold','الذهب'],['salary','المرتبات'],['expenses','المصاريف'],['subscriptions','الاشتراكات'],['debts','الديون'],['increases','الزيادات']];
+    const v=views();
+    body.innerHTML=`<div class="mega-studio">
+      <div class="mega-studio-hero"><div><h3>لوحة التحكم الاحترافية الضخمة</h3><p>كل حاجة تقريبًا قابلة للتعديل: أقسام، خطط، طرق عرض، ربط بيومي، روابط محلية، قوالب، تكرار، وBulk Actions.</p></div><button class="add-btn teal" onclick="openSystemSectionsManager()">إدارة الأقسام</button></div>
+      <div class="mega-studio-grid">
+        <div class="mega-studio-panel"><h4>🧩 الأقسام والخطط</h4>${dyn.map(s=>`<div class="mega-line"><span>${escx(s.icon||'📌')}</span><b>${escx(s.name)}</b><small>${(s.subsections||[]).length} أقسام فرعية / ${(s.items||[]).length} عناصر عامة</small><button onclick="go('dyn_${s.id}');closeSystemSectionsModal()">فتح</button></div>`).join('')||'<p class="hub-empty">لا يوجد أقسام رئيسية</p>'}<button class="add-task-row" onclick="openSystemSectionsManager()">+ أضف قسم رئيسي</button></div>
+        <div class="mega-studio-panel"><h4>💰 طريقة عرض ثروتي بشكل مستقل</h4>${finTabs.map(([k,n])=>`<div class="mega-line"><span>▦</span><b>${n}</b><select class="mf-inp" data-fin-view="${k}" onchange="setMegaFinViewV15('${k}',this.value)"><option value="list" ${(v['fin:'+k]||'list')==='list'?'selected':''}>List</option><option value="grid" ${(v['fin:'+k])==='grid'?'selected':''}>Grid</option><option value="board" ${(v['fin:'+k])==='board'?'selected':''}>Board</option></select></div>`).join('')}</div>
+        <div class="mega-studio-panel"><h4>⚡ Bulk Actions</h4><button class="add-task-row" onclick="syncAllDynamicPlansV15()">ربط كل الخطط المختارة بيومي</button><button class="add-task-row" onclick="exportMegaBackupV15()">Export Backup JSON</button><button class="add-task-row" onclick="createTreatmentTemplateV15()">إنشاء مثال قسم علاجي احترافي</button><button class="add-task-row" onclick="createWorkoutTemplateV15()">إنشاء مثال قسم تمرين احترافي</button></div>
+        <div class="mega-studio-panel"><h4>✨ تحسينات مضافة</h4><ul class="mega-added-list"><li>Advanced Plan Builder بقواعد تكرار حسب أيام الأسبوع.</li><li>تعديل كل يوم داخل الخطة بتفاصيل مختلفة.</li><li>Checklist وDeadline لكل يوم وتاسك فرعي.</li><li>روابط Web وLocal file paths.</li><li>عرض مستقل Grid/List/Board للأقسام والخطط.</li><li>Bulk Sync لكل الخطط مع يومي.</li></ul></div>
+      </div>
+    </div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+
+  window.setMegaFinViewV15=function(tab,val){
+    const vv=views(); vv['fin:'+tab]=val; setViews(vv);
+    try{
+      const ls=JSON.parse(localStorage.getItem('ms_fin_layouts_v2')||'{}'); ls[tab]=val==='board'?'grid':val; localStorage.setItem('ms_fin_layouts_v2',JSON.stringify(ls));
+      if(FIN && FIN.tab===tab && typeof finSetLayout==='function') finSetLayout(val==='board'?'grid':val);
+    }catch(_){}
+    toast('تم حفظ طريقة العرض');
+  }
+
+  window.syncAllDynamicPlansV15=function(){
+    let total=0;
+    sections().map(normalizeSec).forEach(sec=>sec.subsections.forEach(sub=>(sub.plans||[]).forEach((p,i)=>{ if(p.link_day){syncPlanToDayV15(sec.id,sub.id,i); total++;} })));
+    toast(total?`تم تنفيذ ربط ${total} خطة بيومي`:'لا توجد خطط مفعّل لها ربط بيومي');
+  }
+
+  window.exportMegaBackupV15=function(){
+    const data={dynamicSections:sections(),views:views(),exported_at:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mysystem-mega-backup.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
+
+  function ensureSectionTemplate(name,icon,color){
+    const list=sections().map(normalizeSec);
+    let sec=list.find(s=>s.name===name);
+    if(!sec){sec={id:uidv(),name,icon,color,desc:'قسم تم إنشاؤه تلقائيًا من Mega Studio',items:[],subsections:[]}; list.push(sec);}
+    saveSections(list);
+    if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();
+    return sec.id;
+  }
+  window.createTreatmentTemplateV15=function(){
+    const secId=ensureSectionTemplate('علاجي','🩺','#14b8a6');
+    const list=sections().map(normalizeSec), sec=list.find(s=>s.id===secId);
+    if(!sec.subsections.some(s=>s.name==='علاج طبيعي')) sec.subsections.push({id:uidv(),name:'علاج طبيعي',icon:'🦵',color:'#22c55e',desc:'جلسات علاج وتمارين منزلية',items:[],plans:[]});
+    if(!sec.subsections.some(s=>s.name==='تأهيل بدني')) sec.subsections.push({id:uidv(),name:'تأهيل بدني',icon:'🏃',color:'#818cf8',desc:'تقوية وتوازن وحركة',items:[],plans:[]});
+    if(!sec.subsections.some(s=>s.name==='نظام غذائي')) sec.subsections.push({id:uidv(),name:'نظام غذائي',icon:'🥗',color:'#f59e0b',desc:'متابعة أكل ومياه ووزن',items:[],plans:[]});
+    saveSections(list); if(typeof renderDynamicShellV14==='function')renderDynamicShellV14(); go('dyn_'+secId); closeSystemSectionsModal(); toast('تم إنشاء قالب علاجي ✅');
+  }
+  window.createWorkoutTemplateV15=function(){
+    const secId=ensureSectionTemplate('مواعيد التمرين','🏋️','#8b5cf6');
+    const list=sections().map(normalizeSec), sec=list.find(s=>s.id===secId);
+    if(!sec.subsections.some(s=>s.name==='تمارين القوة')) sec.subsections.push({id:uidv(),name:'تمارين القوة',icon:'💪',color:'#8b5cf6',desc:'صدر، ظهر، رجل، كتف',items:[],plans:[]});
+    if(!sec.subsections.some(s=>s.name==='كارديو واستشفاء')) sec.subsections.push({id:uidv(),name:'كارديو واستشفاء',icon:'🚶',color:'#06b6d4',desc:'مشي وتمدد واستشفاء',items:[],plans:[]});
+    saveSections(list); if(typeof renderDynamicShellV14==='function')renderDynamicShellV14(); go('dyn_'+secId); closeSystemSectionsModal(); toast('تم إنشاء قالب تمرين ✅');
+  }
+
+  // Add Mega buttons inside settings and dynamic pages
+  const oldOpenSettings=window.openSettings;
+  if(oldOpenSettings&&!oldOpenSettings.__megaV15){
+    window.openSettings=function(){
+      oldOpenSettings();
+      setTimeout(()=>{
+        const box=document.querySelector('#settingsModal .modal-box');
+        if(box&&!document.getElementById('megaStudioSettingsBtn')){
+          const div=document.createElement('div'); div.className='settings-section'; div.id='megaStudioSettingsBtn';
+          div.innerHTML='<h3>🧠 Mega Edit Studio</h3><p style="font-size:12px;color:var(--text-m);margin-bottom:10px">لوحة تعديل ضخمة لكل الأقسام والخطط وطرق العرض.</p><button class="btn btn-primary" onclick="openMegaEditStudioV15()">فتح Mega Studio</button>';
+          box.insertBefore(div,box.children[1]||null);
+        }
+      },50);
+    }
+    window.openSettings.__megaV15=true;
+  }
+  const oldRenderShell=window.renderDynamicShellV14;
+  if(oldRenderShell&&!oldRenderShell.__megaV15){
+    window.renderDynamicShellV14=function(){
+      oldRenderShell();
+      setTimeout(()=>document.querySelectorAll('.dyn-v14-hero-actions').forEach(a=>{ if(!a.querySelector('[data-mega-v15]')) a.insertAdjacentHTML('beforeend','<button data-mega-v15 class="add-btn pink" onclick="openMegaEditStudioV15()">🧠 Mega Studio</button>');}),30);
+    }
+    window.renderDynamicShellV14.__megaV15=true;
+  }
+})();
+</script>
+<style id="mega-pro-options-v15-style">
+.mega-plan-builder{max-height:76vh;overflow:auto;padding-left:4px}
+.mega-plan-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;position:sticky;top:0;background:var(--bg2);z-index:5;padding:8px;border-radius:18px}
+.mega-plan-tabs button{border:0;border-radius:14px;padding:10px 14px;background:var(--panel2);color:var(--text);font-weight:900;cursor:pointer}.mega-plan-tabs button.active{background:linear-gradient(135deg,#5b7cff,#8b5cf6);color:#fff}
+.mega-plan-pane{display:none}.mega-plan-pane.active{display:block}
+.adv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.adv-rule-card,.adv-day-edit-card,.mega-studio-panel{padding:16px;border-radius:24px;background:linear-gradient(180deg,color-mix(in srgb,var(--panel2) 95%,white),color-mix(in srgb,var(--panel) 90%,transparent));box-shadow:var(--shadow-sm);margin-bottom:12px}
+.adv-rule-head,.adv-day-edit-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.adv-rule-head b,.adv-day-edit-top b{font-size:17px}
+.weekday-row{display:flex;gap:6px;flex-wrap:wrap}.weekday-chip{padding:7px 10px;border-radius:999px;background:var(--panel2);font-size:12px;font-weight:900;cursor:pointer}.weekday-chip input{display:none}.weekday-chip:has(input:checked),.weekday-chip.active{background:linear-gradient(135deg,#5b7cff,#8b5cf6);color:#fff}
+.adv-rule-options{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:12px;color:var(--text-m);font-weight:800}.tiny-inp{width:80px!important;padding:7px!important}
+.mega-quick-templates{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.mega-quick-templates button{border:0;border-radius:14px;padding:10px 12px;background:linear-gradient(135deg,#14b8a6,#0ea5e9);color:#fff;font-weight:900;cursor:pointer}
+.adv-days-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.adv-days-toolbar span{font-size:12px;color:var(--text-m);font-weight:800}
+.mini-link-line{display:grid;grid-template-columns:90px 1fr 2fr auto;gap:6px;margin-bottom:6px}.mini-link-line select,.mini-link-line input{border:0;border-radius:10px;background:var(--field);color:var(--text);padding:8px}.mini-link-line button{border:0;border-radius:10px;background:rgba(239,68,68,.18);color:#f87171;padding:6px 10px}
+.sticky-actions{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--bg2) 30%);padding-top:18px}
+.mega-studio-hero{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:24px;border-radius:30px;background:linear-gradient(135deg,#5b7cff,#8b5cf6 55%,#16b7ff);color:#fff;margin-bottom:16px;box-shadow:0 24px 50px rgba(91,124,255,.28)}.mega-studio-hero h3{font-size:28px;margin-bottom:6px}.mega-studio-hero p{font-size:14px;opacity:.9}
+.mega-studio-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.mega-line{display:flex;align-items:center;gap:10px;padding:10px;border-radius:16px;background:var(--panel2);margin-bottom:8px}.mega-line span{font-size:20px}.mega-line b{flex:1;font-size:14px}.mega-line small{font-size:11px;color:var(--text-d)}.mega-line button{border:0;border-radius:10px;padding:7px 10px;background:var(--panel2);color:var(--text);cursor:pointer}.mega-line select{max-width:120px}
+.mega-added-list{padding-right:18px;color:var(--text-m);font-size:13px;line-height:1.9}.mega-added-list li{margin-bottom:4px}
+@media(max-width:900px){.mega-studio-grid{grid-template-columns:1fr}.mega-studio-hero{flex-direction:column;align-items:flex-start}.mini-link-line{grid-template-columns:1fr}.adv-grid{grid-template-columns:1fr}}
+</style>
+
+
+<script id="mega-studio-no-ai-v17">
+/* ===== V17: No AI, deletion only through edit, Mega Studio as universal editor ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+  const VIEW_KEY='ms_view_preferences_v14';
+  const NAV_KEY='ms_nav_custom_labels_v13';
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function escx(s){return (typeof esc==='function'?esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function dynSections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function saveDynSections(v){localStorage.setItem(DYN_KEY,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud();}
+  function views(){return parse(localStorage.getItem(VIEW_KEY),{})||{}}
+  function setViews(v){localStorage.setItem(VIEW_KEY,JSON.stringify(v));}
+  function navCfg(){return parse(localStorage.getItem(NAV_KEY),{})||{}}
+  function uidv(){return 'mega_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function normalizeSec(s){s.subsections=Array.isArray(s.subsections)?s.subsections:[];s.items=Array.isArray(s.items)?s.items:[];s.subsections.forEach(ss=>{ss.items=Array.isArray(ss.items)?ss.items:[];ss.plans=Array.isArray(ss.plans)?ss.plans:[]});return s}
+  function refreshAll(){try{renderAll&&renderAll()}catch(_){try{renderHub&&renderHub();renderDay&&renderDay();renderWork&&renderWork();renderFin&&renderFin();renderGoals&&renderGoals()}catch(__){}} if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();}
+
+  /* Remove Smart Assistant if user opens v16-derived file by mistake */
+  function removeAIArtifacts(){
+    document.getElementById('localAssistantBtn')?.remove();
+    document.getElementById('localAssistantPanel')?.remove();
+    document.getElementById('smart-assistant-local-v16-style')?.remove();
+  }
+  setTimeout(removeAIArtifacts,50);
+
+  /* Delete only from edit screens */
+  const oldWorkEditEnt=window.workEditEnt;
+  if(oldWorkEditEnt && !oldWorkEditEnt.__deleteInsideEditV17){
+    const fn=function(id){
+      oldWorkEditEnt(id);
+      setTimeout(()=>{
+        const body=document.getElementById('entityModalBody');
+        if(body && !body.querySelector('[data-del-inside-edit]')){
+          const row=body.querySelector('.modal-actions');
+          if(row) row.insertAdjacentHTML('beforeend',`<button data-del-inside-edit class="btn btn-danger" onclick="workDelEnt('${id}');closeEntityModal()">حذف</button>`);
+        }
+      },30);
+    };
+    fn.__deleteInsideEditV17=true;
+    window.workEditEnt=fn;
+  }
+
+  function megaTab(btn,name){
+    document.querySelectorAll('.mega-v17-tab').forEach(b=>b.classList.remove('active'));
+    if(btn)btn.classList.add('active');
+    document.querySelectorAll('.mega-v17-pane').forEach(p=>p.classList.toggle('active',p.dataset.pane===name));
+  }
+  window.megaTabV17=megaTab;
+
+  function countDoneTasks(){
+    let all=0,done=0;
+    try{(WORK.data.company||[]).concat(WORK.data.client||[]).forEach(e=>(e.tasks||[]).forEach(t=>{all++; if(t.completed)done++;}))}catch(_){}
+    return {all,done};
+  }
+  function dynamicStats(){
+    let sections=0,subs=0,plans=0,days=0;
+    dynSections().map(normalizeSec).forEach(s=>{sections++; subs+=(s.subsections||[]).length; (s.subsections||[]).forEach(ss=>{plans+=(ss.plans||[]).length; (ss.plans||[]).forEach(p=>days+=(p.days||[]).length)})});
+    return {sections,subs,plans,days};
+  }
+
+  function dayPanel(){
+    const blocks=(DAY?.blocks||[]);
+    return `<div class="mega-editor-list">${blocks.map(b=>`<div class="mega-edit-row"><span>📅</span><div><b>${escx(b.title)}</b><small>${b.start_time||'بدون وقت'} ${b.end_time?'→ '+b.end_time:''} • ${escx(b.repeat_mode||'')}</small></div><button onclick="go('day');openDayModal('${b.id}')">تعديل</button></div>`).join('')||'<p class="hub-empty">لا يوجد بلوكات</p>'}</div>`;
+  }
+  function workPanel(){
+    const ents=(WORK?.data?.company||[]).concat(WORK?.data?.client||[]);
+    return `<div class="mega-editor-list">${ents.map(e=>`<div class="mega-edit-row"><span>${e.icon|| (e.type==='company'?'🏢':'👤')}</span><div><b>${escx(e.name)}</b><small>${(e.tasks||[]).length} تاسكات • ${e.type==='company'?'شركة':'عميل'}</small></div><button onclick="go('work');workEditEnt('${e.id}')">تعديل</button><button onclick="megaShowEntityTasksV17('${e.id}')">تاسكاته</button></div>`).join('')||'<p class="hub-empty">لا يوجد شركات أو عملاء</p>'}</div><div id="megaEntityTasksV17"></div>`;
+  }
+  window.megaShowEntityTasksV17=function(id){
+    const ents=(WORK?.data?.company||[]).concat(WORK?.data?.client||[]);
+    const e=ents.find(x=>x.id===id); const box=document.getElementById('megaEntityTasksV17'); if(!e||!box)return;
+    const isFreelance=e.type!=='company';
+    box.innerHTML=`<div class="mega-nested-panel"><h4>تاسكات ${escx(e.name)}</h4>${(e.tasks||[]).map(t=>`<div class="mega-edit-row small"><span>${t.icon||'✅'}</span><div><b>${escx(t.title)}</b><small>${t.deadline||'بدون ديدلاين'} • ${t.start_time||'بدون وقت'}</small></div><button onclick="go('work');openTaskModal('${t.id}','${e.id}',${isFreelance})">تعديل</button></div>`).join('')||'<p class="hub-empty">لا يوجد تاسكات</p>'}<button class="add-task-row" onclick="go('work');openTaskModal(null,'${e.id}',${isFreelance})">+ تاسك جديد</button></div>`;
+  }
+
+  function financePanel(){
+    const groups=[
+      ['banks','البنوك',FIN?.banks||[]],['gold','الذهب',FIN?.gold||[]],['salary','المرتبات',FIN?.salary||[]],
+      ['expenses','المصاريف',FIN?.expenses||[]],['subscriptions','الاشتراكات',FIN?.subscriptions||[]],['debts','الديون',FIN?.debts||[]],['increases','الزيادات',FIN?.increases||[]]
+    ];
+    return `<div class="mega-accordion">${groups.map(([k,n,arr])=>`<details><summary>${n} <b>${arr.length}</b></summary><div class="mega-editor-list">${arr.map((r,i)=>`<div class="mega-edit-row small"><span>${r.icon||'💰'}</span><div><b>${escx(r.name||r.title||n+' '+(i+1))}</b><small>ID: ${escx(r.id||i)}</small></div><button onclick="go('finance');FIN.tab='${k}';renderFin();openFinanceItemModal('${k}','${r.id||''}',true)">تعديل</button></div>`).join('')||'<p class="hub-empty">لا يوجد عناصر</p>'}<button class="add-task-row" onclick="go('finance');FIN.tab='${k}';renderFin();openFinanceItemModal('${k}',null,false)">+ إضافة داخل ${n}</button></div></details>`).join('')}</div>`;
+  }
+  function goalsPanel(){
+    return `<div class="mega-editor-list">${(GOALS?.items||[]).map(g=>`<div class="mega-edit-row"><span>${g.icon||'🎯'}</span><div><b>${escx(g.title)}</b><small>${g.end_date||'بدون ديدلاين'} • ${g.completed?'مكتمل':'نشط'}</small></div><button onclick="go('goals');openGoalModal('${g.id}')">تعديل</button></div>`).join('')||'<p class="hub-empty">لا يوجد أهداف</p>'}<button class="add-task-row" onclick="go('goals');openGoalModal()">+ هدف جديد</button><button class="add-task-row" onclick="go('goals');openGoalsAdmin()">تعديل أقسام أهدافي</button></div>`;
+  }
+  function dynamicPanel(){
+    const dyn=dynSections().map(normalizeSec);
+    return `<div class="mega-editor-list">${dyn.map(s=>`<div class="mega-edit-row"><span>${s.icon||'📌'}</span><div><b>${escx(s.name)}</b><small>${(s.subsections||[]).length} أقسام فرعية • ${(s.items||[]).length} عناصر عامة</small></div><button onclick="openDynSectionEditor('${s.id}')">تعديل</button><button onclick="go('dyn_${s.id}');closeSystemSectionsModal()">فتح</button></div>${(s.subsections||[]).map(sub=>`<div class="mega-edit-row small sub"><span>${sub.icon||'🧩'}</span><div><b>${escx(sub.name)}</b><small>${(sub.plans||[]).length} خطط • ${(sub.items||[]).length} عناصر</small></div><button onclick="openSubsectionEditorV14('${s.id}','${sub.id}')">تعديل</button><button onclick="go('dyn_${s.id}');setTimeout(()=>renderSubsectionDetailV14('${s.id}','${sub.id}'),100);closeSystemSectionsModal()">فتح</button></div>`).join('')}`).join('')||'<p class="hub-empty">لا يوجد أقسام رئيسية</p>'}<button class="add-task-row" onclick="openDynSectionEditor()">+ قسم رئيسي جديد</button></div>`;
+  }
+
+  function viewPanel(){
+    const vv=views();
+    const dyn=dynSections().map(normalizeSec);
+    const financeTabs=[['banks','البنوك'],['gold','الذهب'],['salary','المرتبات'],['expenses','المصاريف'],['subscriptions','الاشتراكات'],['debts','الديون'],['increases','الزيادات']];
+    return `<div class="mega-view-grid">
+      <div class="mega-studio-panel"><h4>طريقة عرض الصفحات الأساسية</h4>
+        ${[['day','يومي'],['work','شغلي'],['goals','أهدافي']].map(([k,n])=>`<div class="mega-view-row"><b>${n}</b><button onclick="megaSetLayoutV17('${k}','list')">List</button><button onclick="megaSetLayoutV17('${k}','grid')">Grid</button><button onclick="megaSetLayoutV17('${k}','side')">Side</button></div>`).join('')}
+      </div>
+      <div class="mega-studio-panel"><h4>ثروتي — تحكم مختصر بدون الشاشة القديمة</h4>
+        ${financeTabs.map(([k,n])=>`<div class="mega-view-row"><b>${n}</b><button onclick="megaSetFinViewV17('${k}','list')">List</button><button onclick="megaSetFinViewV17('${k}','grid')">Grid</button></div>`).join('')}
+      </div>
+      <div class="mega-studio-panel"><h4>الأقسام الرئيسية الجديدة</h4>
+        ${dyn.map(s=>`<div class="mega-view-row"><b>${escx(s.name)}</b><button onclick="megaSetDynViewV17('section:${s.id}','grid')">Grid</button><button onclick="megaSetDynViewV17('section:${s.id}','list')">List</button><button onclick="megaSetDynViewV17('section:${s.id}','board')">Board</button></div>`).join('')||'<p class="hub-empty">لا يوجد أقسام</p>'}
+      </div>
+    </div>`;
+  }
+
+  window.megaSetLayoutV17=function(k,l){
+    if(k==='day'&&typeof daySetLayout==='function'){DAY.layout=l;daySetLayout(l)}
+    if(k==='work'&&typeof workSetLayout==='function'){WORK.layout=l;workSetLayout(l)}
+    if(k==='goals'&&typeof goalsSetLayout==='function')goalsSetLayout(l==='side'?'side':l);
+    toast('تم تغيير طريقة العرض');
+  }
+  window.megaSetFinViewV17=function(tab,l){
+    try{
+      const key='ms_fin_layouts_v2';
+      const ls=JSON.parse(localStorage.getItem(key)||'{}'); ls[tab]=l; localStorage.setItem(key,JSON.stringify(ls));
+      if(FIN){FIN.tab=tab;FIN.layout=l;}
+      if(typeof renderFin==='function')renderFin();
+    }catch(_){}
+    toast('تم حفظ عرض '+tab);
+  }
+  window.megaSetDynViewV17=function(key,l){
+    const v=views(); v[key]=l; setViews(v);
+    if(typeof setDynViewV14==='function')setDynViewV14(key,l);
+    toast('تم حفظ عرض القسم');
+  }
+
+  function settingsPanel(){
+    const cfg=navCfg();
+    return `<div class="mega-view-grid">
+      <div class="mega-studio-panel"><h4>الأقسام الأساسية</h4>${Object.entries({hub:'الرئيسية',day:'يومي',work:'شغلي',finance:'ثروتي',goals:'أهدافي'}).map(([mod,n])=>{
+        const c=cfg[mod]||{};
+        return `<div class="mega-inline-edit"><label>${n}</label><input class="mf-inp" data-core-name="${mod}" value="${escx(c.name||n)}"><input class="mf-inp mini" data-core-icon="${mod}" value="${escx(c.icon||'')}"><button onclick="megaSaveCoreLabelV17('${mod}')">حفظ</button></div>`;
+      }).join('')}</div>
+      <div class="mega-studio-panel"><h4>أدوات عامة</h4><button class="add-task-row" onclick="megaRunHealthCheckV17()">فحص سريع للسيستم</button><button class="add-task-row" onclick="exportMegaBackupV15&&exportMegaBackupV15()">Export Backup JSON</button><button class="add-task-row" onclick="pushLocalToCloud&&pushLocalToCloud()">رفع آخر نسخة للسحابة</button><button class="add-task-row" onclick="forceSyncNow&&forceSyncNow()">سحب آخر نسخة من السحابة</button></div>
+      <div class="mega-studio-panel"><h4>قوالب جاهزة</h4><button class="add-task-row" onclick="createTreatmentTemplateV15&&createTreatmentTemplateV15()">قالب علاجي</button><button class="add-task-row" onclick="createWorkoutTemplateV15&&createWorkoutTemplateV15()">قالب تمرين</button><button class="add-task-row" onclick="syncAllDynamicPlansV15&&syncAllDynamicPlansV15()">ربط كل الخطط المفعلة بيومي</button></div>
+    </div><div id="megaHealthResultV17"></div>`;
+  }
+  window.megaSaveCoreLabelV17=function(mod){
+    const cfg=navCfg();
+    cfg[mod]={name:document.querySelector(`[data-core-name="${mod}"]`)?.value.trim()||mod, icon:document.querySelector(`[data-core-icon="${mod}"]`)?.value.trim()||''};
+    localStorage.setItem(NAV_KEY,JSON.stringify(cfg)); if(typeof touchCloud==='function')touchCloud();
+    if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();
+    toast('تم حفظ اسم القسم');
+  }
+  window.megaRunHealthCheckV17=function(){
+    const dyn=dynamicStats(), w=countDoneTasks();
+    const noDeadline=[];
+    try{(WORK.data.company||[]).concat(WORK.data.client||[]).forEach(e=>(e.tasks||[]).forEach(t=>{if(!t.completed&&!t.deadline)noDeadline.push(t.title)}))}catch(_){}
+    document.getElementById('megaHealthResultV17').innerHTML=`<div class="mega-health-box"><h4>نتيجة الفحص</h4><p>شغل: ${w.done}/${w.all} مكتمل</p><p>الأقسام الجديدة: ${dyn.sections} رئيسية، ${dyn.subs} فرعية، ${dyn.plans} خطط، ${dyn.days} أيام داخل الخطط.</p><p>تاسكات شغل بدون ديدلاين: ${noDeadline.length}</p>${noDeadline.length?`<small>${noDeadline.slice(0,8).map(escx).join('، ')}</small>`:''}</div>`;
+  }
+
+  window.openMegaEditStudioV15=function(){
+    const modal=document.getElementById('systemSectionsModal');
+    const title=document.getElementById('systemSectionsModalTitle');
+    const body=document.getElementById('systemSectionsModalBody');
+    if(!modal||!body)return;
+    const d=dynamicStats(), w=countDoneTasks();
+    title.textContent='Mega Studio — Universal Edit Center';
+    body.innerHTML=`<div class="mega-v17">
+      <div class="mega-v17-hero">
+        <div><h3>لوحة تعديل كل السيستم</h3><p>كل الحذف من داخل التعديل فقط. من هنا تقدر تعدل الأقسام، يومي، شغلي، ثروتي، أهدافي، الخطط، طرق العرض، والقوالب.</p></div>
+        <div class="mega-v17-hero-actions"><button class="add-btn teal" onclick="openSystemSectionsManager()">إدارة الأقسام</button><button class="add-btn pink" onclick="megaRunHealthCheckV17();megaTabV17(document.querySelector('[data-tab-btn=settings]'),'settings')">فحص النظام</button></div>
+      </div>
+      <div class="mega-v17-metrics"><div><b>${w.done}/${w.all}</b><span>تاسكات شغل</span></div><div><b>${(DAY?.blocks||[]).length}</b><span>بلوكات يومي</span></div><div><b>${(GOALS?.items||[]).length}</b><span>أهداف</span></div><div><b>${d.sections}</b><span>أقسام رئيسية</span></div><div><b>${d.plans}</b><span>خطط</span></div></div>
+      <div class="mega-v17-tabs">
+        <button class="mega-v17-tab active" onclick="megaTabV17(this,'overview')">Overview</button>
+        <button class="mega-v17-tab" onclick="megaTabV17(this,'day')">يومي</button>
+        <button class="mega-v17-tab" onclick="megaTabV17(this,'work')">شغلي</button>
+        <button class="mega-v17-tab" onclick="megaTabV17(this,'finance')">ثروتي</button>
+        <button class="mega-v17-tab" onclick="megaTabV17(this,'goals')">أهدافي</button>
+        <button class="mega-v17-tab" onclick="megaTabV17(this,'dynamic')">الأقسام الجديدة</button>
+        <button class="mega-v17-tab" onclick="megaTabV17(this,'views')">طرق العرض</button>
+        <button class="mega-v17-tab" data-tab-btn="settings" onclick="megaTabV17(this,'settings')">إعدادات وBulk</button>
+      </div>
+      <div class="mega-v17-pane active" data-pane="overview">
+        <div class="mega-v17-grid">
+          <div class="mega-studio-panel"><h4>📅 يومي</h4><p>تعديل كل البلوكات والتوقيت والتكرار والحذف من داخل تعديل البلوك.</p><button class="add-task-row" onclick="megaTabV17(document.querySelector('.mega-v17-tab:nth-child(2)'),'day')">إدارة يومي</button></div>
+          <div class="mega-studio-panel"><h4>💼 شغلي</h4><p>تعديل الشركات والعملاء والتاسكات والديدلاين والروابط.</p><button class="add-task-row" onclick="megaTabV17(document.querySelector('.mega-v17-tab:nth-child(3)'),'work')">إدارة شغلي</button></div>
+          <div class="mega-studio-panel"><h4>🏦 ثروتي</h4><p>تعديل بنوك، ذهب، مصاريف، ديون، مرتبات بدون شاشة العرض القديمة.</p><button class="add-task-row" onclick="megaTabV17(document.querySelector('.mega-v17-tab:nth-child(4)'),'finance')">إدارة ثروتي</button></div>
+          <div class="mega-studio-panel"><h4>🧩 خطط وأقسام</h4><p>أقسام رئيسية، فرعية، خطط، أيام، تكرار، وربط بيومي.</p><button class="add-task-row" onclick="megaTabV17(document.querySelector('.mega-v17-tab:nth-child(6)'),'dynamic')">إدارة الأقسام الجديدة</button></div>
+        </div>
+      </div>
+      <div class="mega-v17-pane" data-pane="day">${dayPanel()}</div>
+      <div class="mega-v17-pane" data-pane="work">${workPanel()}</div>
+      <div class="mega-v17-pane" data-pane="finance">${financePanel()}</div>
+      <div class="mega-v17-pane" data-pane="goals">${goalsPanel()}</div>
+      <div class="mega-v17-pane" data-pane="dynamic">${dynamicPanel()}</div>
+      <div class="mega-v17-pane" data-pane="views">${viewPanel()}</div>
+      <div class="mega-v17-pane" data-pane="settings">${settingsPanel()}</div>
+    </div>`;
+    modal.classList.remove('hidden');
+  }
+
+  // Add Mega button in settings if not present
+  const oldOpenSettings=window.openSettings;
+  if(oldOpenSettings&&!oldOpenSettings.__megaNoAiV17){
+    window.openSettings=function(){
+      oldOpenSettings();
+      setTimeout(()=>{
+        const box=document.querySelector('#settingsModal .modal-box');
+        if(box&&!document.getElementById('megaStudioNoAiV17')){
+          const div=document.createElement('div'); div.className='settings-section'; div.id='megaStudioNoAiV17';
+          div.innerHTML='<h3>🧠 Mega Studio</h3><p style="font-size:12px;color:var(--text-m);margin-bottom:10px">لوحة تعديل شاملة بدون AI، والحذف من داخل التعديل فقط.</p><button class="btn btn-primary" onclick="openMegaEditStudioV15()">فتح Mega Studio</button>';
+          box.insertBefore(div,box.children[1]||null);
+        }
+      },40);
+    }
+    window.openSettings.__megaNoAiV17=true;
+  }
+
+  setTimeout(()=>{removeAIArtifacts();},200);
+})();
+</script>
+<style id="mega-studio-no-ai-v17-style">
+/* Hide external delete X/trash buttons. Deletion stays inside edit modals only. */
+.dyn-sub-actions .danger-mini,
+.dyn-item-actions .danger-mini,
+.goal-acts .danger-mini,
+.admin-section-row .danger-mini,
+.admin-goal-row .danger-mini,
+.sys-row .danger-mini,
+.mega-edit-row .danger-mini,
+.entity-card button[onclick*="workDelEnt"],
+button[onclick*="deleteDynItem"]:not(.btn-danger),
+button[onclick*="deleteDynSection"]:not(.btn-danger),
+button[onclick*="deleteSubsectionV14"]:not(.btn-danger),
+button[onclick*="deletePlanV14"]:not(.btn-danger){display:none!important}
+.local-ai-btn,.local-ai-panel{display:none!important}
+
+.mega-v17{max-height:76vh;overflow:auto;padding-left:4px}
+.mega-v17-hero{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:26px;border-radius:32px;background:linear-gradient(135deg,#5b7cff,#8b5cf6 52%,#0ea5e9);color:#fff;margin-bottom:16px;box-shadow:0 26px 55px rgba(91,124,255,.3)}
+.mega-v17-hero h3{font-size:30px;margin-bottom:6px}.mega-v17-hero p{font-size:14px;line-height:1.7;opacity:.92}.mega-v17-hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+.mega-v17-metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.mega-v17-metrics div{padding:16px;border-radius:22px;background:linear-gradient(180deg,color-mix(in srgb,var(--panel2) 96%,white),color-mix(in srgb,var(--panel) 90%,transparent));box-shadow:var(--shadow-sm)}
+.mega-v17-metrics b{display:block;font-size:26px;color:#60a5fa;line-height:1}.mega-v17-metrics span{font-size:11px;color:var(--text-m);font-weight:900}
+.mega-v17-tabs{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;z-index:8;background:var(--bg2);padding:8px;border-radius:20px;margin-bottom:14px}
+.mega-v17-tab{border:0;border-radius:14px;padding:10px 13px;background:var(--panel2);color:var(--text);font-weight:900;cursor:pointer}.mega-v17-tab.active{background:linear-gradient(135deg,#5b7cff,#8b5cf6);color:#fff}
+.mega-v17-pane{display:none}.mega-v17-pane.active{display:block}
+.mega-v17-grid,.mega-view-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.mega-editor-list{display:flex;flex-direction:column;gap:9px}
+.mega-edit-row{display:flex;align-items:center;gap:11px;padding:12px;border-radius:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--panel2) 94%,white),color-mix(in srgb,var(--panel) 88%,transparent));border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.mega-edit-row.small{padding:9px 10px;margin-right:18px}.mega-edit-row.sub{background:color-mix(in srgb,#6366f1 10%,var(--panel))}
+.mega-edit-row span{font-size:22px}.mega-edit-row div{flex:1}.mega-edit-row b{display:block;font-size:15px}.mega-edit-row small{display:block;font-size:11px;color:var(--text-d);font-weight:800;margin-top:3px}
+.mega-edit-row button,.mega-view-row button,.mega-inline-edit button{border:0;border-radius:12px;padding:8px 11px;background:var(--panel2);color:var(--text);font-weight:900;cursor:pointer}
+.mega-nested-panel{margin-top:14px;padding:14px;border-radius:22px;background:var(--panel);box-shadow:var(--shadow-sm)}.mega-nested-panel h4{font-size:17px;margin-bottom:10px}
+.mega-accordion details{border-radius:20px;background:var(--panel);margin-bottom:10px;overflow:hidden;border:1px solid var(--border)}.mega-accordion summary{cursor:pointer;padding:13px 15px;font-weight:900;display:flex;justify-content:space-between}.mega-accordion details[open] summary{background:var(--panel2)}
+.mega-view-row{display:flex;align-items:center;gap:8px;padding:9px;border-radius:15px;background:var(--panel);margin-bottom:8px}.mega-view-row b{flex:1}
+.mega-inline-edit{display:grid;grid-template-columns:90px 1fr 70px auto;gap:8px;align-items:center;margin-bottom:9px}.mega-inline-edit label{font-size:12px;font-weight:900;color:var(--text-m)}.mega-inline-edit .mini{text-align:center}
+.mega-health-box{margin-top:14px;padding:16px;border-radius:22px;background:linear-gradient(180deg,rgba(34,197,94,.12),var(--panel));border:1px solid rgba(34,197,94,.2)}.mega-health-box h4{font-size:18px;margin-bottom:8px}.mega-health-box p{font-size:13px;margin:6px 0;color:var(--text-m)}
+@media(max-width:900px){.mega-v17-hero{flex-direction:column;align-items:flex-start}.mega-v17-metrics,.mega-v17-grid,.mega-view-grid{grid-template-columns:1fr}.mega-inline-edit{grid-template-columns:1fr}.mega-v17-tabs{position:relative}.mega-edit-row{align-items:flex-start;flex-wrap:wrap}}
+</style>
+
 </body>
 </html>
