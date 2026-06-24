@@ -4963,5 +4963,293 @@ button[onclick*="deletePlanV14"]:not(.btn-danger){display:none!important}
 @media(max-width:900px){.mega-v17-hero{flex-direction:column;align-items:flex-start}.mega-v17-metrics,.mega-v17-grid,.mega-view-grid{grid-template-columns:1fr}.mega-inline-edit{grid-template-columns:1fr}.mega-v17-tabs{position:relative}.mega-edit-row{align-items:flex-start;flex-wrap:wrap}}
 </style>
 
+
+<script id="duplicate-source-cleanup-v18">
+/* ===== V18: Fix duplicated dynamic sections + manage Day synced tasks ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function escx(s){return (typeof esc==='function'?esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function cleanName(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/[ًٌٍَُِّْ]/g,'').toLowerCase();}
+  function sections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function saveSections(v){localStorage.setItem(DYN_KEY,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud();}
+  function normalizeSec(s){
+    s.subsections=Array.isArray(s.subsections)?s.subsections:[];
+    s.items=Array.isArray(s.items)?s.items:[];
+    s.subsections.forEach(ss=>{ss.items=Array.isArray(ss.items)?ss.items:[];ss.plans=Array.isArray(ss.plans)?ss.plans:[]});
+    return s;
+  }
+  function mergeSubsections(a,b){
+    a.items=[...(a.items||[]),...(b.items||[])];
+    a.plans=[...(a.plans||[]),...(b.plans||[])];
+    if(!a.desc && b.desc)a.desc=b.desc;
+    if(!a.icon && b.icon)a.icon=b.icon;
+    if(!a.color && b.color)a.color=b.color;
+    return a;
+  }
+  function mergeSections(a,b){
+    a.items=[...(a.items||[]),...(b.items||[])];
+    if(!a.desc && b.desc)a.desc=b.desc;
+    if(!a.icon && b.icon)a.icon=b.icon;
+    if(!a.color && b.color)a.color=b.color;
+    const subMap=new Map();
+    (a.subsections||[]).map(normalizeSec).forEach(s=>subMap.set(cleanName(s.name),s));
+    (b.subsections||[]).forEach(s=>{
+      const k=cleanName(s.name);
+      if(subMap.has(k)) mergeSubsections(subMap.get(k),s);
+      else subMap.set(k,s);
+    });
+    a.subsections=[...subMap.values()];
+    return a;
+  }
+
+  window.dedupeDynamicSectionsV18=function(showToast=false){
+    const list=sections().map(normalizeSec);
+    const map=new Map(); let merged=0;
+    list.forEach(sec=>{
+      const k=cleanName(sec.name);
+      if(!k)return;
+      if(map.has(k)){ mergeSections(map.get(k),sec); merged++; }
+      else map.set(k,sec);
+    });
+    const out=[...map.values()];
+    if(merged || out.length!==list.length){
+      saveSections(out);
+      if(showToast && typeof toast==='function')toast(`تم دمج ${merged} قسم مكرر ✅`);
+    } else if(showToast && typeof toast==='function') toast('مفيش أقسام مكررة');
+    return out;
+  }
+
+  function buildDynModule(sec){
+    return `<section id="mod-dyn_${sec.id}" class="module" data-dyn-module-v18="1">
+      <div class="dyn-v14-wrap">
+        <div class="dyn-v14-hero" style="--dyn-color:${sec.color||'#6366f1'}">
+          <div class="dyn-v14-hero-icon">${escx(sec.icon||'📌')}</div>
+          <div class="dyn-v14-hero-text"><h2>${escx(sec.name||'قسم')}</h2><p>${escx(sec.desc||'قسم رئيسي مخصص يحتوي أقسام فرعية وخطط وعناصر قابلة للربط بيومي.')}</p></div>
+          <div class="dyn-v14-hero-actions">
+            <button class="add-btn teal" onclick="openSubsectionEditorV14('${sec.id}')">+ قسم فرعي</button>
+            <button class="add-btn" onclick="openQuickItemEditorV14('${sec.id}',null,null)">+ عنصر سريع</button>
+            <button class="add-btn pink" onclick="openSystemSectionsManager()">⚙️ إدارة الأقسام</button>
+            <button class="add-btn" onclick="openDaySyncedTasksManagerV18()">إدارة تاسكات يومي</button>
+          </div>
+        </div>
+        <div id="dynV14Board_${sec.id}"></div>
+      </div>
+    </section>`;
+  }
+
+  window.renderDynamicShellV18=function(){
+    const list=dedupeDynamicSectionsV18(false).map(normalizeSec);
+    const main=document.querySelector('main.main');
+    const nav=document.querySelector('.sidebar .nav-items');
+    const bottom=document.getElementById('bottomNav');
+    if(!main || !nav)return;
+
+    document.querySelectorAll('[data-dyn-module-v13="1"],[data-dyn-module-v14="1"],[data-dyn-module-v18="1"]').forEach(el=>el.remove());
+    document.querySelectorAll('[data-dyn-nav-v13="1"],[data-dyn-nav-v14="1"],[data-dyn-nav-v18="1"]').forEach(el=>el.remove());
+
+    const seen=new Set();
+    list.forEach(sec=>{
+      const mod='dyn_'+sec.id;
+      if(seen.has(mod))return; seen.add(mod);
+
+      const n=document.createElement('div');
+      n.className='nav-item';
+      n.dataset.mod=mod;
+      n.dataset.dynNavV18='1';
+      n.onclick=()=>go(mod);
+      n.innerHTML=`<span class="nav-icon">${escx(sec.icon||'📌')}</span><span>${escx(sec.name||'قسم')}</span>`;
+      nav.appendChild(n);
+
+      if(bottom){
+        const b=document.createElement('div');
+        b.className='bnav-item';
+        b.dataset.mod=mod;
+        b.dataset.dynNavV18='1';
+        b.onclick=()=>go(mod);
+        b.innerHTML=`<span class="bnav-icon">${escx(sec.icon||'📌')}</span><span>${escx(sec.name||'قسم')}</span>`;
+        bottom.appendChild(b);
+      }
+
+      main.insertAdjacentHTML('beforeend',buildDynModule(sec));
+    });
+  }
+
+  function cleanDuplicateNavDOM(){
+    const seen=new Set();
+    document.querySelectorAll('.nav-item[data-mod^="dyn_"], .bnav-item[data-mod^="dyn_"]').forEach(el=>{
+      const scope=el.classList.contains('bnav-item')?'b:':'s:';
+      const key=scope+el.dataset.mod;
+      if(seen.has(key))el.remove();
+      else seen.add(key);
+    });
+  }
+
+  const oldRenderDyn14=window.renderDynamicShellV14;
+  window.renderDynamicShellV14=function(){
+    renderDynamicShellV18();
+    cleanDuplicateNavDOM();
+  };
+  window.renderDynamicShell=window.renderDynamicShellV18;
+
+  const oldGo=window.go;
+  window.go=function(mod){
+    if(String(mod).startsWith('dyn_')){
+      renderDynamicShellV18();
+      cur=mod;
+      document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+      let target=document.getElementById('mod-'+mod);
+      if(target)target.classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod===mod));
+      document.querySelectorAll('.bnav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod===mod));
+      const id=String(mod).slice(4);
+      if(typeof renderDynamicBoardV14==='function')renderDynamicBoardV14(id);
+      cleanDuplicateNavDOM();
+      return;
+    }
+    oldGo(mod);
+    cleanDuplicateNavDOM();
+  };
+
+  function findDynamicSourceByName(sourceEnt){
+    const raw=String(sourceEnt||'').replace(/^💼/,'').trim();
+    const parts=raw.split('/').map(x=>cleanName(x));
+    const secName=parts[0], subName=parts[1];
+    const list=sections().map(normalizeSec);
+    const sec=list.find(s=>cleanName(s.name)===secName || cleanName(s.name).includes(secName) || secName.includes(cleanName(s.name)));
+    if(!sec)return null;
+    let sub=null;
+    if(subName) sub=(sec.subsections||[]).find(s=>cleanName(s.name)===subName || cleanName(s.name).includes(subName) || subName.includes(cleanName(s.name)));
+    return {sec,sub};
+  }
+
+  window.openDynamicSourceByNameV18=function(sourceEnt){
+    const f=findDynamicSourceByName(sourceEnt);
+    if(!f){ if(typeof toast==='function')toast('مش لاقي مصدر التاسك — افتح إدارة تاسكات يومي'); openDaySyncedTasksManagerV18(); return; }
+    go('dyn_'+f.sec.id);
+    setTimeout(()=>{
+      if(f.sub && typeof renderSubsectionDetailV14==='function')renderSubsectionDetailV14(f.sec.id,f.sub.id);
+    },120);
+  };
+
+  document.addEventListener('click',function(e){
+    const s=e.target.closest?.('.block-task-source');
+    if(!s)return;
+    const txt=s.textContent.replace(/^💼/,'').replace(/^📌/,'').trim();
+    if(txt)openDynamicSourceByNameV18(txt);
+  });
+
+  function allSyncedDayTasks(){
+    const out=[];
+    const ovs=DAY?.overrides||{};
+    Object.entries(ovs).forEach(([key,b])=>{
+      const [blockId,date]=key.split('_');
+      (b.tasks||[]).forEach((t,idx)=>{
+        if(t.sourceEnt || String(t.id||'').startsWith('dyn') || String(t.id||'').startsWith('plan')){
+          out.push({key,blockId,date,block:b,task:t,idx,sourceEnt:t.sourceEnt||'غير معروف'});
+        }
+      });
+    });
+    return out;
+  }
+
+  window.removeSyncedTaskFromDayV18=function(key,idx){
+    const b=DAY.overrides[key]; if(!b||!Array.isArray(b.tasks))return;
+    b.tasks.splice(idx,1);
+    if(typeof daySaveLocal==='function')daySaveLocal();
+    if(typeof renderDay==='function')renderDay();
+    openDaySyncedTasksManagerV18();
+    if(typeof toast==='function')toast('تم حذف التاسك من يومي فقط');
+  };
+
+  window.removeAllSyncedBySourceV18=function(sourceEnt){
+    if(!confirm(`حذف كل تاسكات "${sourceEnt}" من يومي فقط؟`))return;
+    let count=0;
+    Object.values(DAY.overrides||{}).forEach(b=>{
+      if(Array.isArray(b.tasks)){
+        const before=b.tasks.length;
+        b.tasks=b.tasks.filter(t=>String(t.sourceEnt||'')!==String(sourceEnt));
+        count+=before-b.tasks.length;
+      }
+    });
+    if(typeof daySaveLocal==='function')daySaveLocal();
+    if(typeof renderDay==='function')renderDay();
+    openDaySyncedTasksManagerV18();
+    if(typeof toast==='function')toast(`تم حذف ${count} تاسك من يومي`);
+  };
+
+  window.openDaySyncedTasksManagerV18=function(){
+    const modal=document.getElementById('systemSectionsModal');
+    const title=document.getElementById('systemSectionsModalTitle');
+    const body=document.getElementById('systemSectionsModalBody');
+    if(!modal||!body)return;
+    const list=allSyncedDayTasks();
+    const groups={};
+    list.forEach(x=>{groups[x.sourceEnt]=groups[x.sourceEnt]||[];groups[x.sourceEnt].push(x);});
+    title.textContent='إدارة التاسكات المسمعة في يومي';
+    body.innerHTML=`<div class="day-sync-manager-v18">
+      <div class="sync-manager-hero">
+        <div><h3>تاسكات جاية من الأقسام والخطط</h3><p>هنا تقدر تفتح مصدر التاسك أو تشيله من يومي فقط، وده يحل مشكلة إنك مش عارف توصل لقسم رياضة / علاج طبيعي.</p></div>
+        <button class="add-btn teal" onclick="dedupeDynamicSectionsV18(true);renderDynamicShellV18();openDaySyncedTasksManagerV18()">دمج الأقسام المكررة</button>
+      </div>
+      ${Object.keys(groups).length?Object.entries(groups).map(([src,items])=>`<div class="sync-source-card">
+        <div class="sync-source-head"><div><b>${escx(src)}</b><small>${items.length} تاسكات في يومي</small></div><div><button class="btn btn-ghost" onclick="openDynamicSourceByNameV18('${escx(src).replace(/'/g,"\\'")}')">فتح المصدر</button><button class="btn btn-danger" onclick="removeAllSyncedBySourceV18('${escx(src).replace(/'/g,"\\'")}')">حذف الكل من يومي</button></div></div>
+        <div class="sync-task-list">${items.map((x,i)=>`<div class="sync-task-row"><span>📅 ${escx(x.date||'')}</span><b>${escx(x.task.text||x.task.title||'تاسك')}</b><small>${escx(x.task.timeLabel||'بدون وقت')}</small><button onclick="removeSyncedTaskFromDayV18('${x.key}',${x.idx})">إزالة من يومي</button></div>`).join('')}</div>
+      </div>`).join(''):`<div class="goals-empty"><div class="ge-icon">✅</div><h3>مفيش تاسكات خارجية في يومي</h3><p>أي تاسك متزامن من الأقسام أو الخطط هيظهر هنا.</p></div>`}
+      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إغلاق</button></div>
+    </div>`;
+    modal.classList.remove('hidden');
+  };
+
+  const oldOpenMega=window.openMegaEditStudioV15;
+  if(oldOpenMega && !oldOpenMega.__v18){
+    const fn=function(){
+      oldOpenMega();
+      setTimeout(()=>{
+        const actions=document.querySelector('.mega-v17-hero-actions');
+        if(actions && !actions.querySelector('[data-sync-manager-v18]')){
+          actions.insertAdjacentHTML('beforeend',`<button data-sync-manager-v18 class="add-btn teal" onclick="openDaySyncedTasksManagerV18()">إدارة تاسكات يومي</button><button class="add-btn" onclick="dedupeDynamicSectionsV18(true);renderDynamicShellV18()">دمج المكرر</button>`);
+        }
+      },60);
+    };
+    fn.__v18=true;
+    window.openMegaEditStudioV15=fn;
+  }
+
+  const oldRenderDay=window.renderDay;
+  if(oldRenderDay && !oldRenderDay.__v18){
+    const rd=function(){
+      oldRenderDay();
+      setTimeout(()=>{
+        const bar=document.querySelector('#mod-day .view-bar');
+        if(bar && !document.getElementById('daySyncedManagerBtnV18')){
+          bar.insertAdjacentHTML('beforeend',`<button id="daySyncedManagerBtnV18" class="add-task-row day-sync-open-btn" onclick="openDaySyncedTasksManagerV18()">إدارة التاسكات المسمعة</button>`);
+        }
+      },50);
+    };
+    rd.__v18=true;
+    window.renderDay=rd;
+  }
+
+  setTimeout(()=>{dedupeDynamicSectionsV18(false); renderDynamicShellV18(); cleanDuplicateNavDOM(); if(cur==='day'&&typeof renderDay==='function')renderDay();},400);
+  setTimeout(cleanDuplicateNavDOM,1200);
+})();
+</script>
+<style id="duplicate-source-cleanup-v18-style">
+.block-task-source{cursor:pointer;transition:.15s}
+.block-task-source:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(99,102,241,.16)}
+.day-sync-open-btn{width:auto!important;max-width:max-content;padding:9px 13px!important;background:linear-gradient(135deg,#14b8a6,#0ea5e9)!important;color:#fff!important;border:0!important}
+.day-sync-manager-v18{max-height:74vh;overflow:auto}
+.sync-manager-hero{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:22px;border-radius:28px;background:linear-gradient(135deg,#14b8a6,#0ea5e9 55%,#6366f1);color:#fff;margin-bottom:14px;box-shadow:0 24px 50px rgba(20,184,166,.24)}
+.sync-manager-hero h3{font-size:25px;margin-bottom:6px}.sync-manager-hero p{font-size:13px;line-height:1.7;opacity:.9}
+.sync-source-card{padding:16px;border-radius:24px;background:var(--panel);border:1px solid var(--border);margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.sync-source-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.sync-source-head b{font-size:18px}.sync-source-head small{display:block;color:var(--text-d);font-size:12px;margin-top:3px}.sync-source-head>div:last-child{display:flex;gap:7px;flex-wrap:wrap}
+.sync-task-list{display:flex;flex-direction:column;gap:8px}
+.sync-task-row{display:grid;grid-template-columns:110px 1fr 120px auto;gap:8px;align-items:center;padding:10px;border-radius:15px;background:var(--panel2)}
+.sync-task-row span,.sync-task-row small{font-size:11px;color:var(--text-d);font-weight:800}.sync-task-row b{font-size:13px}.sync-task-row button{border:0;border-radius:11px;background:rgba(239,68,68,.14);color:#f87171;padding:8px 10px;font-weight:900;cursor:pointer}
+@media(max-width:800px){.sync-manager-hero,.sync-source-head{flex-direction:column;align-items:flex-start}.sync-task-row{grid-template-columns:1fr}.sync-task-row button{width:100%}}
+</style>
+
 </body>
 </html>
