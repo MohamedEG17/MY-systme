@@ -6134,5 +6134,274 @@ body[data-theme="light"] textarea::selection{background:rgba(59,130,246,.32)!imp
 })();
 </script>
 
+
+<script id="hero-gradient-contrast-correction-v22">
+/* ===== V22: Keep gradient hero text white, keep normal light cards dark ===== */
+(function(){
+  function injectHeroContrastV22(){
+    if(document.getElementById('hero-gradient-contrast-correction-v22-style')) return;
+    const st=document.createElement('style');
+    st.id='hero-gradient-contrast-correction-v22-style';
+    st.textContent=`
+      /* Gradient / colored hero areas must stay white in light theme */
+      body[data-theme="light"] .dyn-v14-hero,
+      body[data-theme="light"] .dyn-v14-hero *,
+      body[data-theme="light"] .dyn-page-hero,
+      body[data-theme="light"] .dyn-page-hero *,
+      body[data-theme="light"] .dyn-section-head,
+      body[data-theme="light"] .dyn-section-head *,
+      body[data-theme="light"] .sys-admin-hero,
+      body[data-theme="light"] .sys-admin-hero *,
+      body[data-theme="light"] .mega-v17-hero,
+      body[data-theme="light"] .mega-v17-hero *,
+      body[data-theme="light"] .mega-studio-hero,
+      body[data-theme="light"] .mega-studio-hero *,
+      body[data-theme="light"] .admin-hero,
+      body[data-theme="light"] .admin-hero *,
+      body[data-theme="light"] .custom-dashboard-hero,
+      body[data-theme="light"] .custom-dashboard-hero *,
+      body[data-theme="light"] .dash-hero-card,
+      body[data-theme="light"] .dash-hero-card *,
+      body[data-theme="light"] .fin-hero,
+      body[data-theme="light"] .fin-hero *{
+        color:#ffffff!important;
+        -webkit-text-fill-color:#ffffff!important;
+        text-shadow:0 2px 12px rgba(15,23,42,.28)!important;
+      }
+
+      /* Smaller subtitle on gradient still white but softer */
+      body[data-theme="light"] .dyn-v14-hero p,
+      body[data-theme="light"] .dyn-page-hero p,
+      body[data-theme="light"] .dyn-section-head p,
+      body[data-theme="light"] .sys-admin-hero p,
+      body[data-theme="light"] .mega-v17-hero p,
+      body[data-theme="light"] .mega-studio-hero p{
+        color:rgba(255,255,255,.88)!important;
+        -webkit-text-fill-color:rgba(255,255,255,.88)!important;
+      }
+
+      /* Normal sidebar/buttons/cards stay readable dark */
+      body[data-theme="light"] .sidebar .nav-item:not(.active),
+      body[data-theme="light"] .sidebar .nav-item:not(.active) span:not(.nav-badge),
+      body[data-theme="light"] .bottom-nav .bnav-item:not(.active),
+      body[data-theme="light"] .bottom-nav .bnav-item:not(.active) span:not(.bnav-badge){
+        color:#334155!important;
+        -webkit-text-fill-color:#334155!important;
+        text-shadow:none!important;
+      }
+      body[data-theme="light"] .sidebar .nav-item.active,
+      body[data-theme="light"] .sidebar .nav-item.active span:not(.nav-badge),
+      body[data-theme="light"] .bottom-nav .bnav-item.active,
+      body[data-theme="light"] .bottom-nav .bnav-item.active span:not(.bnav-badge){
+        color:#0f172a!important;
+        -webkit-text-fill-color:#0f172a!important;
+        text-shadow:none!important;
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  function repairHeroContrastV22(){
+    if(!document.body.matches('[data-theme="light"]')) return;
+    const heroSelectors=[
+      '.dyn-v14-hero','.dyn-page-hero','.dyn-section-head',
+      '.sys-admin-hero','.mega-v17-hero','.mega-studio-hero',
+      '.admin-hero','.custom-dashboard-hero','.dash-hero-card','.fin-hero'
+    ];
+    document.querySelectorAll(heroSelectors.join(',')).forEach(hero=>{
+      hero.style.color='#fff';
+      hero.style.webkitTextFillColor='#fff';
+      hero.querySelectorAll('h1,h2,h3,h4,p,span,b,small,div').forEach(el=>{
+        if(el.closest('.btn-ghost,.block-mini-btn,.modal-close')) return;
+        el.style.color = el.tagName==='P' || el.tagName==='SMALL' ? 'rgba(255,255,255,.88)' : '#fff';
+        el.style.webkitTextFillColor = el.tagName==='P' || el.tagName==='SMALL' ? 'rgba(255,255,255,.88)' : '#fff';
+        el.style.textShadow='0 2px 12px rgba(15,23,42,.28)';
+      });
+    });
+  }
+
+  injectHeroContrastV22();
+
+  ['renderDay','renderWork','renderFin','renderGoals','renderHub','renderDynamicShellV14','renderDynamicShellV18'].forEach(name=>{
+    const old=window[name];
+    if(old && !old.__heroFixV22){
+      const fn=function(...args){
+        const r=old.apply(this,args);
+        setTimeout(repairHeroContrastV22,80);
+        setTimeout(repairHeroContrastV22,400);
+        return r;
+      };
+      fn.__heroFixV22=true;
+      window[name]=fn;
+    }
+  });
+
+  const oldGo=window.go;
+  if(oldGo && !oldGo.__heroFixV22){
+    const fn=function(...args){
+      const r=oldGo.apply(this,args);
+      setTimeout(repairHeroContrastV22,80);
+      setTimeout(repairHeroContrastV22,400);
+      return r;
+    };
+    fn.__heroFixV22=true;
+    window.go=fn;
+  }
+
+  setTimeout(repairHeroContrastV22,100);
+  setTimeout(repairHeroContrastV22,800);
+  setInterval(repairHeroContrastV22,1200);
+})();
+</script>
+
+
+<script id="final-gradient-text-override-v23">
+/* ===== V23: Final precise contrast override for purple/gradient headers and active tabs ===== */
+(function(){
+  function injectV23(){
+    if(document.getElementById('final-gradient-text-override-v23-style')) return;
+    const st=document.createElement('style');
+    st.id='final-gradient-text-override-v23-style';
+    st.textContent=`
+      /* Strongest override for text inside purple/gradient headers */
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero h1,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero h2,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero h3,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero h4,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero p,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero span,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero b,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero small,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero div,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero h1,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero h2,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero h3,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero p,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero span,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero b,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero small,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero div,
+      body[data-theme="light"] .dyn-section-head,
+      body[data-theme="light"] .dyn-section-head h1,
+      body[data-theme="light"] .dyn-section-head h2,
+      body[data-theme="light"] .dyn-section-head h3,
+      body[data-theme="light"] .dyn-section-head p,
+      body[data-theme="light"] .dyn-section-head span,
+      body[data-theme="light"] .dyn-section-head b,
+      body[data-theme="light"] .dyn-section-head small,
+      body[data-theme="light"] .dyn-section-head div{
+        color:#ffffff!important;
+        -webkit-text-fill-color:#ffffff!important;
+        text-shadow:0 2px 12px rgba(0,0,0,.26)!important;
+      }
+
+      /* Subtitles in gradient headers */
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero p,
+      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero small,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero p,
+      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero small,
+      body[data-theme="light"] .dyn-section-head p,
+      body[data-theme="light"] .dyn-section-head small{
+        color:rgba(255,255,255,.88)!important;
+        -webkit-text-fill-color:rgba(255,255,255,.88)!important;
+      }
+
+      /* Active purple tabs/buttons must have white text */
+      body[data-theme="light"] .vt-btn.active,
+      body[data-theme="light"] .vt-btn.active *,
+      body[data-theme="light"] .vt-day.active,
+      body[data-theme="light"] .vt-day.active *,
+      body[data-theme="light"] .work-tab.active,
+      body[data-theme="light"] .work-tab.active *,
+      body[data-theme="light"] .fin-nav-item.active,
+      body[data-theme="light"] .fin-nav-item.active *,
+      body[data-theme="light"] .section-chip.active,
+      body[data-theme="light"] .section-chip.active *,
+      body[data-theme="light"] .mega-v17-tab.active,
+      body[data-theme="light"] .mega-v17-tab.active *,
+      body[data-theme="light"] .bnav-item.active[style*="gradient"],
+      body[data-theme="light"] .bnav-item.active[style*="gradient"] *,
+      body[data-theme="light"] .nav-item.active[style*="gradient"],
+      body[data-theme="light"] .nav-item.active[style*="gradient"] *{
+        color:#ffffff!important;
+        -webkit-text-fill-color:#ffffff!important;
+        text-shadow:0 1px 8px rgba(0,0,0,.18)!important;
+      }
+
+      /* Normal light sidebar stays dark only when it is NOT a gradient hero/tab */
+      body[data-theme="light"] .sidebar .nav-item:not(.active),
+      body[data-theme="light"] .sidebar .nav-item:not(.active) span:not(.nav-badge),
+      body[data-theme="light"] .bottom-nav .bnav-item:not(.active),
+      body[data-theme="light"] .bottom-nav .bnav-item:not(.active) span:not(.bnav-badge){
+        color:#334155!important;
+        -webkit-text-fill-color:#334155!important;
+        text-shadow:none!important;
+      }
+
+      /* If active sidebar item is on pale background, keep it dark */
+      body[data-theme="light"] .sidebar .nav-item.active:not([style*="gradient"]),
+      body[data-theme="light"] .sidebar .nav-item.active:not([style*="gradient"]) span:not(.nav-badge),
+      body[data-theme="light"] .bottom-nav .bnav-item.active:not([style*="gradient"]),
+      body[data-theme="light"] .bottom-nav .bnav-item.active:not([style*="gradient"]) span:not(.bnav-badge){
+        color:#0f172a!important;
+        -webkit-text-fill-color:#0f172a!important;
+        text-shadow:none!important;
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  function hardFixV23(){
+    if(!document.body.matches('[data-theme="light"]')) return;
+
+    document.querySelectorAll('.dyn-v14-hero,.dyn-page-hero,.dyn-section-head').forEach(hero=>{
+      hero.style.color='#ffffff';
+      hero.style.webkitTextFillColor='#ffffff';
+      hero.querySelectorAll('h1,h2,h3,h4,p,span,b,small,div').forEach(el=>{
+        if(el.closest('.btn-ghost,.block-mini-btn,.modal-close,.gold-edit-btn-v19')) return;
+        const soft = el.tagName==='P' || el.tagName==='SMALL';
+        el.style.setProperty('color', soft?'rgba(255,255,255,.88)':'#ffffff', 'important');
+        el.style.setProperty('-webkit-text-fill-color', soft?'rgba(255,255,255,.88)':'#ffffff', 'important');
+        el.style.setProperty('text-shadow','0 2px 12px rgba(0,0,0,.26)','important');
+      });
+    });
+
+    document.querySelectorAll('.vt-btn.active,.vt-day.active,.work-tab.active,.fin-nav-item.active,.section-chip.active,.mega-v17-tab.active').forEach(el=>{
+      el.style.setProperty('color','#ffffff','important');
+      el.style.setProperty('-webkit-text-fill-color','#ffffff','important');
+      el.querySelectorAll('*').forEach(ch=>{
+        ch.style.setProperty('color','#ffffff','important');
+        ch.style.setProperty('-webkit-text-fill-color','#ffffff','important');
+      });
+    });
+  }
+
+  injectV23();
+
+  const hooks=['renderDay','renderWork','renderFin','renderGoals','renderHub','renderDynamicShellV14','renderDynamicShellV18','go','applyTheme'];
+  hooks.forEach(name=>{
+    const old=window[name];
+    if(old && !old.__v23FinalGradientFix){
+      const fn=function(...args){
+        const r=old.apply(this,args);
+        setTimeout(hardFixV23,30);
+        setTimeout(hardFixV23,200);
+        setTimeout(hardFixV23,700);
+        return r;
+      };
+      fn.__v23FinalGradientFix=true;
+      window[name]=fn;
+    }
+  });
+
+  setTimeout(hardFixV23,50);
+  setTimeout(hardFixV23,500);
+  setTimeout(hardFixV23,1500);
+  setInterval(hardFixV23,900);
+})();
+</script>
+
 </body>
 </html>
