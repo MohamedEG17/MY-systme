@@ -5891,517 +5891,454 @@ body[data-theme="light"] textarea::selection{background:rgba(59,130,246,.32)!imp
 </style>
 
 
-<script id="light-theme-text-contrast-final-v21">
-/* ===== V21: Strong light theme text contrast fix ===== */
+<style id="balanced-font-colors-v25">
+/* ===== V25: Balanced font colors restore — no heavy global override ===== */
+
+/* Light theme: normal sidebar and dynamic nav must be readable */
+body[data-theme="light"] .sidebar .nav-item,
+body[data-theme="light"] .sidebar .nav-item span:not(.nav-badge),
+body[data-theme="light"] .bottom-nav .bnav-item,
+body[data-theme="light"] .bottom-nav .bnav-item span:not(.bnav-badge),
+body[data-theme="light"] [data-dyn-nav-v13],
+body[data-theme="light"] [data-dyn-nav-v14],
+body[data-theme="light"] [data-dyn-nav-v18],
+body[data-theme="light"] [data-dyn-nav-v13] span,
+body[data-theme="light"] [data-dyn-nav-v14] span,
+body[data-theme="light"] [data-dyn-nav-v18] span{
+  color:#334155!important;
+  -webkit-text-fill-color:#334155!important;
+  text-shadow:none!important;
+}
+
+/* Active items on colored/purple buttons should be white */
+body[data-theme="light"] .vt-btn.active,
+body[data-theme="light"] .vt-btn.active *,
+body[data-theme="light"] .vt-day.active,
+body[data-theme="light"] .vt-day.active *,
+body[data-theme="light"] .work-tab.active,
+body[data-theme="light"] .work-tab.active *,
+body[data-theme="light"] .fin-nav-item.active,
+body[data-theme="light"] .fin-nav-item.active *,
+body[data-theme="light"] .section-chip.active,
+body[data-theme="light"] .section-chip.active *,
+body[data-theme="light"] .mega-v17-tab.active,
+body[data-theme="light"] .mega-v17-tab.active *{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 1px 8px rgba(15,23,42,.18)!important;
+}
+
+/* Purple / gradient hero sections must stay white */
+body[data-theme="light"] .dyn-v14-hero,
+body[data-theme="light"] .dyn-v14-hero *,
+body[data-theme="light"] .dyn-page-hero,
+body[data-theme="light"] .dyn-page-hero *,
+body[data-theme="light"] .dyn-section-head,
+body[data-theme="light"] .dyn-section-head *,
+body[data-theme="light"] .sys-admin-hero,
+body[data-theme="light"] .sys-admin-hero *,
+body[data-theme="light"] .mega-v17-hero,
+body[data-theme="light"] .mega-v17-hero *,
+body[data-theme="light"] .mega-studio-hero,
+body[data-theme="light"] .mega-studio-hero *,
+body[data-theme="light"] .admin-hero,
+body[data-theme="light"] .admin-hero *{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 2px 12px rgba(15,23,42,.25)!important;
+}
+
+/* Finance page: restore nice blue/ink colors, not black/white */
+body[data-theme="light"] #mod-finance,
+body[data-theme="light"] #mod-finance .sec-title h2,
+body[data-theme="light"] #mod-finance .sec-title p{
+  color:#1e293b!important;
+  -webkit-text-fill-color:#1e293b!important;
+}
+
+body[data-theme="light"] #mod-finance .fin-hero{
+  color:#1e3a8a!important;
+  -webkit-text-fill-color:#1e3a8a!important;
+  text-shadow:none!important;
+}
+
+body[data-theme="light"] #mod-finance .fin-hero-label,
+body[data-theme="light"] #mod-finance .fin-rate-tag,
+body[data-theme="light"] #mod-finance .fin-dist-label{
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+  text-shadow:none!important;
+}
+
+body[data-theme="light"] #mod-finance .fin-hero-val{
+  color:#1e40af!important;
+  -webkit-text-fill-color:#1e40af!important;
+  text-shadow:0 10px 26px rgba(30,64,175,.12)!important;
+}
+
+body[data-theme="light"] #mod-finance .fin-dist-val,
+body[data-theme="light"] #mod-finance .fin-sum-val{
+  color:#1e293b!important;
+  -webkit-text-fill-color:#1e293b!important;
+  text-shadow:none!important;
+}
+
+body[data-theme="light"] #mod-finance .fin-sum-label,
+body[data-theme="light"] #mod-finance .fin-card-field span,
+body[data-theme="light"] #mod-finance .gold-current-note,
+body[data-theme="light"] #mod-finance .gold-row-sub{
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+}
+
+body[data-theme="light"] #mod-finance .fin-card-title,
+body[data-theme="light"] #mod-finance .fin-table th,
+body[data-theme="light"] #mod-finance .fin-table td,
+body[data-theme="light"] #mod-finance .gold-current-label{
+  color:#1e293b!important;
+  -webkit-text-fill-color:#1e293b!important;
+}
+
+body[data-theme="light"] #mod-finance .gold-card-value{
+  color:#2563eb!important;
+  -webkit-text-fill-color:#2563eb!important;
+}
+
+body[data-theme="light"] #mod-finance .profit-pos{
+  color:#16a34a!important;
+  -webkit-text-fill-color:#16a34a!important;
+}
+body[data-theme="light"] #mod-finance .profit-neg{
+  color:#dc2626!important;
+  -webkit-text-fill-color:#dc2626!important;
+}
+body[data-theme="light"] #mod-finance .profit-zero{
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+}
+
+/* Finance inputs and non-primary buttons */
+body[data-theme="light"] #mod-finance input,
+body[data-theme="light"] #mod-finance select,
+body[data-theme="light"] #mod-finance textarea,
+body[data-theme="light"] #mod-finance .mf-inp,
+body[data-theme="light"] #mod-finance .fin-inp{
+  color:#0f172a!important;
+  -webkit-text-fill-color:#0f172a!important;
+  caret-color:#2563eb!important;
+}
+body[data-theme="light"] #mod-finance .gold-edit-btn-v19,
+body[data-theme="light"] #mod-finance .fin-add-btn,
+body[data-theme="light"] #mod-finance .btn-ghost{
+  color:#1e293b!important;
+  -webkit-text-fill-color:#1e293b!important;
+}
+
+/* Keep colored primary/add buttons readable */
+body[data-theme="light"] .add-btn,
+body[data-theme="light"] .btn-primary{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
+/* Text selection fix only */
+body[data-theme="light"] ::selection{
+  background:rgba(37,99,235,.24)!important;
+  color:#0f172a!important;
+  -webkit-text-fill-color:#0f172a!important;
+}
+body[data-theme="light"] input::selection,
+body[data-theme="light"] textarea::selection{
+  background:rgba(37,99,235,.30)!important;
+  color:#0f172a!important;
+  -webkit-text-fill-color:#0f172a!important;
+}
+</style>
+
+<script id="balanced-font-colors-v25-runtime">
 (function(){
-  function injectLightFixV21(){
-    if(document.getElementById('light-theme-text-contrast-final-v21-style')) return;
-    const st=document.createElement('style');
-    st.id='light-theme-text-contrast-final-v21-style';
-    st.textContent=`
-      /* Text selection */
-      body[data-theme="light"] ::selection{
-        background:rgba(37,99,235,.26)!important;
-        color:#0f172a!important;
-        -webkit-text-fill-color:#0f172a!important;
-      }
-      body[data-theme="light"] input::selection,
-      body[data-theme="light"] textarea::selection{
-        background:rgba(37,99,235,.30)!important;
-        color:#0f172a!important;
-        -webkit-text-fill-color:#0f172a!important;
-      }
-
-      /* Global light theme readable text */
-      body[data-theme="light"] .sidebar,
-      body[data-theme="light"] .main,
-      body[data-theme="light"] .module,
-      body[data-theme="light"] .modal-box,
-      body[data-theme="light"] .fin-table,
-      body[data-theme="light"] .fin-card,
-      body[data-theme="light"] .block-card,
-      body[data-theme="light"] .entity-card,
-      body[data-theme="light"] .goal-card,
-      body[data-theme="light"] .dyn-sub-card,
-      body[data-theme="light"] .dyn-item-card,
-      body[data-theme="light"] .dyn-plan-card,
-      body[data-theme="light"] .dyn-quick-card{
-        color:#0f172a!important;
-        -webkit-text-fill-color:initial!important;
-      }
-
-      /* Sidebar items: the exact issue in screenshot */
-      body[data-theme="light"] .nav-item,
-      body[data-theme="light"] .nav-item span,
-      body[data-theme="light"] .nav-item .nav-icon,
-      body[data-theme="light"] .bnav-item,
-      body[data-theme="light"] .bnav-item span,
-      body[data-theme="light"] .bnav-item .bnav-icon{
-        color:#334155!important;
-        -webkit-text-fill-color:#334155!important;
-        text-shadow:none!important;
-      }
-      body[data-theme="light"] .nav-item.active,
-      body[data-theme="light"] .nav-item.active span,
-      body[data-theme="light"] .nav-item.active .nav-icon,
-      body[data-theme="light"] .bnav-item.active,
-      body[data-theme="light"] .bnav-item.active span,
-      body[data-theme="light"] .bnav-item.active .bnav-icon{
-        color:#0f172a!important;
-        -webkit-text-fill-color:#0f172a!important;
-        font-weight:950!important;
-      }
-
-      /* If a nav item has gradient background, keep icon readable but not invisible */
-      body[data-theme="light"] .nav-item[style*="gradient"],
-      body[data-theme="light"] .bnav-item[style*="gradient"]{
-        color:#0f172a!important;
-      }
-
-      /* Dynamic section titles/cards */
-      body[data-theme="light"] .dyn-v14-wrap h1,
-      body[data-theme="light"] .dyn-v14-wrap h2,
-      body[data-theme="light"] .dyn-v14-wrap h3,
-      body[data-theme="light"] .dyn-v14-wrap h4,
-      body[data-theme="light"] .dyn-v14-wrap b,
-      body[data-theme="light"] .dyn-v14-wrap span:not(.dyn-v14-hero-icon):not(.dyn-sub-icon):not(.bnav-icon):not(.nav-icon),
-      body[data-theme="light"] .dyn-v14-wrap p,
-      body[data-theme="light"] .dyn-v14-wrap small,
-      body[data-theme="light"] .dyn-page-wrap h1,
-      body[data-theme="light"] .dyn-page-wrap h2,
-      body[data-theme="light"] .dyn-page-wrap h3,
-      body[data-theme="light"] .dyn-page-wrap b,
-      body[data-theme="light"] .dyn-page-wrap span,
-      body[data-theme="light"] .dyn-page-wrap p,
-      body[data-theme="light"] .dyn-page-wrap small{
-        color:#0f172a!important;
-        -webkit-text-fill-color:#0f172a!important;
-        text-shadow:none!important;
-      }
-
-      /* Keep text white only on clear dark/gradient hero buttons */
-      body[data-theme="light"] .add-btn,
-      body[data-theme="light"] .btn-primary,
-      body[data-theme="light"] .dyn-v14-hero,
-      body[data-theme="light"] .dyn-v14-hero *,
-      body[data-theme="light"] .dyn-page-hero,
-      body[data-theme="light"] .dyn-page-hero *,
-      body[data-theme="light"] .mega-v17-hero,
-      body[data-theme="light"] .mega-v17-hero *,
-      body[data-theme="light"] .sys-admin-hero,
-      body[data-theme="light"] .sys-admin-hero *{
-        color:#fff!important;
-        -webkit-text-fill-color:#fff!important;
-      }
-
-      /* But secondary buttons inside light cards must be dark */
-      body[data-theme="light"] .btn-ghost,
-      body[data-theme="light"] .block-mini-btn,
-      body[data-theme="light"] .gold-edit-btn-v19,
-      body[data-theme="light"] .section-chip,
-      body[data-theme="light"] .vt-btn,
-      body[data-theme="light"] .vt-day,
-      body[data-theme="light"] .work-tab,
-      body[data-theme="light"] .fin-nav-item,
-      body[data-theme="light"] .add-task-row{
-        color:#0f172a!important;
-        -webkit-text-fill-color:#0f172a!important;
-        text-shadow:none!important;
-      }
-
-      /* Inputs/selects in light theme */
-      body[data-theme="light"] input,
-      body[data-theme="light"] textarea,
-      body[data-theme="light"] select,
-      body[data-theme="light"] .mf-inp,
-      body[data-theme="light"] .fin-inp,
-      body[data-theme="light"] .work-search,
-      body[data-theme="light"] .work-filter{
-        color:#0f172a!important;
-        -webkit-text-fill-color:#0f172a!important;
-        caret-color:#2563eb!important;
-      }
-      body[data-theme="light"] input::placeholder,
-      body[data-theme="light"] textarea::placeholder{
-        color:#64748b!important;
-        -webkit-text-fill-color:#64748b!important;
-        opacity:1!important;
-      }
-
-      /* Prevent accidental white text inside bordered light boxes */
-      body[data-theme="light"] [class*="card"]:not(.dash-hero-card):not(.hub-quick-card),
-      body[data-theme="light"] [class*="row"],
-      body[data-theme="light"] [class*="panel"]:not(.dyn-v14-hero):not(.dyn-page-hero),
-      body[data-theme="light"] [class*="item"]{
-        text-shadow:none!important;
-      }
-      body[data-theme="light"] [class*="card"]:not(.dash-hero-card):not(.hub-quick-card) *:not(.add-btn):not(.btn-primary),
-      body[data-theme="light"] [class*="row"] *:not(.add-btn):not(.btn-primary),
-      body[data-theme="light"] [class*="panel"]:not(.dyn-v14-hero):not(.dyn-page-hero) *:not(.add-btn):not(.btn-primary){
-        -webkit-text-fill-color:initial;
-      }
-
-      /* Specific fallback for dynamic nav buttons that were white */
-      body[data-theme="light"] [data-dyn-nav-v13],
-      body[data-theme="light"] [data-dyn-nav-v14],
-      body[data-theme="light"] [data-dyn-nav-v18],
-      body[data-theme="light"] [data-dyn-nav-v13] *,
-      body[data-theme="light"] [data-dyn-nav-v14] *,
-      body[data-theme="light"] [data-dyn-nav-v18] *{
-        color:#1e293b!important;
-        -webkit-text-fill-color:#1e293b!important;
-      }
-    `;
-    document.head.appendChild(st);
-  }
-
-  function forceReadableLightTextV21(){
+  function repairV25(){
     if(!document.body.matches('[data-theme="light"]')) return;
-    const selectors=[
-      '.nav-item span:not(.nav-icon)',
-      '.bnav-item span:not(.bnav-icon)',
-      '[data-dyn-nav-v13] span',
-      '[data-dyn-nav-v14] span',
-      '[data-dyn-nav-v18] span',
-      '.dyn-sub-card h3',
-      '.dyn-sub-card p',
-      '.dyn-sub-card b',
-      '.dyn-sub-card span',
-      '.dyn-item-card b',
-      '.dyn-item-card span',
-      '.dyn-plan-card h3',
-      '.dyn-plan-card b',
-      '.section-chip',
-      '.vt-btn',
-      '.add-task-row'
-    ];
-    document.querySelectorAll(selectors.join(',')).forEach(el=>{
-      if(el.closest('.dyn-v14-hero,.dyn-page-hero,.mega-v17-hero,.sys-admin-hero')) return;
-      el.style.color='#0f172a';
-      el.style.webkitTextFillColor='#0f172a';
-      el.style.textShadow='none';
+
+    // Keep finance colorful/readable without touching gradient hero sections.
+    document.querySelectorAll('#mod-finance .fin-hero-val').forEach(el=>{
+      el.style.setProperty('color','#1e40af','important');
+      el.style.setProperty('-webkit-text-fill-color','#1e40af','important');
     });
-  }
-
-  injectLightFixV21();
-  const oldApplyTheme=window.applyTheme;
-  if(oldApplyTheme && !oldApplyTheme.__lightFixV21){
-    const fn=function(){
-      oldApplyTheme();
-      injectLightFixV21();
-      setTimeout(forceReadableLightTextV21,80);
-      setTimeout(forceReadableLightTextV21,400);
-    };
-    fn.__lightFixV21=true;
-    window.applyTheme=fn;
-  }
-
-  const oldRenderDyn14=window.renderDynamicShellV14;
-  if(oldRenderDyn14 && !oldRenderDyn14.__lightFixV21){
-    const fn=function(){
-      oldRenderDyn14();
-      setTimeout(forceReadableLightTextV21,80);
-    };
-    fn.__lightFixV21=true;
-    window.renderDynamicShellV14=fn;
-  }
-
-  const oldRenderDyn18=window.renderDynamicShellV18;
-  if(oldRenderDyn18 && !oldRenderDyn18.__lightFixV21){
-    const fn=function(){
-      oldRenderDyn18();
-      setTimeout(forceReadableLightTextV21,80);
-    };
-    fn.__lightFixV21=true;
-    window.renderDynamicShellV18=fn;
-  }
-
-  ['renderDay','renderWork','renderFin','renderGoals','renderHub'].forEach(name=>{
-    const old=window[name];
-    if(old && !old.__lightFixV21){
-      const fn=function(...args){
-        const r=old.apply(this,args);
-        setTimeout(forceReadableLightTextV21,80);
-        return r;
-      };
-      fn.__lightFixV21=true;
-      window[name]=fn;
-    }
-  });
-
-  setTimeout(forceReadableLightTextV21,300);
-  setInterval(forceReadableLightTextV21,1500);
-})();
-</script>
-
-
-<script id="hero-gradient-contrast-correction-v22">
-/* ===== V22: Keep gradient hero text white, keep normal light cards dark ===== */
-(function(){
-  function injectHeroContrastV22(){
-    if(document.getElementById('hero-gradient-contrast-correction-v22-style')) return;
-    const st=document.createElement('style');
-    st.id='hero-gradient-contrast-correction-v22-style';
-    st.textContent=`
-      /* Gradient / colored hero areas must stay white in light theme */
-      body[data-theme="light"] .dyn-v14-hero,
-      body[data-theme="light"] .dyn-v14-hero *,
-      body[data-theme="light"] .dyn-page-hero,
-      body[data-theme="light"] .dyn-page-hero *,
-      body[data-theme="light"] .dyn-section-head,
-      body[data-theme="light"] .dyn-section-head *,
-      body[data-theme="light"] .sys-admin-hero,
-      body[data-theme="light"] .sys-admin-hero *,
-      body[data-theme="light"] .mega-v17-hero,
-      body[data-theme="light"] .mega-v17-hero *,
-      body[data-theme="light"] .mega-studio-hero,
-      body[data-theme="light"] .mega-studio-hero *,
-      body[data-theme="light"] .admin-hero,
-      body[data-theme="light"] .admin-hero *,
-      body[data-theme="light"] .custom-dashboard-hero,
-      body[data-theme="light"] .custom-dashboard-hero *,
-      body[data-theme="light"] .dash-hero-card,
-      body[data-theme="light"] .dash-hero-card *,
-      body[data-theme="light"] .fin-hero,
-      body[data-theme="light"] .fin-hero *{
-        color:#ffffff!important;
-        -webkit-text-fill-color:#ffffff!important;
-        text-shadow:0 2px 12px rgba(15,23,42,.28)!important;
-      }
-
-      /* Smaller subtitle on gradient still white but softer */
-      body[data-theme="light"] .dyn-v14-hero p,
-      body[data-theme="light"] .dyn-page-hero p,
-      body[data-theme="light"] .dyn-section-head p,
-      body[data-theme="light"] .sys-admin-hero p,
-      body[data-theme="light"] .mega-v17-hero p,
-      body[data-theme="light"] .mega-studio-hero p{
-        color:rgba(255,255,255,.88)!important;
-        -webkit-text-fill-color:rgba(255,255,255,.88)!important;
-      }
-
-      /* Normal sidebar/buttons/cards stay readable dark */
-      body[data-theme="light"] .sidebar .nav-item:not(.active),
-      body[data-theme="light"] .sidebar .nav-item:not(.active) span:not(.nav-badge),
-      body[data-theme="light"] .bottom-nav .bnav-item:not(.active),
-      body[data-theme="light"] .bottom-nav .bnav-item:not(.active) span:not(.bnav-badge){
-        color:#334155!important;
-        -webkit-text-fill-color:#334155!important;
-        text-shadow:none!important;
-      }
-      body[data-theme="light"] .sidebar .nav-item.active,
-      body[data-theme="light"] .sidebar .nav-item.active span:not(.nav-badge),
-      body[data-theme="light"] .bottom-nav .bnav-item.active,
-      body[data-theme="light"] .bottom-nav .bnav-item.active span:not(.bnav-badge){
-        color:#0f172a!important;
-        -webkit-text-fill-color:#0f172a!important;
-        text-shadow:none!important;
-      }
-    `;
-    document.head.appendChild(st);
-  }
-
-  function repairHeroContrastV22(){
-    if(!document.body.matches('[data-theme="light"]')) return;
-    const heroSelectors=[
-      '.dyn-v14-hero','.dyn-page-hero','.dyn-section-head',
-      '.sys-admin-hero','.mega-v17-hero','.mega-studio-hero',
-      '.admin-hero','.custom-dashboard-hero','.dash-hero-card','.fin-hero'
-    ];
-    document.querySelectorAll(heroSelectors.join(',')).forEach(hero=>{
-      hero.style.color='#fff';
-      hero.style.webkitTextFillColor='#fff';
-      hero.querySelectorAll('h1,h2,h3,h4,p,span,b,small,div').forEach(el=>{
-        if(el.closest('.btn-ghost,.block-mini-btn,.modal-close')) return;
-        el.style.color = el.tagName==='P' || el.tagName==='SMALL' ? 'rgba(255,255,255,.88)' : '#fff';
-        el.style.webkitTextFillColor = el.tagName==='P' || el.tagName==='SMALL' ? 'rgba(255,255,255,.88)' : '#fff';
-        el.style.textShadow='0 2px 12px rgba(15,23,42,.28)';
-      });
+    document.querySelectorAll('#mod-finance .gold-card-value').forEach(el=>{
+      el.style.setProperty('color','#2563eb','important');
+      el.style.setProperty('-webkit-text-fill-color','#2563eb','important');
     });
-  }
+    document.querySelectorAll('#mod-finance .profit-pos').forEach(el=>{
+      el.style.setProperty('color','#16a34a','important');
+      el.style.setProperty('-webkit-text-fill-color','#16a34a','important');
+    });
+    document.querySelectorAll('#mod-finance .profit-neg').forEach(el=>{
+      el.style.setProperty('color','#dc2626','important');
+      el.style.setProperty('-webkit-text-fill-color','#dc2626','important');
+    });
 
-  injectHeroContrastV22();
-
-  ['renderDay','renderWork','renderFin','renderGoals','renderHub','renderDynamicShellV14','renderDynamicShellV18'].forEach(name=>{
-    const old=window[name];
-    if(old && !old.__heroFixV22){
-      const fn=function(...args){
-        const r=old.apply(this,args);
-        setTimeout(repairHeroContrastV22,80);
-        setTimeout(repairHeroContrastV22,400);
-        return r;
-      };
-      fn.__heroFixV22=true;
-      window[name]=fn;
-    }
-  });
-
-  const oldGo=window.go;
-  if(oldGo && !oldGo.__heroFixV22){
-    const fn=function(...args){
-      const r=oldGo.apply(this,args);
-      setTimeout(repairHeroContrastV22,80);
-      setTimeout(repairHeroContrastV22,400);
-      return r;
-    };
-    fn.__heroFixV22=true;
-    window.go=fn;
-  }
-
-  setTimeout(repairHeroContrastV22,100);
-  setTimeout(repairHeroContrastV22,800);
-  setInterval(repairHeroContrastV22,1200);
-})();
-</script>
-
-
-<script id="final-gradient-text-override-v23">
-/* ===== V23: Final precise contrast override for purple/gradient headers and active tabs ===== */
-(function(){
-  function injectV23(){
-    if(document.getElementById('final-gradient-text-override-v23-style')) return;
-    const st=document.createElement('style');
-    st.id='final-gradient-text-override-v23-style';
-    st.textContent=`
-      /* Strongest override for text inside purple/gradient headers */
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero h1,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero h2,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero h3,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero h4,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero p,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero span,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero b,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero small,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero div,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero h1,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero h2,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero h3,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero p,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero span,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero b,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero small,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero div,
-      body[data-theme="light"] .dyn-section-head,
-      body[data-theme="light"] .dyn-section-head h1,
-      body[data-theme="light"] .dyn-section-head h2,
-      body[data-theme="light"] .dyn-section-head h3,
-      body[data-theme="light"] .dyn-section-head p,
-      body[data-theme="light"] .dyn-section-head span,
-      body[data-theme="light"] .dyn-section-head b,
-      body[data-theme="light"] .dyn-section-head small,
-      body[data-theme="light"] .dyn-section-head div{
-        color:#ffffff!important;
-        -webkit-text-fill-color:#ffffff!important;
-        text-shadow:0 2px 12px rgba(0,0,0,.26)!important;
-      }
-
-      /* Subtitles in gradient headers */
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero p,
-      body[data-theme="light"] .dyn-v14-wrap .dyn-v14-hero small,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero p,
-      body[data-theme="light"] .dyn-page-wrap .dyn-page-hero small,
-      body[data-theme="light"] .dyn-section-head p,
-      body[data-theme="light"] .dyn-section-head small{
-        color:rgba(255,255,255,.88)!important;
-        -webkit-text-fill-color:rgba(255,255,255,.88)!important;
-      }
-
-      /* Active purple tabs/buttons must have white text */
-      body[data-theme="light"] .vt-btn.active,
-      body[data-theme="light"] .vt-btn.active *,
-      body[data-theme="light"] .vt-day.active,
-      body[data-theme="light"] .vt-day.active *,
-      body[data-theme="light"] .work-tab.active,
-      body[data-theme="light"] .work-tab.active *,
-      body[data-theme="light"] .fin-nav-item.active,
-      body[data-theme="light"] .fin-nav-item.active *,
-      body[data-theme="light"] .section-chip.active,
-      body[data-theme="light"] .section-chip.active *,
-      body[data-theme="light"] .mega-v17-tab.active,
-      body[data-theme="light"] .mega-v17-tab.active *,
-      body[data-theme="light"] .bnav-item.active[style*="gradient"],
-      body[data-theme="light"] .bnav-item.active[style*="gradient"] *,
-      body[data-theme="light"] .nav-item.active[style*="gradient"],
-      body[data-theme="light"] .nav-item.active[style*="gradient"] *{
-        color:#ffffff!important;
-        -webkit-text-fill-color:#ffffff!important;
-        text-shadow:0 1px 8px rgba(0,0,0,.18)!important;
-      }
-
-      /* Normal light sidebar stays dark only when it is NOT a gradient hero/tab */
-      body[data-theme="light"] .sidebar .nav-item:not(.active),
-      body[data-theme="light"] .sidebar .nav-item:not(.active) span:not(.nav-badge),
-      body[data-theme="light"] .bottom-nav .bnav-item:not(.active),
-      body[data-theme="light"] .bottom-nav .bnav-item:not(.active) span:not(.bnav-badge){
-        color:#334155!important;
-        -webkit-text-fill-color:#334155!important;
-        text-shadow:none!important;
-      }
-
-      /* If active sidebar item is on pale background, keep it dark */
-      body[data-theme="light"] .sidebar .nav-item.active:not([style*="gradient"]),
-      body[data-theme="light"] .sidebar .nav-item.active:not([style*="gradient"]) span:not(.nav-badge),
-      body[data-theme="light"] .bottom-nav .bnav-item.active:not([style*="gradient"]),
-      body[data-theme="light"] .bottom-nav .bnav-item.active:not([style*="gradient"]) span:not(.bnav-badge){
-        color:#0f172a!important;
-        -webkit-text-fill-color:#0f172a!important;
-        text-shadow:none!important;
-      }
-    `;
-    document.head.appendChild(st);
-  }
-
-  function hardFixV23(){
-    if(!document.body.matches('[data-theme="light"]')) return;
-
-    document.querySelectorAll('.dyn-v14-hero,.dyn-page-hero,.dyn-section-head').forEach(hero=>{
-      hero.style.color='#ffffff';
-      hero.style.webkitTextFillColor='#ffffff';
+    // Gradient heroes only.
+    document.querySelectorAll('.dyn-v14-hero,.dyn-page-hero,.dyn-section-head,.sys-admin-hero,.mega-v17-hero,.mega-studio-hero,.admin-hero').forEach(hero=>{
       hero.querySelectorAll('h1,h2,h3,h4,p,span,b,small,div').forEach(el=>{
         if(el.closest('.btn-ghost,.block-mini-btn,.modal-close,.gold-edit-btn-v19')) return;
         const soft = el.tagName==='P' || el.tagName==='SMALL';
-        el.style.setProperty('color', soft?'rgba(255,255,255,.88)':'#ffffff', 'important');
-        el.style.setProperty('-webkit-text-fill-color', soft?'rgba(255,255,255,.88)':'#ffffff', 'important');
-        el.style.setProperty('text-shadow','0 2px 12px rgba(0,0,0,.26)','important');
-      });
-    });
-
-    document.querySelectorAll('.vt-btn.active,.vt-day.active,.work-tab.active,.fin-nav-item.active,.section-chip.active,.mega-v17-tab.active').forEach(el=>{
-      el.style.setProperty('color','#ffffff','important');
-      el.style.setProperty('-webkit-text-fill-color','#ffffff','important');
-      el.querySelectorAll('*').forEach(ch=>{
-        ch.style.setProperty('color','#ffffff','important');
-        ch.style.setProperty('-webkit-text-fill-color','#ffffff','important');
+        el.style.setProperty('color', soft?'rgba(255,255,255,.88)':'#fff', 'important');
+        el.style.setProperty('-webkit-text-fill-color', soft?'rgba(255,255,255,.88)':'#fff', 'important');
       });
     });
   }
 
-  injectV23();
-
-  const hooks=['renderDay','renderWork','renderFin','renderGoals','renderHub','renderDynamicShellV14','renderDynamicShellV18','go','applyTheme'];
-  hooks.forEach(name=>{
+  ['renderFin','finRender','finRenderSection','go','applyTheme','renderDynamicShellV14','renderDynamicShellV18'].forEach(name=>{
     const old=window[name];
-    if(old && !old.__v23FinalGradientFix){
+    if(old && !old.__balancedV25){
       const fn=function(...args){
         const r=old.apply(this,args);
-        setTimeout(hardFixV23,30);
-        setTimeout(hardFixV23,200);
-        setTimeout(hardFixV23,700);
+        setTimeout(repairV25,40);
+        setTimeout(repairV25,300);
         return r;
       };
-      fn.__v23FinalGradientFix=true;
+      fn.__balancedV25=true;
       window[name]=fn;
     }
   });
 
-  setTimeout(hardFixV23,50);
-  setTimeout(hardFixV23,500);
-  setTimeout(hardFixV23,1500);
-  setInterval(hardFixV23,900);
+  setTimeout(repairV25,120);
+  setTimeout(repairV25,900);
 })();
 </script>
+
+
+<style id="finance-vibrant-colors-v26">
+/* ===== V26: Restore colorful finance text/colors, stop boring black finance rows ===== */
+
+/* Finance table rows: use each row's selected color again */
+body[data-theme="light"] #mod-finance .fin-table tbody tr.fin-row-highlight,
+body[data-theme="light"] #mod-finance .fin-table tbody tr.fin-row-highlight td,
+body[data-theme="light"] #mod-finance .fin-table tbody tr.fin-row-highlight td *,
+body[data-theme="light"] #mod-finance .fin-table tbody tr[style*="--row-color"],
+body[data-theme="light"] #mod-finance .fin-table tbody tr[style*="--row-color"] td,
+body[data-theme="light"] #mod-finance .fin-table tbody tr[style*="--row-color"] td *{
+  color:var(--row-color,#2563eb)!important;
+  -webkit-text-fill-color:var(--row-color,#2563eb)!important;
+  text-shadow:none!important;
+}
+
+/* Keep table headers readable but soft, not dead black */
+body[data-theme="light"] #mod-finance .fin-table thead th{
+  color:#475569!important;
+  -webkit-text-fill-color:#475569!important;
+  font-weight:900!important;
+}
+
+/* Bank / finance names bigger colorful */
+body[data-theme="light"] #mod-finance .fin-table tbody tr td:first-child,
+body[data-theme="light"] #mod-finance .fin-table tbody tr td:first-child *,
+body[data-theme="light"] #mod-finance .fin-name,
+body[data-theme="light"] #mod-finance .bank-name,
+body[data-theme="light"] #mod-finance .fin-card-title{
+  color:var(--row-color,#2563eb)!important;
+  -webkit-text-fill-color:var(--row-color,#2563eb)!important;
+  font-weight:950!important;
+}
+
+/* Finance values: restore saturated colors */
+body[data-theme="light"] #mod-finance .fin-table tbody tr td[data-num],
+body[data-theme="light"] #mod-finance .fin-table tbody tr td[data-num] *,
+body[data-theme="light"] #mod-finance .data-num,
+body[data-theme="light"] #mod-finance .data-num *{
+  color:var(--row-color,#2563eb)!important;
+  -webkit-text-fill-color:var(--row-color,#2563eb)!important;
+  font-weight:900!important;
+}
+
+/* Notes can stay colored too, but slightly softer */
+body[data-theme="light"] #mod-finance .fin-table tbody tr .note,
+body[data-theme="light"] #mod-finance .fin-table tbody tr .gold-row-sub,
+body[data-theme="light"] #mod-finance .fin-table tbody tr small{
+  color:color-mix(in srgb,var(--row-color,#2563eb) 72%,#64748b)!important;
+  -webkit-text-fill-color:color-mix(in srgb,var(--row-color,#2563eb) 72%,#64748b)!important;
+}
+
+/* Finance cards: return colorful text */
+body[data-theme="light"] #mod-finance .fin-card,
+body[data-theme="light"] #mod-finance .fin-card *{
+  text-shadow:none!important;
+}
+body[data-theme="light"] #mod-finance .fin-card .fin-card-title,
+body[data-theme="light"] #mod-finance .fin-card .fin-card-value,
+body[data-theme="light"] #mod-finance .fin-card .fin-card-total,
+body[data-theme="light"] #mod-finance .fin-card b{
+  color:var(--row-color,#2563eb)!important;
+  -webkit-text-fill-color:var(--row-color,#2563eb)!important;
+}
+
+/* Summary cards: restore blue / gold / green / red accents */
+body[data-theme="light"] #mod-finance .fin-hero-val{
+  color:#2563eb!important;
+  -webkit-text-fill-color:#2563eb!important;
+}
+body[data-theme="light"] #mod-finance .fin-dist-val{
+  color:#2563eb!important;
+  -webkit-text-fill-color:#2563eb!important;
+}
+body[data-theme="light"] #mod-finance .gold-current-label,
+body[data-theme="light"] #mod-finance .gold-card-value{
+  color:#d97706!important;
+  -webkit-text-fill-color:#d97706!important;
+}
+body[data-theme="light"] #mod-finance .profit-pos{
+  color:#16a34a!important;
+  -webkit-text-fill-color:#16a34a!important;
+}
+body[data-theme="light"] #mod-finance .profit-neg{
+  color:#ef4444!important;
+  -webkit-text-fill-color:#ef4444!important;
+}
+body[data-theme="light"] #mod-finance .profit-zero{
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+}
+
+/* Finance labels remain soft */
+body[data-theme="light"] #mod-finance .fin-hero-label,
+body[data-theme="light"] #mod-finance .fin-rate-tag,
+body[data-theme="light"] #mod-finance .fin-dist-label,
+body[data-theme="light"] #mod-finance .fin-sum-label,
+body[data-theme="light"] #mod-finance .fin-card-field span{
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+}
+
+/* Gradient / active tabs stay white */
+body[data-theme="light"] #mod-finance .fin-nav-item.active,
+body[data-theme="light"] #mod-finance .fin-nav-item.active *,
+body[data-theme="light"] #mod-finance .vt-btn.active,
+body[data-theme="light"] #mod-finance .vt-btn.active *{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
+/* Inputs normal readable */
+body[data-theme="light"] #mod-finance input,
+body[data-theme="light"] #mod-finance select,
+body[data-theme="light"] #mod-finance textarea,
+body[data-theme="light"] #mod-finance .mf-inp,
+body[data-theme="light"] #mod-finance .fin-inp{
+  color:#0f172a!important;
+  -webkit-text-fill-color:#0f172a!important;
+}
+</style>
+
+<script id="finance-vibrant-colors-v26-runtime">
+(function(){
+  function colorizeFinanceV26(){
+    if(!document.body.matches('[data-theme="light"]')) return;
+    const mod=document.getElementById('mod-finance');
+    if(!mod) return;
+
+    mod.querySelectorAll('.fin-table tbody tr').forEach((tr,i)=>{
+      const c=(getComputedStyle(tr).getPropertyValue('--row-color')||tr.style.getPropertyValue('--row-color')||'').trim();
+      if(!c) return;
+      tr.querySelectorAll('td,td *').forEach(el=>{
+        if(el.classList.contains('profit-pos')){el.style.setProperty('color','#16a34a','important');el.style.setProperty('-webkit-text-fill-color','#16a34a','important');return;}
+        if(el.classList.contains('profit-neg')){el.style.setProperty('color','#ef4444','important');el.style.setProperty('-webkit-text-fill-color','#ef4444','important');return;}
+        if(el.closest('.del-cell') || el.matches('button')) return;
+        el.style.setProperty('color',c,'important');
+        el.style.setProperty('-webkit-text-fill-color',c,'important');
+        el.style.setProperty('text-shadow','none','important');
+      });
+    });
+
+    mod.querySelectorAll('.fin-card').forEach(card=>{
+      const c=(getComputedStyle(card).getPropertyValue('--row-color')||card.style.getPropertyValue('--row-color')||'').trim();
+      if(!c) return;
+      card.querySelectorAll('.fin-card-title,.fin-card-value,.fin-card-total,b').forEach(el=>{
+        if(el.classList.contains('profit-pos')||el.classList.contains('profit-neg')) return;
+        el.style.setProperty('color',c,'important');
+        el.style.setProperty('-webkit-text-fill-color',c,'important');
+      });
+    });
+  }
+
+  ['renderFin','finRender','finRenderSection','go','applyTheme'].forEach(name=>{
+    const old=window[name];
+    if(old && !old.__financeVibrantV26){
+      const fn=function(...args){
+        const r=old.apply(this,args);
+        setTimeout(colorizeFinanceV26,30);
+        setTimeout(colorizeFinanceV26,300);
+        setTimeout(colorizeFinanceV26,900);
+        return r;
+      };
+      fn.__financeVibrantV26=true;
+      window[name]=fn;
+    }
+  });
+
+  setTimeout(colorizeFinanceV26,120);
+  setTimeout(colorizeFinanceV26,900);
+})();
+</script>
+
+
+<style id="finance-final-look-v27">
+/* ===== V27: lock finance look like requested screenshot ===== */
+body[data-theme="light"] #mod-finance .gold-grid-v19 .gold-card-v19{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--row-color,#6366f1) 22%,white),rgba(255,255,255,.72))!important;
+  border-color:color-mix(in srgb,var(--row-color,#6366f1) 70%,transparent)!important;
+  box-shadow:0 18px 38px color-mix(in srgb,var(--row-color,#6366f1) 18%,transparent)!important;
+}
+body[data-theme="light"] #mod-finance .gold-card-v19 .fin-card-title{
+  color:var(--row-color,#2563eb)!important;
+  -webkit-text-fill-color:var(--row-color,#2563eb)!important;
+  font-weight:950!important;
+}
+body[data-theme="light"] #mod-finance .gold-card-v19 .gold-card-value{
+  color:#22c7ff!important;
+  -webkit-text-fill-color:#22c7ff!important;
+  font-weight:950!important;
+}
+body[data-theme="light"] #mod-finance .gold-card-v19 .profit-pos{
+  color:#16a34a!important;
+  -webkit-text-fill-color:#16a34a!important;
+}
+body[data-theme="light"] #mod-finance .gold-card-v19 .profit-neg{
+  color:#ef4444!important;
+  -webkit-text-fill-color:#ef4444!important;
+}
+body[data-theme="light"] #mod-finance .gold-card-v19 .gold-metrics-grid-v19 div{
+  background:rgba(255,255,255,.42)!important;
+}
+body[data-theme="light"] #mod-finance .gold-card-v19 .gold-metrics-grid-v19 b{
+  color:#0f172a!important;
+  -webkit-text-fill-color:#0f172a!important;
+}
+body[data-theme="light"] #mod-finance .gold-card-v19 .gold-metrics-grid-v19 span{
+  color:#64748b!important;
+  -webkit-text-fill-color:#64748b!important;
+}
+body[data-theme="light"] #mod-finance .gold-karat-badge-v20{
+  color:#d97706!important;
+  -webkit-text-fill-color:#d97706!important;
+  background:rgba(245,158,11,.14)!important;
+}
+body[data-theme="light"] #mod-finance .fin-sum-card{
+  background:rgba(255,255,255,.78)!important;
+}
+body[data-theme="light"] #mod-finance .fin-sum-val{
+  color:#1e293b!important;
+  -webkit-text-fill-color:#1e293b!important;
+}
+body[data-theme="light"] #mod-finance .fin-sum-card:nth-child(3) .fin-sum-val,
+body[data-theme="light"] #mod-finance .fin-sum-card:nth-child(4) .fin-sum-val{
+  color:#22c7ff!important;
+  -webkit-text-fill-color:#22c7ff!important;
+}
+body[data-theme="light"] #mod-finance .gold-current-panel-v19{
+  background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(255,255,255,.72))!important;
+}
+</style>
 
 </body>
 </html>
