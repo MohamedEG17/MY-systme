@@ -5251,5 +5251,888 @@ button[onclick*="deletePlanV14"]:not(.btn-danger){display:none!important}
 @media(max-width:800px){.sync-manager-hero,.sync-source-head{flex-direction:column;align-items:flex-start}.sync-task-row{grid-template-columns:1fr}.sync-task-row button{width:100%}}
 </style>
 
+
+<script id="gold-lots-profit-v19">
+/* ===== V19: Detailed gold purchases + current value + profit/loss ===== */
+(function(){
+  const GOLD_PRICE_KEY='ms_gold_current_price_v19';
+
+  function escx(s){return (typeof esc==='function'?esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function n(v){return +v||0}
+  function money(v){return typeof fmtEGP==='function'?fmtEGP(v):((+v||0).toLocaleString('en-US')+' EGP')}
+  function gramsFmt(v){return typeof fmtGrams==='function'?fmtGrams(v):(+v||0).toLocaleString('en-US',{maximumFractionDigits:3})}
+  function todayStr(){return new Date().toISOString().slice(0,10)}
+  function goldLots(row){
+    row=row||{};
+    let lots=Array.isArray(row.lots)?row.lots:[];
+    if(!lots.length && (n(row.grams)>0 || n(row.price_per_gram)>0)){
+      lots=[{id:'old-'+(row.id||Date.now()),date:row.date||row.purchase_date||'',grams:n(row.grams),price:n(row.price_per_gram),note:row.note||''}];
+    }
+    return lots.map((l,i)=>({id:l.id||('lot-'+i+'-'+Date.now()),date:l.date||'',grams:n(l.grams),price:n(l.price||l.price_per_gram),note:l.note||''})).filter(l=>l.grams>0 || l.price>0 || l.date || l.note);
+  }
+  function goldGrams(row){return goldLots(row).reduce((s,l)=>s+n(l.grams),0)}
+  function goldCost(row){return goldLots(row).reduce((s,l)=>s+n(l.grams)*n(l.price),0)}
+  function goldAvg(row){const g=goldGrams(row); return g?goldCost(row)/g:0}
+  function allGoldGrams(){return (FIN.gold||[]).reduce((s,g)=>s+goldGrams(g),0)}
+  function allGoldCost(){return (FIN.gold||[]).reduce((s,g)=>s+goldCost(g),0)}
+  function globalAvg(){const g=allGoldGrams(); return g?allGoldCost()/g:0}
+  function goldCurrentPrice(){const saved=n(localStorage.getItem(GOLD_PRICE_KEY)); return saved>0?saved:globalAvg();}
+  function setGoldCurrentPrice(v){localStorage.setItem(GOLD_PRICE_KEY,String(n(v))); if(typeof touchCloud==='function')touchCloud(); finRender();}
+  window.setGoldCurrentPriceV19=setGoldCurrentPrice;
+
+  function normalizeGoldRows(){
+    (FIN.gold||[]).forEach((row,i)=>{
+      const lots=goldLots(row);
+      row.lots=lots;
+      row.grams=lots.reduce((s,l)=>s+n(l.grams),0);
+      const cost=lots.reduce((s,l)=>s+n(l.grams)*n(l.price),0);
+      row.total_cost=cost;
+      row.price_per_gram=row.grams?cost/row.grams:0;
+      if(!row.id && typeof uid==='function')row.id=uid();
+      if(!row.name)row.name='ذهب';
+    });
+  }
+
+  function profitClass(v){return v>0?'profit-pos':v<0?'profit-neg':'profit-zero'}
+  function profitText(v){return (v>0?'+':'')+money(v)}
+
+  function renderGoldV19(rate=50){
+    normalizeGoldRows();
+    const el=document.getElementById('fsec-gold'); if(!el)return;
+    const layout=(typeof finGetLayout==='function'?finGetLayout('gold'):(FIN.layout||'list'));
+    const cur=goldCurrentPrice();
+    const totalG=allGoldGrams();
+    const invested=allGoldCost();
+    const currentValue=totalG*cur;
+    const profit=currentValue-invested;
+    const avg=totalG?invested/totalG:0;
+    el.innerHTML=`
+      <div class="gold-current-panel-v19">
+        <div class="gold-current-main">
+          <div>
+            <div class="gold-current-label">سعر الجرام الحالي</div>
+            <div class="gold-current-note">اكتب السعر الحالي عشان يحسب القيمة الحالية والمكسب/الخسارة</div>
+          </div>
+          <div class="gold-current-input-wrap">
+            <input class="gold-current-input" id="goldCurrentPriceV19" type="number" value="${cur?String(Math.round(cur*100)/100):''}" placeholder="مثلاً 4500" oninput="setGoldCurrentPriceV19(this.value)" dir="ltr">
+            <span>EGP / gram</span>
+          </div>
+        </div>
+      </div>
+      <div class="fin-summary gold-summary-v19">
+        <div class="fin-sum-card"><div class="fin-sum-label">إجمالي الجرامات</div><div class="fin-sum-val">${gramsFmt(totalG)} جم</div></div>
+        <div class="fin-sum-card"><div class="fin-sum-label">إجمالي سعر الشراء</div><div class="fin-sum-val" style="color:#fbbf24">${money(invested)}</div></div>
+        <div class="fin-sum-card"><div class="fin-sum-label">القيمة بالسعر الحالي</div><div class="fin-sum-val" style="color:#38bdf8">${money(currentValue)}</div></div>
+        <div class="fin-sum-card"><div class="fin-sum-label">المكسب / الخسارة</div><div class="fin-sum-val ${profitClass(profit)}">${profitText(profit)}</div></div>
+        <div class="fin-sum-card"><div class="fin-sum-label">متوسط شراء الجرام</div><div class="fin-sum-val">${money(avg)}</div></div>
+      </div>
+      <div id="goldView"></div>`;
+    const host=document.getElementById('goldView');
+    const rows=(FIN.gold||[]).map((g,i)=>{
+      const c=typeof itemColor==='function'?itemColor(g,i):(g.color||'#fbbf24');
+      const lots=goldLots(g), gr=goldGrams(g), cost=goldCost(g), avg=gr?cost/gr:0, val=gr*cur, p=val-cost;
+      const lotsMini=lots.slice(0,4).map(l=>`<div class="gold-lot-mini"><span>${escx(l.date||'بدون تاريخ')}</span><b>${gramsFmt(l.grams)} جم</b><small>${money(l.price)}/جم</small></div>`).join('');
+      if(layout==='grid'){
+        return `<div class="fin-card gold-card-v19" style="--row-color:${c}">
+          <div class="fin-card-head"><div class="fin-card-title">${escx(g.icon||'🥇')} ${escx(g.name||'ذهب')}</div><button class="gold-edit-btn-v19" onclick="openFinanceItemModal('gold','${g.id}',true)">تعديل</button></div>
+          <div class="gold-card-value">${money(val)}</div>
+          <div class="gold-card-profit ${profitClass(p)}">${profitText(p)}</div>
+          <div class="gold-metrics-grid-v19">
+            <div><span>الجرامات</span><b>${gramsFmt(gr)} جم</b></div>
+            <div><span>شراء</span><b>${money(cost)}</b></div>
+            <div><span>متوسط</span><b>${money(avg)}</b></div>
+            <div><span>عمليات</span><b>${lots.length}</b></div>
+          </div>
+          <div class="gold-lots-mini-list">${lotsMini||'<div class="hub-empty">لا يوجد عمليات شراء</div>'}</div>
+        </div>`;
+      }
+      return `<tr class="fin-row-highlight gold-row-v19" style="--row-color:${c}">
+        ${td('الصنف',`<b style="color:${c}">${escx(g.icon||'🥇')} ${escx(g.name||'ذهب')}</b><div class="gold-row-sub">${lots.length} عمليات شراء</div>`)}
+        ${td('إجمالي الجرامات',`<b>${gramsFmt(gr)} جم</b>`,'data-num')}
+        ${td('إجمالي الشراء',`<b>${money(cost)}</b>`,'data-num')}
+        ${td('القيمة الحالية',`<b style="color:#38bdf8">${money(val)}</b>`,'data-num')}
+        ${td('مكسب/خسارة',`<b class="${profitClass(p)}">${profitText(p)}</b>`,'data-num')}
+        ${td('',`<button class="gold-edit-btn-v19" onclick="openFinanceItemModal('gold','${g.id}',true)">تعديل</button>`,'class="del-cell"')}
+      </tr>`;
+    }).join('');
+    if(layout==='grid'){
+      host.innerHTML=`<div class="fin-card-grid gold-grid-v19">${rows}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('gold')">+ إضافة ذهب</button>`;
+    } else {
+      host.innerHTML=`<div class="fin-table-wrap"><table class="fin-table gold-table-v19"><thead><tr><th>الصنف</th><th>إجمالي الجرامات</th><th>إجمالي الشراء</th><th>القيمة الحالية</th><th>مكسب/خسارة</th><th></th></tr></thead><tbody>${rows}</tbody></table><button class="fin-add-btn" onclick="finAdd('gold')">+ إضافة ذهب</button></div>`;
+    }
+  }
+
+  const oldFinRenderSectionV19=window.finRenderSection;
+  window.finRenderSection=function(rate=50){
+    if(FIN?.tab==='gold') return renderGoldV19(rate);
+    return oldFinRenderSectionV19 ? oldFinRenderSectionV19(rate) : null;
+  };
+
+  const oldFinRenderV19=window.finRender;
+  window.finRender=function(){
+    try{normalizeFinanceData();normalizeGoldRows();}catch(_){}
+    const rate=typeof getUsdRate==='function'?getUsdRate():50;
+    const banks=(FIN.banks||[]).reduce((s,b)=>s+(typeof bankTotalEGP==='function'?bankTotalEGP(b,rate):(+b.balance||0)),0);
+    const gold=allGoldGrams()*goldCurrentPrice();
+    const total=banks+gold;
+    const totalEl=document.getElementById('finTotal'); if(totalEl)totalEl.textContent=money(total);
+    const dist=document.getElementById('finDist');
+    if(dist){
+      const mx=total||1;
+      dist.innerHTML=[['البنوك',banks,'linear-gradient(90deg,#0ea5e9,#6366f1)'],['الذهب بالسعر الحالي',gold,'linear-gradient(90deg,#f59e0b,#fcd34d)']].map(([l,v,g])=>`<div class="fin-dist-item"><div class="fin-dist-label">${l}</div><div class="fin-dist-val">${money(v)}</div><div class="fin-dist-bar"><div class="fin-dist-fill" style="width:${Math.round(v/mx*100)}%;background:${g}"></div></div></div>`).join('');
+    }
+    if(typeof finRenderSection==='function')finRenderSection(rate);
+    if(typeof attachFinanceColorControls==='function')setTimeout(attachFinanceColorControls,0);
+  };
+
+  function goldLotRowHtml(l={},i=0){
+    return `<div class="gold-lot-row-v19" data-lot="${i}">
+      <div class="mf-row"><label>التاريخ</label><input class="mf-inp" data-lot-date type="date" value="${escx(l.date||'')}" oninput="updateGoldModalSummaryV19()"></div>
+      <div class="mf-row"><label>عدد الجرامات</label><input class="mf-inp" data-lot-grams type="number" step="0.001" value="${n(l.grams)||''}" dir="ltr" oninput="updateGoldModalSummaryV19()"></div>
+      <div class="mf-row"><label>سعر الجرام وقت الشراء</label><input class="mf-inp" data-lot-price type="number" step="0.01" value="${n(l.price)||''}" dir="ltr" oninput="updateGoldModalSummaryV19()"></div>
+      <div class="mf-row"><label>ملاحظة</label><input class="mf-inp" data-lot-note value="${escx(l.note||'')}" placeholder="اختياري"></div>
+      <button type="button" class="gold-lot-remove-v19" onclick="removeGoldLotRowV19(this)">×</button>
+    </div>`;
+  }
+
+  function readGoldLotsFromModal(){
+    return [...document.querySelectorAll('#goldLotsBoxV19 .gold-lot-row-v19')].map((r,i)=>({
+      id:r.dataset.id||('lot-'+i+'-'+Date.now()),
+      date:r.querySelector('[data-lot-date]')?.value||'',
+      grams:n(r.querySelector('[data-lot-grams]')?.value),
+      price:n(r.querySelector('[data-lot-price]')?.value),
+      note:r.querySelector('[data-lot-note]')?.value||''
+    })).filter(l=>l.grams>0 || l.price>0 || l.date || l.note);
+  }
+
+  window.updateGoldModalSummaryV19=function(){
+    const lots=readGoldLotsFromModal();
+    const gr=lots.reduce((s,l)=>s+n(l.grams),0);
+    const cost=lots.reduce((s,l)=>s+n(l.grams)*n(l.price),0);
+    const avg=gr?cost/gr:0;
+    const box=document.getElementById('goldModalSummaryV19'); if(!box)return;
+    box.innerHTML=`
+      <div><span>إجمالي الجرامات</span><b>${gramsFmt(gr)} جم</b></div>
+      <div><span>إجمالي الشراء</span><b>${money(cost)}</b></div>
+      <div><span>متوسط الجرام</span><b>${money(avg)}</b></div>`;
+  };
+  window.addGoldLotRowV19=function(l={}){
+    const box=document.getElementById('goldLotsBoxV19'); if(!box)return;
+    box.insertAdjacentHTML('beforeend',goldLotRowHtml(l,box.children.length));
+    updateGoldModalSummaryV19();
+  };
+  window.removeGoldLotRowV19=function(btn){
+    btn.closest('.gold-lot-row-v19')?.remove();
+    updateGoldModalSummaryV19();
+  };
+
+  const oldOpenFinanceItemModalV19=window.openFinanceItemModal;
+  window.openFinanceItemModal=function(key,id=null,editVisual=false){
+    if(key!=='gold') return oldOpenFinanceItemModalV19(key,id,editVisual);
+    normalizeGoldRows();
+    financeModalKey=key; financeModalId=id;
+    const row=id?(FIN.gold||[]).find(r=>r.id===id):null;
+    const lots=goldLots(row);
+    const color=typeof itemColor==='function'?itemColor(row||{},(FIN.gold||[]).length):(row?.color||'#fbbf24');
+    financePickedIcon=(typeof itemIcon==='function'?itemIcon(row,'gold',(FIN.gold||[]).length):(row?.icon||'🥇')) || '🥇';
+    document.getElementById('financeItemModalTitle').textContent=id?'تعديل الذهب وعمليات الشراء':'إضافة ذهب بعمليات شراء';
+    document.getElementById('financeItemModalBody').innerHTML=`
+      <div class="finance-visual-form">
+        <div class="visual-preview" id="financeVisualPreview"></div>
+        <div class="mg3">
+          <div class="mf-row"><label>اسم الصنف</label><input class="mf-inp" id="fiName" value="${escx(row?.name||'ذهب')}" placeholder="مثلاً: سبائك BTC / جنيهات"></div>
+          <div class="mf-row"><label>اللون</label><input class="mf-inp" id="fiColor" type="color" value="${color}" oninput="refreshFinancePreview&&refreshFinancePreview()"></div>
+          <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="fiGoldIconV19" maxlength="2" value="${escx(financePickedIcon||'🥇')}" oninput="financePickedIcon=this.value;refreshFinancePreview&&refreshFinancePreview()"></div>
+        </div>
+        <div class="gold-modal-summary-v19" id="goldModalSummaryV19"></div>
+        <div class="gold-lots-head-v19">
+          <h3>عمليات الشراء</h3>
+          <button type="button" class="add-task-row" onclick="addGoldLotRowV19()">+ عملية شراء</button>
+        </div>
+        <div id="goldLotsBoxV19">${(lots.length?lots:[{date:todayStr(),grams:0,price:0,note:''}]).map(goldLotRowHtml).join('')}</div>
+        <div class="modal-actions">
+          <button class="btn btn-primary" onclick="saveFinanceItemModal()">حفظ</button>
+          <button class="btn btn-ghost" onclick="closeFinanceItemModal()">إلغاء</button>
+          ${id?`<button class="btn btn-danger" onclick="deleteGoldFromModalV19()">حذف الذهب</button>`:''}
+        </div>
+      </div>`;
+    const modal=document.getElementById('financeItemModal');
+    modal.classList.remove('hidden');
+    if(typeof refreshFinancePreview==='function')refreshFinancePreview();
+    updateGoldModalSummaryV19();
+  };
+
+  window.deleteGoldFromModalV19=function(){
+    if(!financeModalId)return;
+    if(!confirm('حذف هذا الذهب وكل عمليات الشراء داخله؟'))return;
+    finDel('gold',financeModalId);
+    closeFinanceItemModal();
+  };
+
+  const oldSaveFinanceItemModalV19=window.saveFinanceItemModal;
+  window.saveFinanceItemModal=async function(){
+    if(financeModalKey!=='gold') return oldSaveFinanceItemModalV19();
+    const id=financeModalId||uid();
+    const isEdit=!!financeModalId;
+    const lots=readGoldLotsFromModal();
+    const totalG=lots.reduce((s,l)=>s+n(l.grams),0);
+    const cost=lots.reduce((s,l)=>s+n(l.grams)*n(l.price),0);
+    const patch={
+      id,user_id:OWNER,
+      name:document.getElementById('fiName')?.value.trim()||'ذهب',
+      color:document.getElementById('fiColor')?.value||'#fbbf24',
+      icon:document.getElementById('fiGoldIconV19')?.value.trim()||financePickedIcon||'🥇',
+      lots,
+      grams:totalG,
+      total_cost:cost,
+      price_per_gram:totalG?cost/totalG:0
+    };
+    if(isEdit){
+      const row=(FIN.gold||[]).find(r=>r.id===id);
+      if(row)Object.assign(row,patch);
+    } else {
+      FIN.gold=FIN.gold||[];
+      FIN.gold.push(patch);
+    }
+    normalizeGoldRows();
+    finSaveLocal(); markWrite('fin');
+    if(sb)try{
+      const dbPatch={...patch};
+      if(isEdit) await sb.from(FIN_TBL_MAP.gold).update(dbPatch).eq('id',id);
+      else await sb.from(FIN_TBL_MAP.gold).insert(dbPatch);
+    }catch(_){}
+    closeFinanceItemModal();
+    finRender();
+    toast(isEdit?'تم حفظ الذهب ✅':'تم إضافة الذهب ✅');
+  };
+
+  // make old gold rows compatible when tab opens
+  setTimeout(()=>{try{normalizeGoldRows(); if(FIN?.tab==='gold')finRender();}catch(_){}} ,300);
+})();
+</script>
+<style id="gold-lots-profit-v19-style">
+.gold-current-panel-v19{padding:18px;border-radius:28px;background:linear-gradient(135deg,rgba(245,158,11,.16),rgba(251,191,36,.08));border:1px solid rgba(245,158,11,.22);margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.gold-current-main{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.gold-current-label{font-size:18px;font-weight:950;color:#f59e0b}
+.gold-current-note{font-size:12px;color:var(--text-m);font-weight:800;margin-top:4px}
+.gold-current-input-wrap{display:flex;align-items:center;gap:8px;background:var(--panel2);padding:8px 11px;border-radius:18px}
+.gold-current-input{width:150px;border:0;background:transparent;color:var(--text);font-size:20px;font-weight:950;outline:none;text-align:left}
+.gold-current-input-wrap span{font-size:11px;color:var(--text-d);font-weight:900}
+.gold-summary-v19{grid-template-columns:repeat(5,minmax(0,1fr))}
+.profit-pos{color:#22c55e!important}.profit-neg{color:#f87171!important}.profit-zero{color:var(--text-m)!important}
+.gold-grid-v19 .gold-card-v19{min-height:260px}
+.gold-card-value{font-size:28px;font-weight:950;color:#38bdf8;direction:ltr;margin-top:8px}
+.gold-card-profit{font-size:18px;font-weight:950;direction:ltr;margin:4px 0 12px}
+.gold-metrics-grid-v19{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.gold-metrics-grid-v19 div{padding:9px;border-radius:14px;background:rgba(255,255,255,.16)}
+.gold-metrics-grid-v19 span{display:block;font-size:10px;color:var(--text-d);font-weight:900}
+.gold-metrics-grid-v19 b{display:block;font-size:13px;margin-top:3px}
+.gold-lots-mini-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.gold-lot-mini{display:grid;grid-template-columns:1fr auto auto;gap:7px;align-items:center;padding:7px 9px;border-radius:12px;background:rgba(255,255,255,.12);font-size:11px}
+.gold-lot-mini span{color:var(--text-d);font-weight:800}.gold-lot-mini b{font-weight:950}.gold-lot-mini small{color:var(--text-m);font-weight:800}
+.gold-edit-btn-v19{border:0;border-radius:12px;padding:8px 12px;background:var(--panel2);color:var(--text);font-weight:900;cursor:pointer}
+.gold-row-sub{font-size:11px;color:var(--text-d);margin-top:3px;font-weight:800}
+.gold-modal-summary-v19{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.gold-modal-summary-v19 div{padding:12px;border-radius:18px;background:linear-gradient(180deg,rgba(245,158,11,.13),var(--panel));border:1px solid rgba(245,158,11,.16)}
+.gold-modal-summary-v19 span{display:block;font-size:11px;color:var(--text-d);font-weight:900}.gold-modal-summary-v19 b{display:block;font-size:18px;margin-top:4px;color:#f59e0b}
+.gold-lots-head-v19{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0}
+.gold-lots-head-v19 h3{font-size:18px}
+.gold-lot-row-v19{display:grid;grid-template-columns:1fr 1fr 1fr 1.3fr auto;gap:8px;align-items:end;padding:12px;border-radius:20px;background:var(--panel);border:1px solid var(--border);margin-bottom:9px}
+.gold-lot-remove-v19{width:34px;height:34px;border:0;border-radius:12px;background:rgba(239,68,68,.16);color:#f87171;font-size:18px;font-weight:950;cursor:pointer}
+@media(max-width:900px){.gold-summary-v19{grid-template-columns:1fr 1fr}.gold-lot-row-v19{grid-template-columns:1fr}.gold-current-main{align-items:flex-start}.gold-current-input-wrap{width:100%}.gold-current-input{width:100%}.gold-modal-summary-v19{grid-template-columns:1fr}.gold-lot-mini{grid-template-columns:1fr}.gold-table-v19 th:nth-child(3),.gold-table-v19 td:nth-child(3){display:none}}
+</style>
+
+
+<script id="gold-karat-theme-selection-v20">
+/* ===== V20: Gold karat support + light theme selection visibility fix ===== */
+(function(){
+  const GOLD_PRICE_KEY='ms_gold_current_price_v19';
+  const GOLD_KARAT_KEY='ms_gold_current_karat_v20';
+  const KARATS=[24,21,18,14];
+
+  function escx(s){return (typeof esc==='function'?esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function n(v){return +v||0}
+  function money(v){return typeof fmtEGP==='function'?fmtEGP(v):((+v||0).toLocaleString('en-US')+' EGP')}
+  function gramsFmt(v){return typeof fmtGrams==='function'?fmtGrams(v):(+v||0).toLocaleString('en-US',{maximumFractionDigits:3})}
+  function todayStr(){return new Date().toISOString().slice(0,10)}
+  function karatOptions(selected=21){
+    return KARATS.map(k=>`<option value="${k}" ${Number(selected)===k?'selected':''}>عيار ${k}</option>`).join('');
+  }
+  function currentKarat(){return Number(localStorage.getItem(GOLD_KARAT_KEY)||21)||21}
+  function currentPrice(){return Number(localStorage.getItem(GOLD_PRICE_KEY)||0)||0}
+  function setCurrentKarat(k){localStorage.setItem(GOLD_KARAT_KEY,String(Number(k)||21)); if(typeof touchCloud==='function')touchCloud(); finRender();}
+  function setCurrentPrice(v){localStorage.setItem(GOLD_PRICE_KEY,String(Number(v)||0)); if(typeof touchCloud==='function')touchCloud(); finRender();}
+  window.setGoldCurrentKaratV20=setCurrentKarat;
+  window.setGoldCurrentPriceV20=setCurrentPrice;
+  window.setGoldCurrentPriceV19=setCurrentPrice;
+
+  function normalizeLot(l={},fallbackKarat=21,i=0){
+    return {
+      id:l.id||('lot-'+i+'-'+Date.now()),
+      date:l.date||'',
+      grams:n(l.grams),
+      price:n(l.price||l.price_per_gram),
+      karat:Number(l.karat||fallbackKarat||21),
+      note:l.note||''
+    };
+  }
+  function goldLots(row){
+    row=row||{};
+    const fallbackKarat=Number(row.karat||21);
+    let lots=Array.isArray(row.lots)?row.lots:[];
+    if(!lots.length && (n(row.grams)>0 || n(row.price_per_gram)>0)){
+      lots=[{id:'old-'+(row.id||Date.now()),date:row.date||row.purchase_date||'',grams:n(row.grams),price:n(row.price_per_gram),karat:fallbackKarat,note:row.note||''}];
+    }
+    return lots.map((l,i)=>normalizeLot(l,fallbackKarat,i)).filter(l=>l.grams>0 || l.price>0 || l.date || l.note);
+  }
+  function goldGrams(row){return goldLots(row).reduce((s,l)=>s+n(l.grams),0)}
+  function goldCost(row){return goldLots(row).reduce((s,l)=>s+n(l.grams)*n(l.price),0)}
+  function pureGrams(row){return goldLots(row).reduce((s,l)=>s+n(l.grams)*(Number(l.karat||21)/24),0)}
+  function currentValue(row){
+    const cur=currentPrice(), curK=currentKarat();
+    if(!cur)return 0;
+    return goldLots(row).reduce((s,l)=>s+n(l.grams)*cur*(Number(l.karat||21)/curK),0);
+  }
+  function allGoldGrams(){return (FIN.gold||[]).reduce((s,g)=>s+goldGrams(g),0)}
+  function allPureGrams(){return (FIN.gold||[]).reduce((s,g)=>s+pureGrams(g),0)}
+  function allGoldCost(){return (FIN.gold||[]).reduce((s,g)=>s+goldCost(g),0)}
+  function allCurrentValue(){return (FIN.gold||[]).reduce((s,g)=>s+currentValue(g),0)}
+  function fallbackPrice(){
+    const g=allGoldGrams(), cost=allGoldCost();
+    return g?cost/g:0;
+  }
+  function profitClass(v){return v>0?'profit-pos':v<0?'profit-neg':'profit-zero'}
+  function profitText(v){return (v>0?'+':'')+money(v)}
+
+  function normalizeGoldRowsV20(){
+    (FIN.gold||[]).forEach((row,i)=>{
+      row.karat=Number(row.karat||21);
+      const lots=goldLots(row);
+      row.lots=lots;
+      row.grams=lots.reduce((s,l)=>s+n(l.grams),0);
+      const cost=lots.reduce((s,l)=>s+n(l.grams)*n(l.price),0);
+      row.total_cost=cost;
+      row.price_per_gram=row.grams?cost/row.grams:0;
+      row.pure_grams=lots.reduce((s,l)=>s+n(l.grams)*(Number(l.karat||21)/24),0);
+      if(!row.id && typeof uid==='function')row.id=uid();
+      if(!row.name)row.name='ذهب';
+    });
+    if(!currentPrice() && fallbackPrice()>0) localStorage.setItem(GOLD_PRICE_KEY,String(Math.round(fallbackPrice()*100)/100));
+  }
+
+  function lotCurrentPrice(l){
+    const cur=currentPrice();
+    const curK=currentKarat();
+    return cur ? cur*(Number(l.karat||21)/curK) : 0;
+  }
+
+  function renderGoldV20(rate=50){
+    normalizeGoldRowsV20();
+    const el=document.getElementById('fsec-gold'); if(!el)return;
+    const layout=(typeof finGetLayout==='function'?finGetLayout('gold'):(FIN.layout||'list'));
+    const cur=currentPrice() || fallbackPrice();
+    if(!currentPrice() && cur) localStorage.setItem(GOLD_PRICE_KEY,String(cur));
+    const curK=currentKarat();
+    const totalG=allGoldGrams();
+    const pureG=allPureGrams();
+    const invested=allGoldCost();
+    const currentVal=allCurrentValue();
+    const profit=currentVal-invested;
+    const avg=totalG?invested/totalG:0;
+    el.innerHTML=`
+      <div class="gold-current-panel-v19 gold-current-panel-v20">
+        <div class="gold-current-main">
+          <div>
+            <div class="gold-current-label">سعر الجرام الحالي</div>
+            <div class="gold-current-note">حدد السعر والعيار، والسيستم يحسب قيمة كل عملية حسب عيارها.</div>
+          </div>
+          <div class="gold-current-input-wrap gold-current-input-wrap-v20">
+            <select class="gold-karat-select-v20" id="goldCurrentKaratV20" onchange="setGoldCurrentKaratV20(this.value)">${karatOptions(curK)}</select>
+            <input class="gold-current-input" id="goldCurrentPriceV19" type="number" value="${cur?String(Math.round(cur*100)/100):''}" placeholder="مثلاً 4500" oninput="setGoldCurrentPriceV20(this.value)" dir="ltr">
+            <span>EGP / gram</span>
+          </div>
+        </div>
+      </div>
+      <div class="fin-summary gold-summary-v19 gold-summary-v20">
+        <div class="fin-sum-card"><div class="fin-sum-label">إجمالي الجرامات</div><div class="fin-sum-val">${gramsFmt(totalG)} جم</div></div>
+        <div class="fin-sum-card"><div class="fin-sum-label">جرامات صافي 24</div><div class="fin-sum-val">${gramsFmt(pureG)} جم</div></div>
+        <div class="fin-sum-card"><div class="fin-sum-label">إجمالي سعر الشراء</div><div class="fin-sum-val" style="color:#fbbf24">${money(invested)}</div></div>
+        <div class="fin-sum-card"><div class="fin-sum-label">القيمة الحالية</div><div class="fin-sum-val" style="color:#38bdf8">${money(currentVal)}</div></div>
+        <div class="fin-sum-card"><div class="fin-sum-label">المكسب / الخسارة</div><div class="fin-sum-val ${profitClass(profit)}">${profitText(profit)}</div></div>
+        <div class="fin-sum-card"><div class="fin-sum-label">متوسط شراء الجرام</div><div class="fin-sum-val">${money(avg)}</div></div>
+      </div>
+      <div id="goldView"></div>`;
+    const host=document.getElementById('goldView');
+    const rows=(FIN.gold||[]).map((g,i)=>{
+      const c=typeof itemColor==='function'?itemColor(g,i):(g.color||'#fbbf24');
+      const lots=goldLots(g), gr=goldGrams(g), pure=pureGrams(g), cost=goldCost(g), avg=gr?cost/gr:0, val=currentValue(g), p=val-cost;
+      const karats=[...new Set(lots.map(l=>Number(l.karat||21)))].sort((a,b)=>b-a);
+      const karatLabel=karats.length?karats.map(k=>'عيار '+k).join(' / '):'عيار 21';
+      const lotsMini=lots.slice(0,4).map(l=>`<div class="gold-lot-mini"><span>${escx(l.date||'بدون تاريخ')}</span><b>${gramsFmt(l.grams)} جم</b><small>عيار ${l.karat} • ${money(l.price)}/جم</small></div>`).join('');
+      if(layout==='grid'){
+        return `<div class="fin-card gold-card-v19" style="--row-color:${c}">
+          <div class="fin-card-head"><div class="fin-card-title">${escx(g.icon||'🥇')} ${escx(g.name||'ذهب')}</div><button class="gold-edit-btn-v19" onclick="openFinanceItemModal('gold','${g.id}',true)">تعديل</button></div>
+          <div class="gold-karat-badge-v20">${escx(karatLabel)}</div>
+          <div class="gold-card-value">${money(val)}</div>
+          <div class="gold-card-profit ${profitClass(p)}">${profitText(p)}</div>
+          <div class="gold-metrics-grid-v19">
+            <div><span>الجرامات</span><b>${gramsFmt(gr)} جم</b></div>
+            <div><span>صافي 24</span><b>${gramsFmt(pure)} جم</b></div>
+            <div><span>شراء</span><b>${money(cost)}</b></div>
+            <div><span>متوسط</span><b>${money(avg)}</b></div>
+          </div>
+          <div class="gold-lots-mini-list">${lotsMini||'<div class="hub-empty">لا يوجد عمليات شراء</div>'}</div>
+        </div>`;
+      }
+      return `<tr class="fin-row-highlight gold-row-v19" style="--row-color:${c}">
+        ${td('الصنف',`<b style="color:${c}">${escx(g.icon||'🥇')} ${escx(g.name||'ذهب')}</b><div class="gold-row-sub">${lots.length} عمليات شراء • ${escx(karatLabel)}</div>`)}
+        ${td('إجمالي الجرامات',`<b>${gramsFmt(gr)} جم</b><div class="gold-row-sub">صافي 24: ${gramsFmt(pure)} جم</div>`,'data-num')}
+        ${td('إجمالي الشراء',`<b>${money(cost)}</b>`,'data-num')}
+        ${td('القيمة الحالية',`<b style="color:#38bdf8">${money(val)}</b>`,'data-num')}
+        ${td('مكسب/خسارة',`<b class="${profitClass(p)}">${profitText(p)}</b>`,'data-num')}
+        ${td('',`<button class="gold-edit-btn-v19" onclick="openFinanceItemModal('gold','${g.id}',true)">تعديل</button>`,'class="del-cell"')}
+      </tr>`;
+    }).join('');
+    if(layout==='grid'){
+      host.innerHTML=`<div class="fin-card-grid gold-grid-v19">${rows}</div><button class="fin-add-btn fin-compact-add" onclick="finAdd('gold')">+ إضافة ذهب</button>`;
+    } else {
+      host.innerHTML=`<div class="fin-table-wrap"><table class="fin-table gold-table-v19"><thead><tr><th>الصنف</th><th>إجمالي الجرامات</th><th>إجمالي الشراء</th><th>القيمة الحالية</th><th>مكسب/خسارة</th><th></th></tr></thead><tbody>${rows}</tbody></table><button class="fin-add-btn" onclick="finAdd('gold')">+ إضافة ذهب</button></div>`;
+    }
+  }
+
+  const oldFinRenderSectionV20=window.finRenderSection;
+  window.finRenderSection=function(rate=50){
+    if(FIN?.tab==='gold') return renderGoldV20(rate);
+    return oldFinRenderSectionV20 ? oldFinRenderSectionV20(rate) : null;
+  };
+
+  const oldFinRenderV20=window.finRender;
+  window.finRender=function(){
+    try{normalizeFinanceData();normalizeGoldRowsV20();}catch(_){}
+    const rate=typeof getUsdRate==='function'?getUsdRate():50;
+    const banks=(FIN.banks||[]).reduce((s,b)=>s+(typeof bankTotalEGP==='function'?bankTotalEGP(b,rate):(+b.balance||0)),0);
+    const gold=allCurrentValue();
+    const total=banks+gold;
+    const totalEl=document.getElementById('finTotal'); if(totalEl)totalEl.textContent=money(total);
+    const dist=document.getElementById('finDist');
+    if(dist){
+      const mx=total||1;
+      dist.innerHTML=[['البنوك',banks,'linear-gradient(90deg,#0ea5e9,#6366f1)'],['الذهب بالسعر الحالي',gold,'linear-gradient(90deg,#f59e0b,#fcd34d)']].map(([l,v,g])=>`<div class="fin-dist-item"><div class="fin-dist-label">${l}</div><div class="fin-dist-val">${money(v)}</div><div class="fin-dist-bar"><div class="fin-dist-fill" style="width:${Math.round(v/mx*100)}%;background:${g}"></div></div></div>`).join('');
+    }
+    if(typeof finRenderSection==='function')finRenderSection(rate);
+    if(typeof attachFinanceColorControls==='function')setTimeout(attachFinanceColorControls,0);
+  };
+
+  function goldLotRowHtmlV20(l={},i=0,defaultKarat=21){
+    const lot=normalizeLot(l,defaultKarat,i);
+    return `<div class="gold-lot-row-v19 gold-lot-row-v20" data-lot="${i}">
+      <div class="mf-row"><label>التاريخ</label><input class="mf-inp" data-lot-date type="date" value="${escx(lot.date||'')}" oninput="updateGoldModalSummaryV20()"></div>
+      <div class="mf-row"><label>عدد الجرامات</label><input class="mf-inp" data-lot-grams type="number" step="0.001" value="${n(lot.grams)||''}" dir="ltr" oninput="updateGoldModalSummaryV20()"></div>
+      <div class="mf-row"><label>عيار الذهب</label><select class="mf-inp" data-lot-karat onchange="updateGoldModalSummaryV20()">${karatOptions(lot.karat)}</select></div>
+      <div class="mf-row"><label>سعر الجرام وقت الشراء</label><input class="mf-inp" data-lot-price type="number" step="0.01" value="${n(lot.price)||''}" dir="ltr" oninput="updateGoldModalSummaryV20()"></div>
+      <div class="mf-row"><label>ملاحظة</label><input class="mf-inp" data-lot-note value="${escx(lot.note||'')}" placeholder="اختياري"></div>
+      <button type="button" class="gold-lot-remove-v19" onclick="removeGoldLotRowV19(this)">×</button>
+    </div>`;
+  }
+
+  function readGoldLotsFromModalV20(){
+    return [...document.querySelectorAll('#goldLotsBoxV19 .gold-lot-row-v19')].map((r,i)=>({
+      id:r.dataset.id||('lot-'+i+'-'+Date.now()),
+      date:r.querySelector('[data-lot-date]')?.value||'',
+      grams:n(r.querySelector('[data-lot-grams]')?.value),
+      karat:Number(r.querySelector('[data-lot-karat]')?.value||document.getElementById('fiGoldDefaultKaratV20')?.value||21),
+      price:n(r.querySelector('[data-lot-price]')?.value),
+      note:r.querySelector('[data-lot-note]')?.value||''
+    })).filter(l=>l.grams>0 || l.price>0 || l.date || l.note);
+  }
+  window.updateGoldModalSummaryV20=function(){
+    const lots=readGoldLotsFromModalV20();
+    const gr=lots.reduce((s,l)=>s+n(l.grams),0);
+    const pure=lots.reduce((s,l)=>s+n(l.grams)*(Number(l.karat||21)/24),0);
+    const cost=lots.reduce((s,l)=>s+n(l.grams)*n(l.price),0);
+    const avg=gr?cost/gr:0;
+    const curVal=lots.reduce((s,l)=>s+n(l.grams)*lotCurrentPrice(l),0);
+    const profit=curVal-cost;
+    const box=document.getElementById('goldModalSummaryV19'); if(!box)return;
+    box.innerHTML=`
+      <div><span>إجمالي الجرامات</span><b>${gramsFmt(gr)} جم</b></div>
+      <div><span>صافي 24</span><b>${gramsFmt(pure)} جم</b></div>
+      <div><span>إجمالي الشراء</span><b>${money(cost)}</b></div>
+      <div><span>متوسط الجرام</span><b>${money(avg)}</b></div>
+      <div><span>القيمة الحالية</span><b style="color:#38bdf8">${money(curVal)}</b></div>
+      <div><span>مكسب/خسارة</span><b class="${profitClass(profit)}">${profitText(profit)}</b></div>`;
+  };
+  window.updateGoldModalSummaryV19=window.updateGoldModalSummaryV20;
+
+  window.addGoldLotRowV19=function(l={}){
+    const box=document.getElementById('goldLotsBoxV19'); if(!box)return;
+    const defaultKarat=Number(document.getElementById('fiGoldDefaultKaratV20')?.value||21);
+    box.insertAdjacentHTML('beforeend',goldLotRowHtmlV20(l,box.children.length,defaultKarat));
+    updateGoldModalSummaryV20();
+  };
+  window.applyDefaultKaratToLotsV20=function(){
+    const k=Number(document.getElementById('fiGoldDefaultKaratV20')?.value||21);
+    document.querySelectorAll('#goldLotsBoxV19 [data-lot-karat]').forEach(sel=>{sel.value=String(k)});
+    updateGoldModalSummaryV20();
+  };
+
+  const oldOpenFinanceItemModalV20=window.openFinanceItemModal;
+  window.openFinanceItemModal=function(key,id=null,editVisual=false){
+    if(key!=='gold') return oldOpenFinanceItemModalV20(key,id,editVisual);
+    normalizeGoldRowsV20();
+    financeModalKey=key; financeModalId=id;
+    const row=id?(FIN.gold||[]).find(r=>r.id===id):null;
+    const lots=goldLots(row);
+    const defaultKarat=Number(row?.karat || lots[0]?.karat || 21);
+    const color=typeof itemColor==='function'?itemColor(row||{},(FIN.gold||[]).length):(row?.color||'#fbbf24');
+    financePickedIcon=(typeof itemIcon==='function'?itemIcon(row,'gold',(FIN.gold||[]).length):(row?.icon||'🥇')) || '🥇';
+    document.getElementById('financeItemModalTitle').textContent=id?'تعديل الذهب وعمليات الشراء':'إضافة ذهب بعمليات شراء';
+    document.getElementById('financeItemModalBody').innerHTML=`
+      <div class="finance-visual-form">
+        <div class="visual-preview" id="financeVisualPreview"></div>
+        <div class="mg3">
+          <div class="mf-row"><label>اسم الصنف</label><input class="mf-inp" id="fiName" value="${escx(row?.name||'ذهب')}" placeholder="مثلاً: سبائك BTC / جنيهات"></div>
+          <div class="mf-row"><label>اللون</label><input class="mf-inp" id="fiColor" type="color" value="${color}" oninput="refreshFinancePreview&&refreshFinancePreview()"></div>
+          <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="fiGoldIconV19" maxlength="2" value="${escx(financePickedIcon||'🥇')}" oninput="financePickedIcon=this.value;refreshFinancePreview&&refreshFinancePreview()"></div>
+          <div class="mf-row"><label>العيار الافتراضي للصنف</label><select class="mf-inp" id="fiGoldDefaultKaratV20">${karatOptions(defaultKarat)}</select></div>
+        </div>
+        <div class="gold-karat-tools-v20">
+          <button type="button" class="btn btn-ghost" onclick="applyDefaultKaratToLotsV20()">تطبيق العيار الافتراضي على كل العمليات</button>
+          <span>كل عملية شراء ممكن يكون لها عيار مختلف.</span>
+        </div>
+        <div class="gold-modal-summary-v19 gold-modal-summary-v20" id="goldModalSummaryV19"></div>
+        <div class="gold-lots-head-v19">
+          <h3>عمليات الشراء</h3>
+          <button type="button" class="add-task-row" onclick="addGoldLotRowV19()">+ عملية شراء</button>
+        </div>
+        <div id="goldLotsBoxV19">${(lots.length?lots:[{date:todayStr(),grams:0,price:0,karat:defaultKarat,note:''}]).map((l,i)=>goldLotRowHtmlV20(l,i,defaultKarat)).join('')}</div>
+        <div class="modal-actions">
+          <button class="btn btn-primary" onclick="saveFinanceItemModal()">حفظ</button>
+          <button class="btn btn-ghost" onclick="closeFinanceItemModal()">إلغاء</button>
+          ${id?`<button class="btn btn-danger" onclick="deleteGoldFromModalV19()">حذف الذهب</button>`:''}
+        </div>
+      </div>`;
+    document.getElementById('financeItemModal').classList.remove('hidden');
+    if(typeof refreshFinancePreview==='function')refreshFinancePreview();
+    updateGoldModalSummaryV20();
+  };
+
+  const oldSaveFinanceItemModalV20=window.saveFinanceItemModal;
+  window.saveFinanceItemModal=async function(){
+    if(financeModalKey!=='gold') return oldSaveFinanceItemModalV20();
+    const id=financeModalId||uid();
+    const isEdit=!!financeModalId;
+    const lots=readGoldLotsFromModalV20();
+    const totalG=lots.reduce((s,l)=>s+n(l.grams),0);
+    const cost=lots.reduce((s,l)=>s+n(l.grams)*n(l.price),0);
+    const pure=lots.reduce((s,l)=>s+n(l.grams)*(Number(l.karat||21)/24),0);
+    const patch={
+      id,user_id:OWNER,
+      name:document.getElementById('fiName')?.value.trim()||'ذهب',
+      color:document.getElementById('fiColor')?.value||'#fbbf24',
+      icon:document.getElementById('fiGoldIconV19')?.value.trim()||financePickedIcon||'🥇',
+      karat:Number(document.getElementById('fiGoldDefaultKaratV20')?.value||lots[0]?.karat||21),
+      lots,
+      grams:totalG,
+      pure_grams:pure,
+      total_cost:cost,
+      price_per_gram:totalG?cost/totalG:0
+    };
+    if(isEdit){
+      const row=(FIN.gold||[]).find(r=>r.id===id);
+      if(row)Object.assign(row,patch);
+    } else {
+      FIN.gold=FIN.gold||[];
+      FIN.gold.push(patch);
+    }
+    normalizeGoldRowsV20();
+    finSaveLocal(); markWrite('fin');
+    if(sb)try{
+      if(isEdit) await sb.from(FIN_TBL_MAP.gold).update(patch).eq('id',id);
+      else await sb.from(FIN_TBL_MAP.gold).insert(patch);
+    }catch(_){}
+    closeFinanceItemModal();
+    finRender();
+    toast(isEdit?'تم حفظ الذهب ✅':'تم إضافة الذهب ✅');
+  };
+
+  // Light theme text selection fix
+  const st=document.createElement('style');
+  st.id='selection-light-fix-v20-runtime';
+  st.textContent=`
+    body[data-theme="light"] ::selection{background:rgba(59,130,246,.28)!important;color:#0f172a!important;-webkit-text-fill-color:#0f172a!important}
+    body[data-theme="light"] input::selection,
+    body[data-theme="light"] textarea::selection,
+    body[data-theme="light"] .mf-inp::selection,
+    body[data-theme="light"] .fin-inp::selection{background:rgba(59,130,246,.32)!important;color:#0f172a!important;-webkit-text-fill-color:#0f172a!important}
+    body[data-theme="light"] .selected,
+    body[data-theme="light"] .is-selected,
+    body[data-theme="light"] .selecting{color:#0f172a!important;-webkit-text-fill-color:#0f172a!important}
+  `;
+  document.head.appendChild(st);
+
+  setTimeout(()=>{try{normalizeGoldRowsV20(); if(FIN?.tab==='gold')finRender();}catch(_){}} ,300);
+})();
+</script>
+<style id="gold-karat-theme-selection-v20-style">
+.gold-current-panel-v20 .gold-current-input-wrap-v20{gap:10px}
+.gold-karat-select-v20{border:0;border-radius:14px;background:var(--panel);color:var(--text);font-weight:900;padding:10px 12px;outline:none;min-width:100px}
+.gold-summary-v20{grid-template-columns:repeat(6,minmax(0,1fr))}
+.gold-karat-badge-v20{width:max-content;max-width:100%;padding:5px 10px;border-radius:999px;background:rgba(245,158,11,.14);color:#f59e0b;font-size:11px;font-weight:950;margin-top:8px}
+.gold-modal-summary-v20{grid-template-columns:repeat(3,1fr)}
+.gold-karat-tools-v20{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+.gold-karat-tools-v20 span{font-size:12px;color:var(--text-d);font-weight:800}
+.gold-lot-row-v20{grid-template-columns:1fr 1fr .85fr 1.1fr 1.2fr auto}
+body[data-theme="light"] ::selection{background:rgba(59,130,246,.28)!important;color:#0f172a!important;-webkit-text-fill-color:#0f172a!important}
+body[data-theme="light"] input::selection,
+body[data-theme="light"] textarea::selection{background:rgba(59,130,246,.32)!important;color:#0f172a!important;-webkit-text-fill-color:#0f172a!important}
+@media(max-width:1100px){.gold-summary-v20{grid-template-columns:repeat(3,1fr)}.gold-lot-row-v20{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.gold-summary-v20,.gold-modal-summary-v20{grid-template-columns:1fr}.gold-lot-row-v20{grid-template-columns:1fr}.gold-current-input-wrap-v20{align-items:stretch;flex-direction:column}.gold-karat-select-v20{width:100%}}
+</style>
+
+
+<script id="light-theme-text-contrast-final-v21">
+/* ===== V21: Strong light theme text contrast fix ===== */
+(function(){
+  function injectLightFixV21(){
+    if(document.getElementById('light-theme-text-contrast-final-v21-style')) return;
+    const st=document.createElement('style');
+    st.id='light-theme-text-contrast-final-v21-style';
+    st.textContent=`
+      /* Text selection */
+      body[data-theme="light"] ::selection{
+        background:rgba(37,99,235,.26)!important;
+        color:#0f172a!important;
+        -webkit-text-fill-color:#0f172a!important;
+      }
+      body[data-theme="light"] input::selection,
+      body[data-theme="light"] textarea::selection{
+        background:rgba(37,99,235,.30)!important;
+        color:#0f172a!important;
+        -webkit-text-fill-color:#0f172a!important;
+      }
+
+      /* Global light theme readable text */
+      body[data-theme="light"] .sidebar,
+      body[data-theme="light"] .main,
+      body[data-theme="light"] .module,
+      body[data-theme="light"] .modal-box,
+      body[data-theme="light"] .fin-table,
+      body[data-theme="light"] .fin-card,
+      body[data-theme="light"] .block-card,
+      body[data-theme="light"] .entity-card,
+      body[data-theme="light"] .goal-card,
+      body[data-theme="light"] .dyn-sub-card,
+      body[data-theme="light"] .dyn-item-card,
+      body[data-theme="light"] .dyn-plan-card,
+      body[data-theme="light"] .dyn-quick-card{
+        color:#0f172a!important;
+        -webkit-text-fill-color:initial!important;
+      }
+
+      /* Sidebar items: the exact issue in screenshot */
+      body[data-theme="light"] .nav-item,
+      body[data-theme="light"] .nav-item span,
+      body[data-theme="light"] .nav-item .nav-icon,
+      body[data-theme="light"] .bnav-item,
+      body[data-theme="light"] .bnav-item span,
+      body[data-theme="light"] .bnav-item .bnav-icon{
+        color:#334155!important;
+        -webkit-text-fill-color:#334155!important;
+        text-shadow:none!important;
+      }
+      body[data-theme="light"] .nav-item.active,
+      body[data-theme="light"] .nav-item.active span,
+      body[data-theme="light"] .nav-item.active .nav-icon,
+      body[data-theme="light"] .bnav-item.active,
+      body[data-theme="light"] .bnav-item.active span,
+      body[data-theme="light"] .bnav-item.active .bnav-icon{
+        color:#0f172a!important;
+        -webkit-text-fill-color:#0f172a!important;
+        font-weight:950!important;
+      }
+
+      /* If a nav item has gradient background, keep icon readable but not invisible */
+      body[data-theme="light"] .nav-item[style*="gradient"],
+      body[data-theme="light"] .bnav-item[style*="gradient"]{
+        color:#0f172a!important;
+      }
+
+      /* Dynamic section titles/cards */
+      body[data-theme="light"] .dyn-v14-wrap h1,
+      body[data-theme="light"] .dyn-v14-wrap h2,
+      body[data-theme="light"] .dyn-v14-wrap h3,
+      body[data-theme="light"] .dyn-v14-wrap h4,
+      body[data-theme="light"] .dyn-v14-wrap b,
+      body[data-theme="light"] .dyn-v14-wrap span:not(.dyn-v14-hero-icon):not(.dyn-sub-icon):not(.bnav-icon):not(.nav-icon),
+      body[data-theme="light"] .dyn-v14-wrap p,
+      body[data-theme="light"] .dyn-v14-wrap small,
+      body[data-theme="light"] .dyn-page-wrap h1,
+      body[data-theme="light"] .dyn-page-wrap h2,
+      body[data-theme="light"] .dyn-page-wrap h3,
+      body[data-theme="light"] .dyn-page-wrap b,
+      body[data-theme="light"] .dyn-page-wrap span,
+      body[data-theme="light"] .dyn-page-wrap p,
+      body[data-theme="light"] .dyn-page-wrap small{
+        color:#0f172a!important;
+        -webkit-text-fill-color:#0f172a!important;
+        text-shadow:none!important;
+      }
+
+      /* Keep text white only on clear dark/gradient hero buttons */
+      body[data-theme="light"] .add-btn,
+      body[data-theme="light"] .btn-primary,
+      body[data-theme="light"] .dyn-v14-hero,
+      body[data-theme="light"] .dyn-v14-hero *,
+      body[data-theme="light"] .dyn-page-hero,
+      body[data-theme="light"] .dyn-page-hero *,
+      body[data-theme="light"] .mega-v17-hero,
+      body[data-theme="light"] .mega-v17-hero *,
+      body[data-theme="light"] .sys-admin-hero,
+      body[data-theme="light"] .sys-admin-hero *{
+        color:#fff!important;
+        -webkit-text-fill-color:#fff!important;
+      }
+
+      /* But secondary buttons inside light cards must be dark */
+      body[data-theme="light"] .btn-ghost,
+      body[data-theme="light"] .block-mini-btn,
+      body[data-theme="light"] .gold-edit-btn-v19,
+      body[data-theme="light"] .section-chip,
+      body[data-theme="light"] .vt-btn,
+      body[data-theme="light"] .vt-day,
+      body[data-theme="light"] .work-tab,
+      body[data-theme="light"] .fin-nav-item,
+      body[data-theme="light"] .add-task-row{
+        color:#0f172a!important;
+        -webkit-text-fill-color:#0f172a!important;
+        text-shadow:none!important;
+      }
+
+      /* Inputs/selects in light theme */
+      body[data-theme="light"] input,
+      body[data-theme="light"] textarea,
+      body[data-theme="light"] select,
+      body[data-theme="light"] .mf-inp,
+      body[data-theme="light"] .fin-inp,
+      body[data-theme="light"] .work-search,
+      body[data-theme="light"] .work-filter{
+        color:#0f172a!important;
+        -webkit-text-fill-color:#0f172a!important;
+        caret-color:#2563eb!important;
+      }
+      body[data-theme="light"] input::placeholder,
+      body[data-theme="light"] textarea::placeholder{
+        color:#64748b!important;
+        -webkit-text-fill-color:#64748b!important;
+        opacity:1!important;
+      }
+
+      /* Prevent accidental white text inside bordered light boxes */
+      body[data-theme="light"] [class*="card"]:not(.dash-hero-card):not(.hub-quick-card),
+      body[data-theme="light"] [class*="row"],
+      body[data-theme="light"] [class*="panel"]:not(.dyn-v14-hero):not(.dyn-page-hero),
+      body[data-theme="light"] [class*="item"]{
+        text-shadow:none!important;
+      }
+      body[data-theme="light"] [class*="card"]:not(.dash-hero-card):not(.hub-quick-card) *:not(.add-btn):not(.btn-primary),
+      body[data-theme="light"] [class*="row"] *:not(.add-btn):not(.btn-primary),
+      body[data-theme="light"] [class*="panel"]:not(.dyn-v14-hero):not(.dyn-page-hero) *:not(.add-btn):not(.btn-primary){
+        -webkit-text-fill-color:initial;
+      }
+
+      /* Specific fallback for dynamic nav buttons that were white */
+      body[data-theme="light"] [data-dyn-nav-v13],
+      body[data-theme="light"] [data-dyn-nav-v14],
+      body[data-theme="light"] [data-dyn-nav-v18],
+      body[data-theme="light"] [data-dyn-nav-v13] *,
+      body[data-theme="light"] [data-dyn-nav-v14] *,
+      body[data-theme="light"] [data-dyn-nav-v18] *{
+        color:#1e293b!important;
+        -webkit-text-fill-color:#1e293b!important;
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  function forceReadableLightTextV21(){
+    if(!document.body.matches('[data-theme="light"]')) return;
+    const selectors=[
+      '.nav-item span:not(.nav-icon)',
+      '.bnav-item span:not(.bnav-icon)',
+      '[data-dyn-nav-v13] span',
+      '[data-dyn-nav-v14] span',
+      '[data-dyn-nav-v18] span',
+      '.dyn-sub-card h3',
+      '.dyn-sub-card p',
+      '.dyn-sub-card b',
+      '.dyn-sub-card span',
+      '.dyn-item-card b',
+      '.dyn-item-card span',
+      '.dyn-plan-card h3',
+      '.dyn-plan-card b',
+      '.section-chip',
+      '.vt-btn',
+      '.add-task-row'
+    ];
+    document.querySelectorAll(selectors.join(',')).forEach(el=>{
+      if(el.closest('.dyn-v14-hero,.dyn-page-hero,.mega-v17-hero,.sys-admin-hero')) return;
+      el.style.color='#0f172a';
+      el.style.webkitTextFillColor='#0f172a';
+      el.style.textShadow='none';
+    });
+  }
+
+  injectLightFixV21();
+  const oldApplyTheme=window.applyTheme;
+  if(oldApplyTheme && !oldApplyTheme.__lightFixV21){
+    const fn=function(){
+      oldApplyTheme();
+      injectLightFixV21();
+      setTimeout(forceReadableLightTextV21,80);
+      setTimeout(forceReadableLightTextV21,400);
+    };
+    fn.__lightFixV21=true;
+    window.applyTheme=fn;
+  }
+
+  const oldRenderDyn14=window.renderDynamicShellV14;
+  if(oldRenderDyn14 && !oldRenderDyn14.__lightFixV21){
+    const fn=function(){
+      oldRenderDyn14();
+      setTimeout(forceReadableLightTextV21,80);
+    };
+    fn.__lightFixV21=true;
+    window.renderDynamicShellV14=fn;
+  }
+
+  const oldRenderDyn18=window.renderDynamicShellV18;
+  if(oldRenderDyn18 && !oldRenderDyn18.__lightFixV21){
+    const fn=function(){
+      oldRenderDyn18();
+      setTimeout(forceReadableLightTextV21,80);
+    };
+    fn.__lightFixV21=true;
+    window.renderDynamicShellV18=fn;
+  }
+
+  ['renderDay','renderWork','renderFin','renderGoals','renderHub'].forEach(name=>{
+    const old=window[name];
+    if(old && !old.__lightFixV21){
+      const fn=function(...args){
+        const r=old.apply(this,args);
+        setTimeout(forceReadableLightTextV21,80);
+        return r;
+      };
+      fn.__lightFixV21=true;
+      window[name]=fn;
+    }
+  });
+
+  setTimeout(forceReadableLightTextV21,300);
+  setInterval(forceReadableLightTextV21,1500);
+})();
+</script>
+
 </body>
 </html>
