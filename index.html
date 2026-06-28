@@ -6340,5 +6340,1929 @@ body[data-theme="light"] #mod-finance .gold-current-panel-v19{
 }
 </style>
 
+
+<style id="dynamic-flex-sections-v28-style">
+body[data-dyn-stabilizing="1"] [data-dyn-nav-v13],
+body[data-dyn-stabilizing="1"] [data-dyn-nav-v14],
+body[data-dyn-stabilizing="1"] [data-dyn-nav-v18],
+body[data-dyn-stabilizing="1"] [data-dyn-nav-v28],
+body[data-dyn-stabilizing="1"] [data-dyn-module-v13],
+body[data-dyn-stabilizing="1"] [data-dyn-module-v14],
+body[data-dyn-stabilizing="1"] [data-dyn-module-v18],
+body[data-dyn-stabilizing="1"] [data-dyn-module-v28]{visibility:hidden!important}
+
+.flex-section-type-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.22);font-size:11px;font-weight:950}
+.flex-board-v28{padding:24px}
+.flex-toolbar-v28{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.flex-toolbar-actions-v28{display:flex;gap:8px;flex-wrap:wrap}
+.flex-stats-v28{display:flex;gap:8px;flex-wrap:wrap}
+.flex-stats-v28 span{padding:9px 12px;border-radius:999px;background:var(--panel2);font-size:12px;font-weight:900;color:var(--text-m)}
+.flex-grid-v28{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.flex-list-v28{display:flex;flex-direction:column;gap:10px}
+.flex-card-v28{position:relative;overflow:hidden;border-radius:26px;padding:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--flex-color,#6366f1) 15%,var(--panel2)),color-mix(in srgb,var(--panel) 88%,transparent));border:1px solid color-mix(in srgb,var(--flex-color,#6366f1) 28%,transparent);box-shadow:var(--shadow-sm)}
+.flex-card-v28 h3{font-size:20px;margin-bottom:6px}.flex-card-v28 p{font-size:13px;line-height:1.7;color:var(--text-m);white-space:pre-wrap}
+.flex-card-head-v28{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.flex-card-icon-v28{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--flex-color,#6366f1),color-mix(in srgb,var(--flex-color,#6366f1) 55%,#111827));font-size:22px;flex:0 0 auto}
+.flex-card-title-v28{display:flex;gap:10px;align-items:center;flex:1}
+.flex-actions-v28{display:flex;gap:6px;flex-wrap:wrap}
+.flex-actions-v28 button,.flex-mini-btn-v28{border:0;border-radius:12px;padding:8px 10px;background:var(--panel2);color:var(--text);font-weight:900;cursor:pointer}
+.flex-tags-v28{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.flex-tags-v28 span{padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.22);font-size:11px;font-weight:850;color:var(--text-m)}
+.flex-note-card-v28{min-height:160px}
+.flex-note-content-v28{max-height:170px;overflow:auto}
+.flex-event-card-v28 .event-date-v28{font-size:28px;font-weight:950;color:var(--flex-color,#6366f1);line-height:1}
+.flex-list-item-v28{display:flex;align-items:flex-start;gap:10px}
+.flex-list-item-v28 input[type=checkbox]{width:20px;height:20px;accent-color:var(--flex-color,#6366f1);margin-top:4px}
+.flex-fin-total-v28{font-size:30px;font-weight:950;color:var(--flex-color,#6366f1);direction:ltr}
+.flex-editor-grid-v28{display:grid;grid-template-columns:2fr .8fr .8fr 1fr;gap:10px}
+.flex-editor-grid-v28.cols-3{grid-template-columns:2fr 1fr 1fr}
+.plan-editor-v28{max-height:76vh;overflow:auto;padding-left:4px}
+.plan-tabs-v28{display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;z-index:6;background:var(--bg2);padding:8px;border-radius:18px;margin-bottom:14px}
+.plan-tabs-v28 button{border:0;border-radius:14px;padding:10px 13px;background:var(--panel2);color:var(--text);font-weight:900;cursor:pointer}
+.plan-tabs-v28 button.active{background:linear-gradient(135deg,#5b7cff,#8b5cf6);color:#fff}
+.plan-pane-v28{display:none}.plan-pane-v28.active{display:block}
+.weekday-row-v28{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.weekday-chip-v28{padding:8px 10px;border-radius:999px;background:var(--panel2);font-size:12px;font-weight:900;cursor:pointer}
+.weekday-chip-v28 input{display:none}
+.weekday-chip-v28:has(input:checked){background:linear-gradient(135deg,#5b7cff,#8b5cf6);color:#fff}
+.plan-day-row-v28{display:grid;grid-template-columns:130px 1.4fr 95px 95px 130px 1fr auto;gap:8px;align-items:end;padding:10px;border-radius:18px;background:var(--panel);border:1px solid var(--border);margin-bottom:8px}
+.plan-day-row-v28 .details{grid-column:1 / -1}
+.plan-day-row-v28 textarea{min-height:56px}
+.plan-day-row-v28 button{border:0;border-radius:12px;background:rgba(239,68,68,.16);color:#ef4444;font-weight:950;padding:8px 10px;cursor:pointer}
+.flex-empty-v28{padding:28px;border-radius:24px;background:var(--panel);text-align:center;color:var(--text-m);font-weight:900}
+@media(max-width:900px){.flex-editor-grid-v28,.flex-editor-grid-v28.cols-3,.plan-day-row-v28{grid-template-columns:1fr}.flex-grid-v28{grid-template-columns:1fr}.flex-toolbar-v28{align-items:flex-start;flex-direction:column}}
+</style>
+
+<script id="dynamic-flex-sections-v28">
+/* ===== V28: stable dynamic nav + flexible section types + easier plan editor/sync ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+  const VIEW_KEY='ms_view_preferences_v14';
+  const WD=[['6','سبت'],['0','أحد'],['1','إثنين'],['2','ثلاثاء'],['3','أربعاء'],['4','خميس'],['5','جمعة']];
+  let planCtxV28=null, planDaysV28=[];
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function save(k,v){localStorage.setItem(k,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud()}
+  function esc(s){return (typeof window.esc==='function'?window.esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function uid(){return 'v28_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function today(){return (typeof dateKey==='function'?dateKey(new Date()):new Date().toISOString().slice(0,10))}
+  function addDays(date,n){const d=new Date((date||today())+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+  function n(v){return +v||0}
+  function dynSections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function setDynSections(v){save(DYN_KEY,v)}
+  function views(){return parse(localStorage.getItem(VIEW_KEY),{})||{}}
+  function setView(key,val){const v=views();v[key]=val;save(VIEW_KEY,v)}
+  function viewOf(key,def='grid'){return views()[key]||def}
+  function cleanName(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/[ًٌٍَُِّْ]/g,'').toLowerCase()}
+  function minOf(t){if(!t)return null; const [h,m]=String(t).slice(0,5).split(':').map(Number); if(!Number.isFinite(h))return null; return h*60+(Number.isFinite(m)?m:0)}
+  function overlap(s1,e1,s2,e2){if(s1==null||s2==null)return false; if(e1==null)e1=s1+60; if(e2==null)e2=s2+60; return s1<e2 && e1>s2}
+  function fmtMoney(v){return (typeof fmtEGP==='function'?fmtEGP(v):((+v||0).toLocaleString('en-US')+' EGP'))}
+  function typeLabel(t){return {plans:'خطط وعناصر',notes:'ملاحظات',calendar:'كالندر ومواعيد',list:'قائمة مرنة',finance:'ثروتي مخصص',dashboard:'داشبورد حر'}[t||'plans']||'مرن'}
+  function typeIcon(t){return {plans:'📋',notes:'📝',calendar:'📆',list:'✅',finance:'💰',dashboard:'📊'}[t||'plans']||'🧩'}
+  function normSec(s){
+    s.type=s.type||'plans';
+    s.subsections=Array.isArray(s.subsections)?s.subsections:[];
+    s.items=Array.isArray(s.items)?s.items:[];
+    s.notes=Array.isArray(s.notes)?s.notes:[];
+    s.events=Array.isArray(s.events)?s.events:[];
+    s.finItems=Array.isArray(s.finItems)?s.finItems:[];
+    s.cards=Array.isArray(s.cards)?s.cards:[];
+    s.subsections.forEach(ss=>{ss.items=Array.isArray(ss.items)?ss.items:[];ss.plans=Array.isArray(ss.plans)?ss.plans:[]});
+    return s;
+  }
+  function mergeSections(list){
+    const map=new Map(); let merged=0;
+    list.map(normSec).forEach(sec=>{
+      const k=cleanName(sec.name);
+      if(!k)return;
+      if(!map.has(k)){map.set(k,sec);return;}
+      const a=map.get(k); merged++;
+      a.items=[...(a.items||[]),...(sec.items||[])];
+      a.notes=[...(a.notes||[]),...(sec.notes||[])];
+      a.events=[...(a.events||[]),...(sec.events||[])];
+      a.finItems=[...(a.finItems||[]),...(sec.finItems||[])];
+      a.cards=[...(a.cards||[]),...(sec.cards||[])];
+      if((a.type||'plans')==='plans' && sec.type && sec.type!=='plans') a.type=sec.type;
+      const subMap=new Map((a.subsections||[]).map(s=>[cleanName(s.name),s]));
+      (sec.subsections||[]).forEach(s=>{
+        const kk=cleanName(s.name);
+        if(subMap.has(kk)){
+          const old=subMap.get(kk);
+          old.items=[...(old.items||[]),...(s.items||[])];
+          old.plans=[...(old.plans||[]),...(s.plans||[])];
+        } else subMap.set(kk,s);
+      });
+      a.subsections=[...subMap.values()];
+    });
+    const out=[...map.values()];
+    if(merged || out.length!==list.length) setDynSections(out);
+    return out;
+  }
+  function getSections(){return mergeSections(dynSections())}
+  function saveSections(list){setDynSections(list.map(normSec))}
+  function findSec(secId){const list=getSections(); return {list,sec:list.find(s=>s.id===secId)}}
+  function findSub(secId,subId){const {list,sec}=findSec(secId); return {list,sec,sub:sec?.subsections?.find(s=>s.id===subId)}}
+
+  function cleanupDynDom(){
+    const seen=new Set();
+    document.querySelectorAll('[data-dyn-nav-v13],[data-dyn-nav-v14],[data-dyn-nav-v18],[data-dyn-nav-v28]').forEach(el=>{
+      const scope=el.classList.contains('bnav-item')?'b:':'s:';
+      const key=scope+(el.dataset.mod||'');
+      if(seen.has(key)) el.remove(); else seen.add(key);
+    });
+    const seenM=new Set();
+    document.querySelectorAll('[data-dyn-module-v13],[data-dyn-module-v14],[data-dyn-module-v18],[data-dyn-module-v28]').forEach(el=>{
+      const key=el.id;
+      if(seenM.has(key)) el.remove(); else seenM.add(key);
+    });
+  }
+
+  function renderShell(){
+    document.body.setAttribute('data-dyn-stabilizing','1');
+    const main=document.querySelector('main.main'), nav=document.querySelector('.sidebar .nav-items'), bottom=document.getElementById('bottomNav');
+    if(!main||!nav)return;
+    document.querySelectorAll('[data-dyn-nav-v13],[data-dyn-nav-v14],[data-dyn-nav-v18],[data-dyn-nav-v28],[data-dyn-module-v13],[data-dyn-module-v14],[data-dyn-module-v18],[data-dyn-module-v28]').forEach(x=>x.remove());
+    const sections=getSections();
+    sections.forEach(sec=>{
+      const mod='dyn_'+sec.id;
+      const ni=document.createElement('div');
+      ni.className='nav-item'; ni.dataset.mod=mod; ni.dataset.dynNavV28='1';
+      ni.onclick=()=>go(mod);
+      ni.innerHTML=`<span class="nav-icon">${esc(sec.icon||typeIcon(sec.type))}</span><span>${esc(sec.name||'قسم')}</span>`;
+      nav.appendChild(ni);
+      if(bottom){
+        const bi=document.createElement('div');
+        bi.className='bnav-item'; bi.dataset.mod=mod; bi.dataset.dynNavV28='1';
+        bi.onclick=()=>go(mod);
+        bi.innerHTML=`<span class="bnav-icon">${esc(sec.icon||typeIcon(sec.type))}</span><span>${esc(sec.name||'قسم')}</span>`;
+        bottom.appendChild(bi);
+      }
+      const m=document.createElement('section');
+      m.id='mod-'+mod; m.className='module'; m.dataset.dynModuleV28='1';
+      m.innerHTML=`<div class="dyn-v14-wrap">
+        <div class="dyn-v14-hero" style="--dyn-color:${sec.color||'#6366f1'}">
+          <div class="dyn-v14-hero-icon">${esc(sec.icon||typeIcon(sec.type))}</div>
+          <div class="dyn-v14-hero-text"><h2>${esc(sec.name||'قسم')}</h2><p>${esc(sec.desc||'قسم مرن قابل للتخصيص حسب نوعه.')}</p><div class="flex-section-type-badge">${typeIcon(sec.type)} ${typeLabel(sec.type)}</div></div>
+          <div class="dyn-v14-hero-actions">
+            ${heroActions(sec)}
+            <button class="add-btn pink" onclick="openDynSectionEditor('${sec.id}')">⚙️ تعديل القسم</button>
+          </div>
+        </div>
+        <div id="dynV28Board_${sec.id}" class="flex-board-v28"></div>
+      </div>`;
+      main.appendChild(m);
+    });
+    cleanupDynDom();
+    setTimeout(()=>document.body.removeAttribute('data-dyn-stabilizing'),320);
+  }
+  function heroActions(sec){
+    const id=sec.id;
+    if(sec.type==='notes')return `<button class="add-btn teal" onclick="openNoteEditorV28('${id}')">+ ملاحظة</button>`;
+    if(sec.type==='calendar')return `<button class="add-btn teal" onclick="openEventEditorV28('${id}')">+ موعد</button>`;
+    if(sec.type==='list')return `<button class="add-btn teal" onclick="openListItemEditorV28('${id}')">+ عنصر</button>`;
+    if(sec.type==='finance')return `<button class="add-btn teal" onclick="openFlexFinanceEditorV28('${id}')">+ عملية</button>`;
+    if(sec.type==='dashboard')return `<button class="add-btn teal" onclick="openDashboardCardEditorV28('${id}')">+ كارت</button>`;
+    return `<button class="add-btn teal" onclick="openSubsectionEditorV14('${id}')">+ قسم فرعي</button><button class="add-btn" onclick="openQuickItemEditorV14('${id}',null,null)">+ عنصر سريع</button>`;
+  }
+
+  function toolbar(sec, extra=''){
+    const v=viewOf('section:'+sec.id,'grid');
+    return `<div class="flex-toolbar-v28"><div class="flex-stats-v28">${extra}</div><div class="view-toggle dyn-view-toggle"><div class="vt-btn ${v==='grid'?'active':''}" onclick="setFlexViewV28('${sec.id}','grid')">Grid</div><div class="vt-btn ${v==='list'?'active':''}" onclick="setFlexViewV28('${sec.id}','list')">List</div><div class="vt-btn ${v==='board'?'active':''}" onclick="setFlexViewV28('${sec.id}','board')">Board</div></div></div>`;
+  }
+  window.setFlexViewV28=function(secId,val){setView('section:'+secId,val); renderDynamicBoardV28(secId)}
+  function layoutClass(sec){return viewOf('section:'+sec.id,'grid')==='list'?'flex-list-v28':'flex-grid-v28'}
+
+  window.renderDynamicBoardV28=function(secId){
+    const sec=getSections().find(s=>s.id===secId); if(!sec)return;
+    const board=document.getElementById('dynV28Board_'+secId) || document.getElementById('dynV14Board_'+secId); if(!board)return;
+    const type=sec.type||'plans';
+    if(type==='notes') return renderNotes(sec,board);
+    if(type==='calendar') return renderCalendar(sec,board);
+    if(type==='list') return renderList(sec,board);
+    if(type==='finance') return renderFlexFinance(sec,board);
+    if(type==='dashboard') return renderDashboard(sec,board);
+    if(typeof window.__oldRenderDynamicBoardV14_V28==='function') return window.__oldRenderDynamicBoardV14_V28(secId);
+    return renderPlansLite(sec,board);
+  }
+  window.renderDynamicBoard=window.renderDynamicBoardV28;
+
+  function renderNotes(sec,board){
+    board.innerHTML=toolbar(sec,`<span><b>${sec.notes.length}</b> ملاحظات</span>`)+`<div class="${layoutClass(sec)}">${sec.notes.map((x,i)=>`<div class="flex-card-v28 flex-note-card-v28" style="--flex-color:${x.color||sec.color||'#6366f1'}"><div class="flex-card-head-v28"><div class="flex-card-title-v28"><div class="flex-card-icon-v28">${esc(x.icon||'📝')}</div><div><h3>${esc(x.title||'ملاحظة')}</h3><div class="flex-tags-v28"><span>${esc(x.date||'بدون تاريخ')}</span>${x.tag?`<span>${esc(x.tag)}</span>`:''}</div></div></div><div class="flex-actions-v28"><button onclick="openNoteEditorV28('${sec.id}',${i})">تعديل</button></div></div><p class="flex-note-content-v28">${esc(x.content||'')}</p></div>`).join('')||`<div class="flex-empty-v28">اضف أول ملاحظة كتابة فقط</div>`}</div>`;
+  }
+  function renderCalendar(sec,board){
+    const sorted=[...(sec.events||[])].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+    board.innerHTML=toolbar(sec,`<span><b>${sorted.length}</b> مواعيد</span><span><b>${sorted.filter(e=>e.link_day).length}</b> مربوط بيومي</span>`)+`<div class="${layoutClass(sec)}">${sorted.map((e,i)=>`<div class="flex-card-v28 flex-event-card-v28" style="--flex-color:${e.color||sec.color||'#6366f1'}"><div class="flex-card-head-v28"><div><div class="event-date-v28">${esc(e.date||'بدون تاريخ')}</div><h3>${esc(e.title||'موعد')}</h3></div><div class="flex-actions-v28"><button onclick="openEventEditorV28('${sec.id}',${i})">تعديل</button></div></div><p>${esc(e.desc||'')}</p><div class="flex-tags-v28"><span>⏱ ${esc(e.start||'بدون وقت')}${e.end?' → '+esc(e.end):''}</span>${e.location?`<span>📍 ${esc(e.location)}</span>`:''}${e.link_day?'<span>🔗 يومي</span>':''}</div></div>`).join('')||`<div class="flex-empty-v28">اضف موعد أو حدث في الكالندر</div>`}</div>`;
+  }
+  function renderList(sec,board){
+    board.innerHTML=toolbar(sec,`<span><b>${sec.items.length}</b> عناصر</span><span><b>${sec.items.filter(x=>x.done).length}</b> مكتمل</span>`)+`<div class="${layoutClass(sec)}">${sec.items.map((it,i)=>`<div class="flex-card-v28" style="--flex-color:${it.color||sec.color||'#6366f1'}"><div class="flex-list-item-v28"><input type="checkbox" ${it.done?'checked':''} onchange="toggleFlexListItemV28('${sec.id}',${i},this.checked)"><div><h3>${esc(it.icon||'✅')} ${esc(it.title||'عنصر')}</h3><p>${esc(it.desc||'')}</p><div class="flex-tags-v28">${it.deadline?`<span>🏁 ${it.deadline}</span>`:''}${it.date?`<span>📅 ${it.date}</span>`:''}</div></div><div class="flex-actions-v28"><button onclick="openListItemEditorV28('${sec.id}',${i})">تعديل</button></div></div></div>`).join('')||`<div class="flex-empty-v28">اضف عنصر لقائمتك المرنة</div>`}</div>`;
+  }
+  function renderFlexFinance(sec,board){
+    const total=(sec.finItems||[]).reduce((s,x)=>s+n(x.amount)*(x.type==='out'?-1:1),0);
+    board.innerHTML=toolbar(sec,`<span><b>${fmtMoney(total)}</b> الصافي</span><span><b>${sec.finItems.length}</b> عمليات</span>`)+`<div class="${layoutClass(sec)}">${sec.finItems.map((x,i)=>`<div class="flex-card-v28" style="--flex-color:${x.color||sec.color||'#10b981'}"><div class="flex-card-head-v28"><div class="flex-card-title-v28"><div class="flex-card-icon-v28">${esc(x.icon||'💰')}</div><div><h3>${esc(x.title||'عملية')}</h3><div class="flex-fin-total-v28">${x.type==='out'?'-':'+'}${fmtMoney(x.amount)}</div></div></div><div class="flex-actions-v28"><button onclick="openFlexFinanceEditorV28('${sec.id}',${i})">تعديل</button></div></div><p>${esc(x.note||'')}</p><div class="flex-tags-v28"><span>${x.type==='out'?'مصروف':'دخل/أصل'}</span>${x.date?`<span>${x.date}</span>`:''}</div></div>`).join('')||`<div class="flex-empty-v28">اضف عمليات مالية مخصصة</div>`}</div>`;
+  }
+  function renderDashboard(sec,board){
+    board.innerHTML=toolbar(sec,`<span><b>${sec.cards.length}</b> كروت</span>`)+`<div class="${layoutClass(sec)}">${sec.cards.map((c,i)=>`<div class="flex-card-v28" style="--flex-color:${c.color||sec.color||'#6366f1'}"><div class="flex-card-head-v28"><div class="flex-card-title-v28"><div class="flex-card-icon-v28">${esc(c.icon||'📊')}</div><div><h3>${esc(c.title||'كارت')}</h3><div class="flex-fin-total-v28">${esc(c.value||'')}</div></div></div><div class="flex-actions-v28"><button onclick="openDashboardCardEditorV28('${sec.id}',${i})">تعديل</button></div></div><p>${esc(c.desc||'')}</p></div>`).join('')||`<div class="flex-empty-v28">اضف كروت داشبورد حرة</div>`}</div>`;
+  }
+  function renderPlansLite(sec,board){
+    board.innerHTML=toolbar(sec,`<span><b>${sec.subsections.length}</b> أقسام فرعية</span><span><b>${sec.subsections.reduce((a,s)=>a+(s.plans||[]).length,0)}</b> خطط</span>`)+`<div class="flex-grid-v28">${sec.subsections.map(sub=>`<div class="flex-card-v28" style="--flex-color:${sub.color||sec.color||'#6366f1'}"><div class="flex-card-head-v28"><div class="flex-card-title-v28"><div class="flex-card-icon-v28">${esc(sub.icon||'🧩')}</div><div><h3>${esc(sub.name)}</h3><p>${esc(sub.desc||'')}</p><div class="flex-tags-v28"><span>${(sub.plans||[]).length} خطط</span><span>${(sub.items||[]).length} عناصر</span></div></div></div><div class="flex-actions-v28"><button onclick="renderSubsectionDetailV14('${sec.id}','${sub.id}')">فتح</button><button onclick="openSubsectionEditorV14('${sec.id}','${sub.id}')">تعديل</button></div></div></div>`).join('')||`<div class="flex-empty-v28">اضف قسم فرعي أو خطة</div>`}</div>`;
+  }
+
+  window.openDynSectionEditor=function(id=''){
+    const {list,sec}=findSec(id);
+    const title=document.getElementById('systemSectionsModalTitle'), body=document.getElementById('systemSectionsModalBody');
+    title.textContent=sec?'تعديل قسم رئيسي مرن':'قسم رئيسي جديد مرن';
+    body.innerHTML=`<div class="flex-editor-grid-v28">
+      <div class="mf-row"><label>اسم القسم *</label><input class="mf-inp" id="dsName" value="${esc(sec?.name||'')}" placeholder="مثلاً: ملاحظاتي / كالندر / مواعيد التمرين"></div>
+      <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="dsIcon" maxlength="2" value="${esc(sec?.icon||typeIcon(sec?.type||'plans'))}"></div>
+      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="dsColor" type="color" value="${sec?.color||'#6366f1'}"></div>
+      <div class="mf-row"><label>نوع القسم</label><select class="mf-inp" id="dsType">
+        <option value="plans" ${(sec?.type||'plans')==='plans'?'selected':''}>خطط / أقسام فرعية</option>
+        <option value="notes" ${sec?.type==='notes'?'selected':''}>ملاحظات كتابة فقط</option>
+        <option value="calendar" ${sec?.type==='calendar'?'selected':''}>كالندر / مواعيد</option>
+        <option value="list" ${sec?.type==='list'?'selected':''}>قائمة مرنة Checklist</option>
+        <option value="finance" ${sec?.type==='finance'?'selected':''}>ثروتي مخصص</option>
+        <option value="dashboard" ${sec?.type==='dashboard'?'selected':''}>داشبورد حر</option>
+      </select></div>
+    </div>
+    <div class="mf-row"><label>وصف القسم</label><textarea class="mf-inp" id="dsDesc">${esc(sec?.desc||'')}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="saveDynSectionV28('${id||''}')">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button>${sec?`<button class="btn btn-danger" onclick="deleteDynSection('${sec.id}')">حذف القسم</button>`:''}</div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+  window.saveDynSectionV28=function(id=''){
+    const name=document.getElementById('dsName').value.trim(); if(!name)return toast('اكتب اسم القسم');
+    const list=getSections();
+    const old=id?list.find(x=>x.id===id):null;
+    const obj={...(old||{}),id:id||uid(),name,icon:document.getElementById('dsIcon').value||typeIcon(document.getElementById('dsType').value),color:document.getElementById('dsColor').value||'#6366f1',type:document.getElementById('dsType').value,desc:document.getElementById('dsDesc').value.trim()};
+    normSec(obj);
+    const ix=list.findIndex(x=>x.id===obj.id); if(ix>=0)list[ix]=obj; else list.push(obj);
+    saveSections(list); renderShell(); closeSystemSectionsModal(); toast('تم حفظ القسم ✅'); go('dyn_'+obj.id);
+  }
+
+  function openSimpleEditor(secId,kind,index=null){
+    const {list,sec}=findSec(secId); if(!sec)return;
+    const arr=kind==='notes'?sec.notes:kind==='calendar'?sec.events:kind==='finance'?sec.finItems:kind==='dashboard'?sec.cards:sec.items;
+    const x=index!==null?arr[index]:null;
+    const title=document.getElementById('systemSectionsModalTitle'), body=document.getElementById('systemSectionsModalBody');
+    const labels={notes:'ملاحظة',calendar:'موعد',list:'عنصر',finance:'عملية مالية',dashboard:'كارت داشبورد'};
+    title.textContent=(x?'تعديل ':'إضافة ')+labels[kind];
+    let html='';
+    if(kind==='notes') html=`<div class="flex-editor-grid-v28 cols-3"><div class="mf-row"><label>العنوان</label><input class="mf-inp" id="fxTitle" value="${esc(x?.title||'')}"></div><div class="mf-row"><label>التاريخ</label><input class="mf-inp" id="fxDate" type="date" value="${x?.date||today()}"></div><div class="mf-row"><label>Tag</label><input class="mf-inp" id="fxTag" value="${esc(x?.tag||'')}"></div></div><div class="mf-row"><label>الملاحظة</label><textarea class="mf-inp" id="fxContent" style="min-height:220px">${esc(x?.content||'')}</textarea></div>`;
+    if(kind==='calendar') html=`<div class="flex-editor-grid-v28"><div class="mf-row"><label>العنوان</label><input class="mf-inp" id="fxTitle" value="${esc(x?.title||'')}"></div><div class="mf-row"><label>التاريخ</label><input class="mf-inp" id="fxDate" type="date" value="${x?.date||today()}"></div><div class="mf-row"><label>من</label><input class="mf-inp" id="fxStart" type="time" value="${x?.start||''}"></div><div class="mf-row"><label>إلى</label><input class="mf-inp" id="fxEnd" type="time" value="${x?.end||''}"></div></div><div class="mf-row"><label>المكان</label><input class="mf-inp" id="fxLocation" value="${esc(x?.location||'')}"></div><div class="mf-row"><label>تفاصيل</label><textarea class="mf-inp" id="fxDesc">${esc(x?.desc||'')}</textarea></div><label class="switch-line"><input type="checkbox" id="fxLinkDay" ${x?.link_day?'checked':''}> يسمع في يومي</label>`;
+    if(kind==='list') html=`<div class="flex-editor-grid-v28"><div class="mf-row"><label>العنوان</label><input class="mf-inp" id="fxTitle" value="${esc(x?.title||'')}"></div><div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="fxIcon" maxlength="2" value="${esc(x?.icon||'✅')}"></div><div class="mf-row"><label>Deadline</label><input class="mf-inp" id="fxDeadline" type="date" value="${x?.deadline||''}"></div><div class="mf-row"><label>لون</label><input class="mf-inp" id="fxColor" type="color" value="${x?.color||sec.color||'#6366f1'}"></div></div><div class="mf-row"><label>تفاصيل</label><textarea class="mf-inp" id="fxDesc">${esc(x?.desc||'')}</textarea></div><label class="switch-line"><input type="checkbox" id="fxDone" ${x?.done?'checked':''}> مكتمل</label>`;
+    if(kind==='finance') html=`<div class="flex-editor-grid-v28"><div class="mf-row"><label>الاسم</label><input class="mf-inp" id="fxTitle" value="${esc(x?.title||'')}"></div><div class="mf-row"><label>القيمة</label><input class="mf-inp" id="fxAmount" type="number" value="${n(x?.amount)||''}"></div><div class="mf-row"><label>النوع</label><select class="mf-inp" id="fxType"><option value="in" ${x?.type!=='out'?'selected':''}>دخل / أصل</option><option value="out" ${x?.type==='out'?'selected':''}>مصروف / التزام</option></select></div><div class="mf-row"><label>لون</label><input class="mf-inp" id="fxColor" type="color" value="${x?.color||sec.color||'#10b981'}"></div></div><div class="mf-row"><label>ملاحظة</label><textarea class="mf-inp" id="fxNote">${esc(x?.note||'')}</textarea></div>`;
+    if(kind==='dashboard') html=`<div class="flex-editor-grid-v28"><div class="mf-row"><label>العنوان</label><input class="mf-inp" id="fxTitle" value="${esc(x?.title||'')}"></div><div class="mf-row"><label>القيمة</label><input class="mf-inp" id="fxValue" value="${esc(x?.value||'')}"></div><div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="fxIcon" maxlength="2" value="${esc(x?.icon||'📊')}"></div><div class="mf-row"><label>لون</label><input class="mf-inp" id="fxColor" type="color" value="${x?.color||sec.color||'#6366f1'}"></div></div><div class="mf-row"><label>وصف</label><textarea class="mf-inp" id="fxDesc">${esc(x?.desc||'')}</textarea></div>`;
+    body.innerHTML=html+`<div class="modal-actions"><button class="btn btn-primary" onclick="saveSimpleV28('${secId}','${kind}',${index===null?'null':index})">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button>${x?`<button class="btn btn-danger" onclick="deleteSimpleV28('${secId}','${kind}',${index})">حذف</button>`:''}</div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+  window.openNoteEditorV28=(s,i=null)=>openSimpleEditor(s,'notes',i);
+  window.openEventEditorV28=(s,i=null)=>openSimpleEditor(s,'calendar',i);
+  window.openListItemEditorV28=(s,i=null)=>openSimpleEditor(s,'list',i);
+  window.openFlexFinanceEditorV28=(s,i=null)=>openSimpleEditor(s,'finance',i);
+  window.openDashboardCardEditorV28=(s,i=null)=>openSimpleEditor(s,'dashboard',i);
+  window.saveSimpleV28=function(secId,kind,index=null){
+    const list=getSections(); const sec=list.find(s=>s.id===secId); if(!sec)return;
+    const arr=kind==='notes'?sec.notes:kind==='calendar'?sec.events:kind==='finance'?sec.finItems:kind==='dashboard'?sec.cards:sec.items;
+    let obj={id:index!==null?arr[index]?.id:uid()};
+    if(kind==='notes') obj={...obj,title:val('fxTitle'),date:val('fxDate'),tag:val('fxTag'),content:val('fxContent'),color:sec.color,icon:'📝'};
+    if(kind==='calendar') obj={...obj,title:val('fxTitle'),date:val('fxDate'),start:val('fxStart'),end:val('fxEnd'),location:val('fxLocation'),desc:val('fxDesc'),link_day:checked('fxLinkDay'),color:sec.color,icon:'📆'};
+    if(kind==='list') obj={...obj,title:val('fxTitle'),icon:val('fxIcon')||'✅',deadline:val('fxDeadline'),color:val('fxColor')||sec.color,desc:val('fxDesc'),done:checked('fxDone')};
+    if(kind==='finance') obj={...obj,title:val('fxTitle'),amount:n(val('fxAmount')),type:val('fxType'),color:val('fxColor')||sec.color,note:val('fxNote'),icon:'💰'};
+    if(kind==='dashboard') obj={...obj,title:val('fxTitle'),value:val('fxValue'),icon:val('fxIcon')||'📊',color:val('fxColor')||sec.color,desc:val('fxDesc')};
+    if(index!==null)arr[index]=obj; else arr.push(obj);
+    saveSections(list); if(kind==='calendar'&&obj.link_day) syncFlexEventToDay(sec,obj); closeSystemSectionsModal(); renderDynamicBoardV28(secId); toast('تم الحفظ ✅');
+  }
+  window.deleteSimpleV28=function(secId,kind,index){if(!confirm('حذف؟'))return; const list=getSections(); const sec=list.find(s=>s.id===secId); const arr=kind==='notes'?sec.notes:kind==='calendar'?sec.events:kind==='finance'?sec.finItems:kind==='dashboard'?sec.cards:sec.items; arr.splice(index,1); saveSections(list); closeSystemSectionsModal(); renderDynamicBoardV28(secId)}
+  window.toggleFlexListItemV28=function(secId,i,v){const list=getSections(); const sec=list.find(s=>s.id===secId); if(sec?.items?.[i])sec.items[i].done=v; saveSections(list); renderDynamicBoardV28(secId)}
+  function val(id){return document.getElementById(id)?.value||''}
+  function checked(id){return !!document.getElementById(id)?.checked}
+
+  function syncFlexEventToDay(sec,e){
+    if(!e.date)return toast('حدد تاريخ عشان يسمع في يومي');
+    const blocks=(typeof dayVisibleBlocks==='function'?dayVisibleBlocks(e.date):[]);
+    if(!blocks.length)return toast('مفيش بلوكات في يومي في التاريخ ده');
+    const ts=minOf(e.start), te=minOf(e.end);
+    let target=ts!=null?blocks.find(b=>overlap(ts,te,minOf(b.start_time)??0,minOf(b.end_time)??1440)):null;
+    if(!target)target=blocks[0];
+    const key=`${target.id}_${e.date}`;
+    const existing=DAY.overrides[key]||{...target};
+    const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
+    const id='event-v28-'+e.id;
+    const task={id,text:e.title,timeLabel:e.start?`${e.start}${e.end?' → '+e.end:''}`:'',source:id,sourceEnt:sec.name,subtasks:[],color:e.color||sec.color};
+    const ix=tasks.findIndex(t=>t.id===id||t.source===id); if(ix>=0)tasks[ix]=task; else tasks.push(task);
+    DAY.overrides[key]={...existing,tasks}; if(typeof daySaveLocal==='function')daySaveLocal(); toast('اتضاف في يومي ✅');
+  }
+
+  /* Easier Plan Editor */
+  window.openPlanEditorV14=function(secId,subId,index=null){
+    const {list,sec,sub}=findSub(secId,subId); if(!sub)return;
+    const p=index!==null?sub.plans[index]:null; planCtxV28={secId,subId,index};
+    planDaysV28=(p?.days||[]).map(d=>({...d,tasks:(d.tasks||[]).map(t=>typeof t==='string'?{text:t,done:false}:t)}));
+    const title=document.getElementById('systemSectionsModalTitle'), body=document.getElementById('systemSectionsModalBody');
+    title.textContent=p?'تعديل خطة مرنة':'خطة جديدة مرنة';
+    const wd=(p?.weekdays||['6','0','1','2','3','4','5']);
+    body.innerHTML=`<div class="plan-editor-v28">
+      <div class="plan-tabs-v28"><button class="active" onclick="planTabV28('basics',this)">الأساسيات</button><button onclick="planTabV28('days',this)">الأيام والتفاصيل</button></div>
+      <div class="plan-pane-v28 active" data-pane="basics">
+        <div class="flex-editor-grid-v28">
+          <div class="mf-row"><label>اسم الخطة</label><input class="mf-inp" id="pTitle" value="${esc(p?.title||'')}"></div>
+          <div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="pIcon" maxlength="2" value="${esc(p?.icon||'📋')}"></div>
+          <div class="mf-row"><label>لون</label><input class="mf-inp" id="pColor" type="color" value="${p?.color||sub.color||sec.color||'#6366f1'}"></div>
+          <div class="mf-row"><label>تبدأ من</label><input class="mf-inp" id="pStart" type="date" value="${p?.start_date||today()}"></div>
+          <div class="mf-row"><label>مدة الخطة بالأيام</label><input class="mf-inp" id="pDuration" type="number" min="1" max="365" value="${p?.duration||30}"></div>
+          <div class="mf-row"><label>من</label><input class="mf-inp" id="pStartTime" type="time" value="${p?.start_time||''}"></div>
+          <div class="mf-row"><label>إلى</label><input class="mf-inp" id="pEndTime" type="time" value="${p?.end_time||''}"></div>
+          <div class="mf-row"><label class="switch-line"><input type="checkbox" id="pLinkDay" ${p?.link_day?'checked':''}> يسمع في يومي</label></div>
+        </div>
+        <div class="mf-row"><label>وصف الخطة</label><textarea class="mf-inp" id="pDesc">${esc(p?.desc||'')}</textarea></div>
+        <div class="mf-row"><label>الأيام اللي تتولد فيها المهام</label><div class="weekday-row-v28">${WD.map(([v,n])=>`<label class="weekday-chip-v28"><input type="checkbox" value="${v}" ${wd.includes(v)?'checked':''}>${n}</label>`).join('')}</div></div>
+        <div class="mf-row"><label>تفاصيل افتراضية تتكرر</label><textarea class="mf-inp" id="pDefaultDetails">${esc(p?.day_details_template||'')}</textarea></div>
+        <div class="mf-row"><label>Checklist افتراضي - كل سطر تاسك</label><textarea class="mf-inp" id="pDefaultTasks">${esc((p?.default_tasks||[]).join('\n'))}</textarea></div>
+        <div class="modal-actions"><button class="btn btn-primary" onclick="generatePlanDaysV28(false)">توليد/تحديث الأيام بدون حذف اليدوي</button><button class="btn btn-ghost" onclick="generatePlanDaysV28(true)">استبدال كل الأيام</button></div>
+      </div>
+      <div class="plan-pane-v28" data-pane="days">
+        <div class="modal-actions"><button class="btn btn-primary" onclick="addPlanDayV28()">+ يوم يدوي</button><button class="btn btn-ghost" onclick="generatePlanDaysV28(false)">توليد حسب أيام الأسبوع</button></div>
+        <div id="planDaysBoxV28"></div>
+      </div>
+      <div class="modal-actions sticky-actions"><button class="btn btn-primary" onclick="savePlanV28()">حفظ الخطة</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button>${p?`<button class="btn btn-danger" onclick="deletePlanV28()">حذف الخطة</button>`:''}</div>
+    </div>`;
+    renderPlanDaysV28(); document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+  window.planTabV28=function(name,btn){document.querySelectorAll('.plan-tabs-v28 button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.plan-pane-v28').forEach(p=>p.classList.toggle('active',p.dataset.pane===name))}
+  window.generatePlanDaysV28=function(replace=false){
+    if(!replace) readPlanDaysV28();
+    const start=val('pStart')||today(), duration=Math.max(1,Math.min(365,n(val('pDuration'))||30));
+    const selected=[...document.querySelectorAll('.weekday-row-v28 input:checked')].map(x=>x.value);
+    const details=val('pDefaultDetails'), tasks=val('pDefaultTasks').split('\n').map(x=>x.trim()).filter(Boolean);
+    const existingByDate=new Map(planDaysV28.map(d=>[d.date,d]));
+    const generated=[];
+    for(let i=0;i<duration;i++){
+      const date=addDays(start,i), wd=String(new Date(date+'T00:00:00').getDay());
+      if(!selected.length || selected.includes(wd)){
+        const old=existingByDate.get(date);
+        generated.push(old||{id:uid(),date,title:'يوم '+(generated.length+1),details,start_time:val('pStartTime')||null,end_time:val('pEndTime')||null,deadline:date,done:false,tasks:tasks.map(t=>({text:t,done:false,deadline:date}))});
+      }
+    }
+    if(replace) planDaysV28=generated; else {
+      const dates=new Set(planDaysV28.map(d=>d.date));
+      generated.forEach(d=>{if(!dates.has(d.date))planDaysV28.push(d)});
+      planDaysV28.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+    }
+    renderPlanDaysV28(); toast('تم توليد الأيام ✅');
+  }
+  window.addPlanDayV28=function(){readPlanDaysV28();planDaysV28.push({id:uid(),date:today(),title:'يوم مخصص',details:'',start_time:'',end_time:'',deadline:'',done:false,tasks:[]});renderPlanDaysV28()}
+  function dayRow(d,i){return `<div class="plan-day-row-v28" data-i="${i}"><div class="mf-row"><label>التاريخ</label><input class="mf-inp" data-date type="date" value="${d.date||''}"></div><div class="mf-row"><label>العنوان</label><input class="mf-inp" data-title value="${esc(d.title||'')}"></div><div class="mf-row"><label>من</label><input class="mf-inp" data-start type="time" value="${d.start_time||''}"></div><div class="mf-row"><label>إلى</label><input class="mf-inp" data-end type="time" value="${d.end_time||''}"></div><div class="mf-row"><label>Deadline</label><input class="mf-inp" data-deadline type="date" value="${d.deadline||''}"></div><label class="switch-line"><input type="checkbox" data-done ${d.done?'checked':''}> تم</label><button onclick="removePlanDayV28(${i})">حذف</button><div class="details mf-row"><label>تفاصيل</label><textarea class="mf-inp" data-details>${esc(d.details||'')}</textarea></div><div class="details mf-row"><label>Checklist - كل سطر تاسك</label><textarea class="mf-inp" data-tasks>${esc((d.tasks||[]).map(t=>t.text||t).join('\n'))}</textarea></div></div>`}
+  window.renderPlanDaysV28=function(){const box=document.getElementById('planDaysBoxV28'); if(box)box.innerHTML=planDaysV28.map(dayRow).join('')||'<div class="flex-empty-v28">لا يوجد أيام. اضغط توليد الأيام أو + يوم يدوي.</div>'}
+  window.removePlanDayV28=function(i){readPlanDaysV28();planDaysV28.splice(i,1);renderPlanDaysV28()}
+  function readPlanDaysV28(){planDaysV28=[...document.querySelectorAll('#planDaysBoxV28 .plan-day-row-v28')].map((r,idx)=>({id:planDaysV28[idx]?.id||uid(),date:r.querySelector('[data-date]').value,title:r.querySelector('[data-title]').value,details:r.querySelector('[data-details]').value,start_time:r.querySelector('[data-start]').value||null,end_time:r.querySelector('[data-end]').value||null,deadline:r.querySelector('[data-deadline]').value||r.querySelector('[data-date]').value,done:r.querySelector('[data-done]').checked,tasks:r.querySelector('[data-tasks]').value.split('\n').map(x=>x.trim()).filter(Boolean).map((t,i)=>({text:t,done:planDaysV28[idx]?.tasks?.[i]?.done||false,deadline:r.querySelector('[data-deadline]').value||r.querySelector('[data-date]').value}))}))}
+  window.savePlanV28=function(){
+    readPlanDaysV28();
+    const {list,sec,sub}=findSub(planCtxV28.secId,planCtxV28.subId); if(!sub)return;
+    const selected=[...document.querySelectorAll('.weekday-row-v28 input:checked')].map(x=>x.value);
+    const old=planCtxV28.index!==null?sub.plans[planCtxV28.index]:null;
+    const p={id:old?.id||uid(),title:val('pTitle')||'خطة',icon:val('pIcon')||'📋',color:val('pColor')||sub.color||sec.color,desc:val('pDesc'),start_date:val('pStart'),duration:n(val('pDuration'))||30,start_time:val('pStartTime')||null,end_time:val('pEndTime')||null,link_day:checked('pLinkDay'),weekdays:selected,day_details_template:val('pDefaultDetails'),default_tasks:val('pDefaultTasks').split('\n').map(x=>x.trim()).filter(Boolean),days:planDaysV28};
+    if(planCtxV28.index!==null)sub.plans[planCtxV28.index]=p; else sub.plans.push(p);
+    saveSections(list);
+    const idx=planCtxV28.index!==null?planCtxV28.index:sub.plans.length-1;
+    if(p.link_day) syncPlanToDayV28(sec.id,sub.id,idx);
+    closeSystemSectionsModal(); if(typeof renderSubsectionDetailV14==='function')renderSubsectionDetailV14(sec.id,sub.id); toast('تم حفظ الخطة ✅');
+  }
+  window.deletePlanV28=function(){if(!confirm('حذف الخطة؟'))return; const {list,sec,sub}=findSub(planCtxV28.secId,planCtxV28.subId); sub.plans.splice(planCtxV28.index,1); saveSections(list); closeSystemSectionsModal(); renderSubsectionDetailV14(sec.id,sub.id)}
+  window.syncPlanToDayV28=function(secId,subId,idx){
+    const {sec,sub}=findSub(secId,subId); const p=sub?.plans?.[idx]; if(!p)return;
+    let count=0;
+    (p.days||[]).forEach(d=>{
+      if(!d.date)return;
+      const blocks=typeof dayVisibleBlocks==='function'?dayVisibleBlocks(d.date):[];
+      if(!blocks.length)return;
+      const ts=minOf(d.start_time||p.start_time), te=minOf(d.end_time||p.end_time);
+      let target=ts!=null?blocks.find(b=>overlap(ts,te,minOf(b.start_time)??0,minOf(b.end_time)??1440)):null;
+      if(!target)target=blocks[0];
+      const key=`${target.id}_${d.date}`; const existing=DAY.overrides[key]||{...target};
+      const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
+      const id='plan-v28-'+p.id+'-'+d.id;
+      const task={id,text:d.title,timeLabel:(d.start_time||p.start_time)?`${d.start_time||p.start_time}${(d.end_time||p.end_time)?' → '+(d.end_time||p.end_time):''}`:'',source:id,sourceEnt:`${sec.name} / ${sub.name}`,subtasks:(d.tasks||[]).map((t,i)=>({id:id+'-s-'+i,text:t.text||t,source:id,deadline:t.deadline||d.deadline})),color:p.color||sub.color||sec.color,deadline:d.deadline,details:d.details};
+      const pos=tasks.findIndex(x=>x.id===id||x.source===id); if(pos>=0)tasks[pos]=task; else tasks.push(task);
+      DAY.overrides[key]={...existing,tasks}; count++;
+    });
+    if(count&&typeof daySaveLocal==='function')daySaveLocal();
+    toast(count?`تم ربط ${count} يوم بيومي ✅`:'مفيش أيام اتربطت. تأكد من التواريخ ووجود بلوكات في يومي.');
+  }
+  window.syncPlanToDayV15=window.syncPlanToDayV28;
+  window.syncPlanToDayV14=window.syncPlanToDayV28;
+
+  // override dynamic shell and go
+  window.__oldRenderDynamicBoardV14_V28=window.__oldRenderDynamicBoardV14_V28||window.renderDynamicBoardV14;
+  window.renderDynamicShellV14=renderShell; window.renderDynamicShellV18=renderShell; window.renderDynamicShell=renderShell;
+  window.renderDynamicBoardV14=window.renderDynamicBoardV28;
+  const oldGo=window.go;
+  window.go=function(mod){
+    if(String(mod).startsWith('dyn_')){
+      renderShell(); cur=mod;
+      document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+      const target=document.getElementById('mod-'+mod); if(target)target.classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod===mod));
+      document.querySelectorAll('.bnav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod===mod));
+      renderDynamicBoardV28(String(mod).slice(4)); cleanupDynDom(); return;
+    }
+    oldGo(mod); cleanupDynDom();
+  }
+
+  const mo=new MutationObserver(()=>cleanupDynDom());
+  setTimeout(()=>{const nav=document.querySelector('.sidebar .nav-items'); if(nav)mo.observe(nav,{childList:true}); const bn=document.getElementById('bottomNav'); if(bn)mo.observe(bn,{childList:true});},300);
+  setTimeout(()=>{renderShell(); cleanupDynDom(); if(cur&&String(cur).startsWith('dyn_'))renderDynamicBoardV28(String(cur).slice(4));},120);
+  setTimeout(()=>{cleanupDynDom();document.body.removeAttribute('data-dyn-stabilizing')},900);
+})();
+</script>
+
+
+<style id="core-clean-system-v29-style">
+/* ===== V29: Core Clean System / Inbox / Health / Reviews / Archive ===== */
+.core-center-wrap{padding:24px;overflow-y:auto}
+.core-hero-v29{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:28px;border-radius:34px;background:linear-gradient(135deg,#2563eb,#7c3aed 55%,#14b8a6);color:#fff;margin-bottom:18px;box-shadow:0 28px 65px rgba(37,99,235,.26)}
+.core-hero-v29 h2{font-size:38px;line-height:1.05}.core-hero-v29 p{font-size:14px;opacity:.9;line-height:1.7;margin-top:6px}
+.core-actions-v29{display:flex;gap:8px;flex-wrap:wrap}.core-actions-v29 button{border:0;border-radius:16px;padding:11px 14px;background:rgba(255,255,255,.18);color:#fff;font-weight:950;cursor:pointer}
+.core-tabs-v29{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;position:sticky;top:0;background:var(--bg2);z-index:5;padding:8px;border-radius:20px}
+.core-tabs-v29 button{border:0;border-radius:14px;padding:10px 14px;background:var(--panel2);color:var(--text);font-weight:950;cursor:pointer}
+.core-tabs-v29 button.active{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+.core-pane-v29{display:none}.core-pane-v29.active{display:block}
+.core-grid-v29{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.core-panel-v29,.core-card-v29{padding:18px;border-radius:26px;background:linear-gradient(180deg,color-mix(in srgb,var(--panel2) 95%,white),color-mix(in srgb,var(--panel) 90%,transparent));border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.core-panel-v29 h3,.core-card-v29 h3{font-size:20px;margin-bottom:8px}.core-card-v29 p{font-size:13px;line-height:1.7;color:var(--text-m);white-space:pre-wrap}
+.core-item-row-v29{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:12px;border-radius:18px;background:var(--panel2);border:1px solid var(--border);margin-bottom:9px}
+.core-item-icon-v29{width:44px;height:44px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--c,#2563eb),color-mix(in srgb,var(--c,#2563eb) 50%,#111827));color:#fff;font-size:21px}
+.core-item-row-v29 b{font-size:15px}.core-item-row-v29 small{display:block;color:var(--text-d);font-size:11px;margin-top:3px;font-weight:800}
+.core-row-actions-v29{display:flex;gap:6px;flex-wrap:wrap}.core-row-actions-v29 button,.core-btn-v29{border:0;border-radius:12px;padding:8px 10px;background:var(--panel);color:var(--text);font-weight:900;cursor:pointer}
+.core-btn-primary-v29{background:linear-gradient(135deg,#2563eb,#7c3aed)!important;color:#fff!important}
+.core-danger-v29{background:rgba(239,68,68,.15)!important;color:#ef4444!important}
+.core-form-grid-v29{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+.core-health-good{color:#16a34a!important}.core-health-warn{color:#f59e0b!important}.core-health-bad{color:#ef4444!important}
+.core-health-list-v29{display:flex;flex-direction:column;gap:10px}
+.core-health-item-v29{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px;border-radius:18px;background:var(--panel2);border:1px solid var(--border)}
+.core-review-list-v29{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.core-review-card-v29{padding:16px;border-radius:22px;background:var(--panel);border:1px solid var(--border)}
+.core-template-card-v29{cursor:pointer;transition:.15s}.core-template-card-v29:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+body[data-theme="light"] .core-hero-v29,body[data-theme="light"] .core-hero-v29 *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+@media(max-width:900px){.core-hero-v29{flex-direction:column;align-items:flex-start}.core-form-grid-v29,.core-item-row-v29{grid-template-columns:1fr}.core-row-actions-v29 button{width:100%}}
+</style>
+
+<script id="core-clean-system-v29">
+/* ===== V29: Core Clean System (Inbox, Universal Item, Data Health, Reviews, Archive, Templates) ===== */
+(function(){
+  const INBOX_KEY='ms_core_inbox_v29';
+  const ARCHIVE_KEY='ms_core_archive_v29';
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+  const VIEW_KEY='ms_view_preferences_v14';
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function save(k,v){localStorage.setItem(k,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud()}
+  function esc(s){return (typeof window.esc==='function'?window.esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function uid(){return 'core_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function today(){return (typeof dateKey==='function'?dateKey(new Date()):new Date().toISOString().slice(0,10))}
+  function addDays(date,n){const d=new Date((date||today())+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+  function n(v){return +v||0}
+  function cleanName(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/[ًٌٍَُِّْ]/g,'').toLowerCase()}
+  function inbox(){return parse(localStorage.getItem(INBOX_KEY),'')||[]}
+  function setInbox(v){save(INBOX_KEY,v)}
+  function archive(){return parse(localStorage.getItem(ARCHIVE_KEY),'')||[]}
+  function setArchive(v){save(ARCHIVE_KEY,v)}
+  function dynSections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function setDynSections(v){save(DYN_KEY,v)}
+  function normSec(s){s.type=s.type||'plans';s.subsections=Array.isArray(s.subsections)?s.subsections:[];s.items=Array.isArray(s.items)?s.items:[];s.notes=Array.isArray(s.notes)?s.notes:[];s.events=Array.isArray(s.events)?s.events:[];s.finItems=Array.isArray(s.finItems)?s.finItems:[];s.cards=Array.isArray(s.cards)?s.cards:[];s.subsections.forEach(ss=>{ss.items=Array.isArray(ss.items)?ss.items:[];ss.plans=Array.isArray(ss.plans)?ss.plans:[]});return s}
+  function sections(){return mergeDupes(dynSections()).map(normSec)}
+  function saveSections(v){setDynSections(v.map(normSec))}
+  function typeIcon(t){return {task:'✅',note:'📝',event:'📆',money:'💰',link:'🔗',plan:'📋',idea:'💡'}[t||'task']||'📌'}
+  function statusLabel(s){return {new:'جديد',planned:'مخطط',progress:'قيد التنفيذ',done:'تم',skipped:'متخطي',delayed:'متأخر',cancelled:'ملغي'}[s||'new']||'جديد'}
+
+  function mergeDupes(list){
+    const map=new Map();
+    list.map(normSec).forEach(sec=>{
+      const k=cleanName(sec.name);
+      if(!k)return;
+      if(!map.has(k)){map.set(k,sec);return;}
+      const a=map.get(k);
+      ['items','notes','events','finItems','cards'].forEach(key=>a[key]=[...(a[key]||[]),...(sec[key]||[])]);
+      if((a.type||'plans')==='plans' && sec.type && sec.type!=='plans')a.type=sec.type;
+      const subMap=new Map((a.subsections||[]).map(s=>[cleanName(s.name),s]));
+      (sec.subsections||[]).forEach(s=>{
+        const kk=cleanName(s.name);
+        if(subMap.has(kk)){
+          const old=subMap.get(kk);
+          old.items=[...(old.items||[]),...(s.items||[])];
+          old.plans=[...(old.plans||[]),...(s.plans||[])];
+        }else subMap.set(kk,s);
+      });
+      a.subsections=[...subMap.values()];
+    });
+    return [...map.values()];
+  }
+
+  /* Sync custom core data in Supabase app_state if the base functions exist */
+  const oldSnap=window.stateSnapshot;
+  if(oldSnap && !oldSnap.__coreV29){
+    const fn=function(){
+      const s=oldSnap();
+      s.coreV29={inbox:inbox(),archive:archive()};
+      return s;
+    };
+    fn.__coreV29=true; window.stateSnapshot=fn;
+  }
+  const oldApply=window.applyRemoteState;
+  if(oldApply && !oldApply.__coreV29){
+    const fn=function(data){
+      oldApply(data);
+      if(data?.coreV29){
+        if(Array.isArray(data.coreV29.inbox))localStorage.setItem(INBOX_KEY,JSON.stringify(data.coreV29.inbox));
+        if(Array.isArray(data.coreV29.archive))localStorage.setItem(ARCHIVE_KEY,JSON.stringify(data.coreV29.archive));
+      }
+    };
+    fn.__coreV29=true; window.applyRemoteState=fn;
+  }
+
+  function ensureCoreModule(){
+    const main=document.querySelector('main.main'), nav=document.querySelector('.sidebar .nav-items'), bottom=document.getElementById('bottomNav');
+    if(!main||!nav)return;
+    if(!document.getElementById('mod-core')){
+      main.insertAdjacentHTML('beforeend',`<section id="mod-core" class="module"><div class="core-center-wrap"><div class="core-hero-v29"><div><h2>مركز النظام</h2><p>Inbox، مراجعات، فحص وإصلاح البيانات، أرشيف، وقوالب. دي طبقة تنظيم فوق كل السيستم.</p></div><div class="core-actions-v29"><button onclick="openCoreItemEditorV29()">+ إدخال سريع</button><button onclick="runDataHealthV29(true)">إصلاح سريع</button></div></div><div id="coreBoardV29"></div></div></section>`);
+    }
+    if(!document.querySelector('.nav-item[data-mod="core"]')){
+      const el=document.createElement('div'); el.className='nav-item'; el.dataset.mod='core'; el.onclick=()=>go('core'); el.innerHTML='<span class="nav-icon">🧠</span><span>المركز</span><span class="nav-badge hidden" id="coreBadgeV29">0</span>'; nav.appendChild(el);
+    }
+    if(bottom && !document.querySelector('.bnav-item[data-mod="core"]')){
+      const el=document.createElement('div'); el.className='bnav-item'; el.dataset.mod='core'; el.onclick=()=>go('core'); el.innerHTML='<span class="bnav-icon">🧠</span><span>المركز</span>'; bottom.appendChild(el);
+    }
+  }
+  function coreTabs(active='inbox'){
+    return `<div class="core-tabs-v29">
+      ${[['inbox','Inbox'],['review','Review'],['health','Data Health'],['templates','Templates'],['archive','Archive'],['settings','Structure']].map(([k,l])=>`<button class="${active===k?'active':''}" onclick="renderCoreV29('${k}')">${l}</button>`).join('')}
+    </div>`;
+  }
+  window.renderCoreV29=function(tab='inbox'){
+    ensureCoreModule();
+    const b=document.getElementById('coreBoardV29'); if(!b)return;
+    b.innerHTML=coreTabs(tab)+`<div class="core-pane-v29 active">${tab==='inbox'?renderInbox():tab==='review'?renderReviews():tab==='health'?renderHealth():tab==='templates'?renderTemplates():tab==='archive'?renderArchive():renderStructure()}</div>`;
+    updateCoreBadge();
+  }
+
+  function renderInbox(){
+    const list=inbox();
+    return `<div class="core-grid-v29"><div class="core-panel-v29"><h3>إدخال سريع</h3><p style="font-size:13px;color:var(--text-m);line-height:1.7;margin-bottom:10px">أي فكرة/تاسك/موعد/ملاحظة تدخل هنا الأول، وبعدها تحولها لمكانها الصحيح.</p><button class="core-btn-v29 core-btn-primary-v29" onclick="openCoreItemEditorV29()">+ إضافة للـ Inbox</button></div><div class="core-panel-v29"><h3>ملخص</h3><div class="core-health-list-v29"><div class="core-health-item-v29"><b>جديد</b><span>${list.filter(x=>x.status==='new'||!x.status).length}</span></div><div class="core-health-item-v29"><b>مخطط</b><span>${list.filter(x=>x.status==='planned').length}</span></div><div class="core-health-item-v29"><b>مكتمل</b><span>${list.filter(x=>x.status==='done').length}</span></div></div></div></div>
+    <div style="margin-top:14px">${list.map((it,i)=>inboxRow(it,i)).join('')||'<div class="core-card-v29"><h3>الـ Inbox فاضي</h3><p>ابدأ بإضافة أي حاجة بسرعة، وبعدها صنفها.</p></div>'}</div>`;
+  }
+  function inboxRow(it,i){
+    return `<div class="core-item-row-v29" style="--c:${it.color||'#2563eb'}"><div class="core-item-icon-v29">${esc(it.icon||typeIcon(it.type))}</div><div><b>${esc(it.title||'عنصر')}</b><small>${esc(it.type||'task')} • ${statusLabel(it.status)} ${it.date?'• '+it.date:''} ${it.deadline?'• Deadline '+it.deadline:''}</small><small>${esc(it.notes||'')}</small></div><div class="core-row-actions-v29"><button onclick="openCoreItemEditorV29(${i})">تعديل</button><button onclick="openCoreConvertV29(${i})">تحويل</button><button onclick="archiveInboxV29(${i})">Archive</button></div></div>`;
+  }
+
+  window.openCoreItemEditorV29=function(index=null){
+    const it=index!==null?inbox()[index]:null;
+    const title=document.getElementById('systemSectionsModalTitle'), body=document.getElementById('systemSectionsModalBody');
+    title.textContent=it?'تعديل Inbox Item':'إدخال سريع للـ Inbox';
+    body.innerHTML=`<div class="core-form-grid-v29">
+      <div class="mf-row"><label>العنوان *</label><input class="mf-inp" id="ciTitle" value="${esc(it?.title||'')}" placeholder="اكتب أي حاجة بسرعة"></div>
+      <div class="mf-row"><label>النوع</label><select class="mf-inp" id="ciType"><option value="task" ${it?.type==='task'?'selected':''}>Task</option><option value="note" ${it?.type==='note'?'selected':''}>Note</option><option value="event" ${it?.type==='event'?'selected':''}>Event</option><option value="money" ${it?.type==='money'?'selected':''}>Money</option><option value="link" ${it?.type==='link'?'selected':''}>Link</option><option value="idea" ${it?.type==='idea'?'selected':''}>Idea</option></select></div>
+      <div class="mf-row"><label>التاريخ</label><input class="mf-inp" id="ciDate" type="date" value="${it?.date||''}"></div>
+      <div class="mf-row"><label>Deadline</label><input class="mf-inp" id="ciDeadline" type="date" value="${it?.deadline||''}"></div>
+      <div class="mf-row"><label>من</label><input class="mf-inp" id="ciStart" type="time" value="${it?.start||''}"></div>
+      <div class="mf-row"><label>إلى</label><input class="mf-inp" id="ciEnd" type="time" value="${it?.end||''}"></div>
+      <div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="ciIcon" maxlength="2" value="${esc(it?.icon||'')}"></div>
+      <div class="mf-row"><label>لون</label><input class="mf-inp" id="ciColor" type="color" value="${it?.color||'#2563eb'}"></div>
+    </div>
+    <div class="mf-row"><label>ملاحظات / تفاصيل</label><textarea class="mf-inp" id="ciNotes" style="min-height:120px">${esc(it?.notes||'')}</textarea></div>
+    <div class="mf-row"><label>Checklist - كل سطر تاسك</label><textarea class="mf-inp" id="ciChecklist">${esc((it?.checklist||[]).map(x=>x.text||x).join('\n'))}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="saveCoreItemV29(${index===null?'null':index})">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button>${it?`<button class="btn btn-danger" onclick="archiveInboxV29(${index});closeSystemSectionsModal()">Archive</button>`:''}</div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+  window.saveCoreItemV29=function(index=null){
+    const list=inbox();
+    const title=document.getElementById('ciTitle').value.trim(); if(!title)return toast('اكتب العنوان');
+    const old=index!==null?list[index]:null;
+    const type=document.getElementById('ciType').value;
+    const item={id:old?.id||uid(),title,type,status:old?.status||'new',date:val('ciDate'),deadline:val('ciDeadline'),start:val('ciStart'),end:val('ciEnd'),icon:val('ciIcon')||typeIcon(type),color:val('ciColor')||'#2563eb',notes:val('ciNotes'),checklist:val('ciChecklist').split('\n').map(x=>x.trim()).filter(Boolean).map((x,i)=>({text:x,done:old?.checklist?.[i]?.done||false}))};
+    if(index!==null)list[index]=item; else list.unshift(item);
+    setInbox(list); closeSystemSectionsModal(); renderCoreV29('inbox'); toast('تم الحفظ ✅');
+  }
+  function val(id){return document.getElementById(id)?.value||''}
+  window.archiveInboxV29=function(i){const list=inbox(); const [it]=list.splice(i,1); const ar=archive(); ar.unshift({...it,archived_at:new Date().toISOString(),from:'inbox'}); setInbox(list); setArchive(ar); renderCoreV29('inbox'); toast('اتنقل للأرشيف')}
+  window.openCoreConvertV29=function(i){
+    const it=inbox()[i]; if(!it)return;
+    const secs=sections();
+    const title=document.getElementById('systemSectionsModalTitle'), body=document.getElementById('systemSectionsModalBody');
+    title.textContent='تحويل من Inbox';
+    body.innerHTML=`<div class="core-card-v29"><h3>${esc(it.title)}</h3><p>${esc(it.notes||'')}</p></div><div class="core-form-grid-v29 cols-3"><div class="mf-row"><label>حوّل إلى</label><select class="mf-inp" id="cvTarget"><option value="day">يومي</option><option value="section">قسم رئيسي</option><option value="goal">هدف</option></select></div><div class="mf-row"><label>القسم</label><select class="mf-inp" id="cvSection">${secs.map(s=>`<option value="${s.id}">${esc(s.icon||'📌')} ${esc(s.name)}</option>`).join('')}</select></div><div class="mf-row"><label class="switch-line"><input type="checkbox" id="cvRemove" checked> حذف من Inbox بعد التحويل</label></div></div><div class="modal-actions"><button class="btn btn-primary" onclick="convertInboxV29(${i})">تحويل</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+  window.convertInboxV29=function(i){
+    const list=inbox(); const it=list[i]; if(!it)return;
+    const target=val('cvTarget');
+    if(target==='day') addInboxToDay(it);
+    if(target==='section') addInboxToSection(it,val('cvSection'));
+    if(target==='goal') addInboxToGoals(it);
+    if(document.getElementById('cvRemove')?.checked)list.splice(i,1);
+    setInbox(list); closeSystemSectionsModal(); renderCoreV29('inbox'); toast('تم التحويل ✅');
+  }
+  function addInboxToDay(it){
+    const d=it.date||today();
+    const blocks=typeof dayVisibleBlocks==='function'?dayVisibleBlocks(d):[];
+    if(!blocks.length){toast('مفيش بلوكات في يومي في التاريخ ده');return;}
+    const target=blocks[0], key=`${target.id}_${d}`, existing=DAY.overrides[key]||{...target};
+    const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
+    const id='core-inbox-'+it.id;
+    tasks.push({id,text:it.title,timeLabel:it.start?`${it.start}${it.end?' → '+it.end:''}`:'',source:id,sourceEnt:'Inbox',subtasks:(it.checklist||[]).map((c,idx)=>({id:id+'-'+idx,text:c.text,source:id})),color:it.color,deadline:it.deadline,details:it.notes});
+    DAY.overrides[key]={...existing,tasks}; if(typeof daySaveLocal==='function')daySaveLocal();
+  }
+  function addInboxToSection(it,secId){
+    const list=sections(); const sec=list.find(s=>s.id===secId); if(!sec)return;
+    if(it.type==='note'){sec.notes=sec.notes||[];sec.type=sec.type==='plans'?'notes':sec.type;sec.notes.unshift({id:uid(),title:it.title,content:it.notes,date:it.date||today(),icon:it.icon,color:it.color});}
+    else if(it.type==='event'){sec.events=sec.events||[];sec.type=sec.type==='plans'?'calendar':sec.type;sec.events.unshift({id:uid(),title:it.title,desc:it.notes,date:it.date||today(),start:it.start,end:it.end,icon:it.icon,color:it.color});}
+    else {sec.items=sec.items||[];sec.items.unshift({id:uid(),title:it.title,desc:it.notes,date:it.date,deadline:it.deadline,icon:it.icon,color:it.color,done:false});}
+    saveSections(list); if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();
+  }
+  function addInboxToGoals(it){
+    if(!window.GOALS)return;
+    GOALS.items.unshift({id:uid(),title:it.title,description:it.notes,icon:it.icon||'🎯',color:it.color||'#6366f1',section_id:(GOALS.sections?.[0]?.id||'personal'),start_date:it.date||today(),end_date:it.deadline||null,steps:(it.checklist||[]),completed:false,updated_at:new Date().toISOString()});
+    if(typeof goalsSaveLocal==='function')goalsSaveLocal(); if(typeof markWrite==='function')markWrite('goals');
+  }
+
+  function renderReviews(){
+    let blocks=[]; try{blocks=dayVisibleBlocks(today())||[]}catch(_){}
+    const work=[]; try{(WORK.data.company||[]).concat(WORK.data.client||[]).forEach(e=>(e.tasks||[]).forEach(t=>work.push({e,t})))}catch(_){}
+    const pendingWork=work.filter(x=>!x.t.completed), late=pendingWork.filter(x=>x.t.deadline && x.t.deadline<today());
+    const goals=(GOALS?.items||[]), nearGoals=goals.filter(g=>!g.completed && g.end_date && g.end_date<=addDays(today(),7));
+    return `<div class="core-review-list-v29">
+      <div class="core-review-card-v29"><h3>مراجعة اليوم</h3><p>بلوكات اليوم: <b>${blocks.length}</b></p><p>المتبقي في الشغل: <b>${pendingWork.length}</b></p><p>متأخر: <b class="${late.length?'core-health-bad':'core-health-good'}">${late.length}</b></p></div>
+      <div class="core-review-card-v29"><h3>أهم 3 حاجات بكرة</h3><p>${pendingWork.slice(0,3).map(x=>'• '+esc(x.t.title)).join('<br>')||'لا يوجد'}</p></div>
+      <div class="core-review-card-v29"><h3>أهداف قريبة</h3><p>${nearGoals.slice(0,5).map(g=>'• '+esc(g.title)+' — '+esc(g.end_date)).join('<br>')||'لا يوجد'}</p></div>
+      <div class="core-review-card-v29"><h3>اقتراح</h3><p>راجع المتأخرات، وانقل أي أفكار جديدة للـ Inbox بدل ما تضيفها عشوائيًا في الأقسام.</p></div>
+    </div>`;
+  }
+
+  function healthData(){
+    const secList=dynSections().map(normSec), merged=mergeDupes(secList), duplicateCount=Math.max(0,secList.length-merged.length);
+    let orphanDay=0, duplicateNav=document.querySelectorAll('[data-dyn-nav-v13],[data-dyn-nav-v14],[data-dyn-nav-v18],[data-dyn-nav-v28]').length - new Set([...document.querySelectorAll('[data-dyn-nav-v13],[data-dyn-nav-v14],[data-dyn-nav-v18],[data-dyn-nav-v28]')].map(x=>(x.classList.contains('bnav-item')?'b:':'s:')+x.dataset.mod)).size;
+    try{Object.values(DAY.overrides||{}).forEach(b=>(b.tasks||[]).forEach(t=>{if(t.sourceEnt && !findSectionBySource(t.sourceEnt))orphanDay++}))}catch(_){}
+    return {duplicateCount,duplicateNav:Math.max(0,duplicateNav),orphanDay,inbox:inbox().length,archive:archive().length};
+  }
+  function findSectionBySource(src){
+    const p=String(src||'').split('/').map(cleanName); const s=p[0]; return sections().find(x=>cleanName(x.name)===s || cleanName(x.name).includes(s) || s.includes(cleanName(x.name)));
+  }
+  function renderHealth(){
+    const h=healthData();
+    return `<div class="core-health-list-v29">
+      ${healthItem('أقسام مكررة',h.duplicateCount,h.duplicateCount?'core-health-bad':'core-health-good','mergeDuplicateSectionsV29()')}
+      ${healthItem('تكرار في القائمة الجانبية',h.duplicateNav,h.duplicateNav?'core-health-warn':'core-health-good','cleanupDynamicDomV29()')}
+      ${healthItem('تاسكات في يومي بدون مصدر واضح',h.orphanDay,h.orphanDay?'core-health-warn':'core-health-good','openDaySyncedTasksManagerV18&&openDaySyncedTasksManagerV18()')}
+      ${healthItem('Inbox',h.inbox,'','renderCoreV29("inbox")')}
+      ${healthItem('Archive',h.archive,'','renderCoreV29("archive")')}
+      <button class="core-btn-v29 core-btn-primary-v29" onclick="runDataHealthV29(true)">إصلاح تلقائي آمن</button>
+    </div>`;
+  }
+  function healthItem(label,v,cls,act){return `<div class="core-health-item-v29"><div><b>${label}</b><p style="margin:4px 0 0;color:var(--text-d);font-size:12px">قابل للإصلاح/المراجعة</p></div><div><b class="${cls}">${v}</b> <button class="core-btn-v29" onclick="${act}">فتح</button></div></div>`}
+  window.mergeDuplicateSectionsV29=function(){const m=mergeDupes(dynSections()); setDynSections(m); if(typeof renderDynamicShellV14==='function')renderDynamicShellV14(); renderCoreV29('health'); toast('تم دمج الأقسام المكررة ✅')}
+  window.cleanupDynamicDomV29=function(){document.querySelectorAll('[data-dyn-nav-v13],[data-dyn-nav-v14],[data-dyn-nav-v18],[data-dyn-nav-v28]').forEach((el)=>{}); if(typeof renderDynamicShellV14==='function')renderDynamicShellV14(); renderCoreV29('health'); toast('تم تنظيف القائمة ✅')}
+  window.runDataHealthV29=function(show=false){mergeDuplicateSectionsV29(); if(show)toast('تم الإصلاح الآمن ✅')}
+
+  function renderTemplates(){
+    const ts=[
+      ['notes','📝','قسم ملاحظات','ملاحظاتي','notes'],
+      ['calendar','📆','قسم كالندر','مواعيدي','calendar'],
+      ['finance','💰','ثروتي مخصص','مشروع مالي','finance'],
+      ['list','✅','Checklist','قائمة متابعة','list'],
+      ['treatment','🩺','قالب علاجي منظم','علاجي','plans'],
+      ['workout','🏋️','قالب تمرين مرن','مواعيد التمرين','plans']
+    ];
+    return `<div class="core-grid-v29">${ts.map(t=>`<div class="core-card-v29 core-template-card-v29" onclick="createTemplateV29('${t[0]}')"><h3>${t[1]} ${t[2]}</h3><p>ينشئ قسم "${t[3]}" من نوع ${t[4]} بشكل منظم.</p></div>`).join('')}</div>`;
+  }
+  window.createTemplateV29=function(type){
+    const list=sections();
+    function add(sec){if(!list.some(s=>cleanName(s.name)===cleanName(sec.name)))list.push(normSec(sec));}
+    if(type==='notes')add({id:uid(),name:'ملاحظاتي',icon:'📝',color:'#6366f1',type:'notes',desc:'ملاحظات كتابة فقط',notes:[],items:[],subsections:[]});
+    if(type==='calendar')add({id:uid(),name:'مواعيدي',icon:'📆',color:'#0ea5e9',type:'calendar',desc:'كالندر ومواعيد قابلة للربط بيومي',events:[],items:[],subsections:[]});
+    if(type==='finance')add({id:uid(),name:'مشروع مالي',icon:'💰',color:'#10b981',type:'finance',desc:'متابعة مالية مخصصة',finItems:[],items:[],subsections:[]});
+    if(type==='list')add({id:uid(),name:'قائمة متابعة',icon:'✅',color:'#f59e0b',type:'list',desc:'Checklist مرن',items:[],subsections:[]});
+    if(type==='treatment')add({id:uid(),name:'علاجي',icon:'🩺',color:'#14b8a6',type:'plans',desc:'علاج طبيعي / تأهيل / نظام غذائي',subsections:[{id:uid(),name:'علاج طبيعي',icon:'🦵',color:'#22c55e',desc:'جلسات علاج طبيعي',items:[],plans:[]},{id:uid(),name:'تأهيل بدني',icon:'🏃',color:'#818cf8',desc:'تأهيل وتقوية',items:[],plans:[]},{id:uid(),name:'نظام غذائي',icon:'🥗',color:'#f59e0b',desc:'متابعة غذاء',items:[],plans:[]}],items:[]});
+    if(type==='workout')add({id:uid(),name:'مواعيد التمرين',icon:'🏋️',color:'#8b5cf6',type:'plans',desc:'خطط ومواعيد تمرين مرنة',subsections:[{id:uid(),name:'تمارين القوة',icon:'💪',color:'#8b5cf6',desc:'قوة',items:[],plans:[]},{id:uid(),name:'كارديو واستشفاء',icon:'🚶',color:'#06b6d4',desc:'كارديو',items:[],plans:[]}],items:[]});
+    saveSections(list); if(typeof renderDynamicShellV14==='function')renderDynamicShellV14(); renderCoreV29('templates'); toast('تم إنشاء القالب ✅');
+  }
+
+  function renderArchive(){
+    const ar=archive();
+    return `<div>${ar.map((it,i)=>`<div class="core-item-row-v29" style="--c:${it.color||'#64748b'}"><div class="core-item-icon-v29">${esc(it.icon||'📦')}</div><div><b>${esc(it.title||it.name||'عنصر مؤرشف')}</b><small>${esc(it.from||'')} • ${esc(it.archived_at||'')}</small></div><div class="core-row-actions-v29"><button onclick="restoreArchiveV29(${i})">استرجاع للـ Inbox</button><button class="core-danger-v29" onclick="deleteArchiveV29(${i})">حذف نهائي</button></div></div>`).join('')||'<div class="core-card-v29"><h3>الأرشيف فاضي</h3></div>'}</div>`;
+  }
+  window.restoreArchiveV29=function(i){const ar=archive();const [it]=ar.splice(i,1);const list=inbox();list.unshift({...it,status:'new'});setArchive(ar);setInbox(list);renderCoreV29('archive')}
+  window.deleteArchiveV29=function(i){if(!confirm('حذف نهائي؟'))return;const ar=archive();ar.splice(i,1);setArchive(ar);renderCoreV29('archive')}
+
+  function renderStructure(){
+    return `<div class="core-grid-v29"><div class="core-panel-v29"><h3>Structure المقترح</h3><p>استخدم 3 مستويات فقط: Section → Collection → Item. والخطط تعتبر Collection، والأيام تعتبر Items.</p></div><div class="core-panel-v29"><h3>قاعدة مهمة</h3><p>يومي شاشة تنفيذ فقط. المصدر الأصلي يفضل في شغلي/أهدافي/الأقسام، ومن يومي افتح المصدر أو أخفي النسخة.</p></div><div class="core-panel-v29"><h3>نصيحة</h3><p>أي حاجة جديدة تدخل Inbox الأول، وبعدها تتحول لمكانها الصحيح.</p></div></div>`;
+  }
+
+  // Archive instead of direct delete for dynamic sections when possible
+  const oldDeleteDyn=window.deleteDynSection;
+  window.deleteDynSection=function(id){
+    const list=sections(); const ix=list.findIndex(s=>s.id===id); if(ix<0)return oldDeleteDyn?oldDeleteDyn(id):null;
+    if(!confirm('نقل القسم للأرشيف؟ تقدر تسترجع بياناته من المركز.'))return;
+    const [sec]=list.splice(ix,1); const ar=archive(); ar.unshift({...sec,from:'dynamic-section',archived_at:new Date().toISOString()}); setArchive(ar); saveSections(list); if(typeof renderDynamicShellV14==='function')renderDynamicShellV14(); closeSystemSectionsModal&&closeSystemSectionsModal(); toast('اتنقل للأرشيف');
+  }
+
+  const oldGo=window.go;
+  if(oldGo && !oldGo.__coreV29){
+    const fn=function(mod){
+      if(mod==='core'){
+        ensureCoreModule(); cur='core'; document.querySelectorAll('.module').forEach(m=>m.classList.remove('active')); document.getElementById('mod-core')?.classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod==='core')); document.querySelectorAll('.bnav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod==='core'));
+        renderCoreV29('inbox'); return;
+      }
+      return oldGo(mod);
+    };
+    fn.__coreV29=true; window.go=fn;
+  }
+  function updateCoreBadge(){const b=document.getElementById('coreBadgeV29'); if(!b)return; const c=inbox().filter(x=>x.status==='new'||!x.status).length; b.textContent=c; b.classList.toggle('hidden',!c);}
+  const oldUpdateBadges=window.updateBadges;
+  if(oldUpdateBadges&&!oldUpdateBadges.__coreV29){const fn=function(){oldUpdateBadges();updateCoreBadge()};fn.__coreV29=true;window.updateBadges=fn}
+
+  setTimeout(()=>{ensureCoreModule(); updateCoreBadge(); runDataHealthV29(false);},400);
+})();
+</script>
+
+
+<style id="templates-40-v30-style">
+.templates-topbar-v30{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.templates-search-v30{display:flex;gap:8px;align-items:center;background:var(--panel2);border:1px solid var(--border);border-radius:18px;padding:8px 12px;min-width:min(420px,100%)}
+.templates-search-v30 input{flex:1;border:0;background:transparent;color:var(--text);outline:none;font-weight:850}
+.template-cat-row-v30{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.template-cat-v30{border:0;border-radius:999px;padding:9px 13px;background:var(--panel2);color:var(--text);font-weight:900;cursor:pointer}
+.template-cat-v30.active{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+.template-card-v30{position:relative;overflow:hidden;min-height:170px}
+.template-card-v30:before{content:"";position:absolute;left:-28px;bottom:-42px;width:140px;height:140px;border-radius:50%;background:color-mix(in srgb,var(--tc,#6366f1) 18%,transparent)}
+.template-card-v30 .tpl-head{display:flex;gap:12px;align-items:flex-start;position:relative;z-index:1}
+.template-card-v30 .tpl-icon{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--tc,#6366f1),color-mix(in srgb,var(--tc,#6366f1) 50%,#111827));font-size:26px;box-shadow:0 14px 28px color-mix(in srgb,var(--tc,#6366f1) 22%,transparent)}
+.template-card-v30 h3{font-size:19px;margin-bottom:5px}
+.template-card-v30 p{font-size:12.5px;line-height:1.7;color:var(--text-m)}
+.template-tags-v30{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;position:relative;z-index:1}
+.template-tags-v30 span{padding:5px 9px;border-radius:999px;background:color-mix(in srgb,var(--tc,#6366f1) 13%,var(--panel2));color:var(--text-m);font-size:10.5px;font-weight:900}
+.template-actions-v30{position:relative;z-index:1;margin-top:14px;display:flex;gap:7px}
+.template-actions-v30 button{border:0;border-radius:13px;padding:9px 12px;font-weight:950;cursor:pointer}
+.template-actions-v30 .use{background:linear-gradient(135deg,var(--tc,#6366f1),color-mix(in srgb,var(--tc,#6366f1) 55%,#111827));color:#fff}
+.template-actions-v30 .preview{background:var(--panel2);color:var(--text)}
+.templates-count-v30{font-weight:950;color:var(--text-m);font-size:13px}
+body[data-theme="light"] .template-card-v30 .use{color:#fff!important;-webkit-text-fill-color:#fff!important}
+</style>
+
+<script id="templates-40-v30">
+/* ===== V30: 40 professional templates library ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+  const TEMPLATE_CATS=[
+    ['all','الكل'],['health','صحة'],['work','شغل'],['finance','فلوس'],['life','حياة'],['content','محتوى'],['learning','تعلم'],['home','منزل']
+  ];
+  const TEMPLATES_V30=[
+    {id:'treatment_pcl',cat:'health',name:'برنامج علاج طبيعي للركبة',icon:'🦵',color:'#14b8a6',type:'plans',desc:'قسم علاجي فيه علاج طبيعي وتأهيل ومتابعة ألم، مناسب للإصابات والتأهيل.',subs:['جلسات علاج طبيعي','تمارين منزلية','متابعة الألم','تعليمات الطبيب']},
+    {id:'sports_rehab',cat:'health',name:'تأهيل إصابات ملاعب',icon:'🏃',color:'#8b5cf6',type:'plans',desc:'تأهيل بدني، توازن، تقوية، عودة تدريجية للرياضة.',subs:['توازن وثبات','تقوية عضلات','مشي وكارديو','اختبارات تقدم']},
+    {id:'diet_plan',cat:'health',name:'نظام غذائي ومتابعة وزن',icon:'🥗',color:'#22c55e',type:'dashboard',desc:'متابعة وزن، مياه، بروتين، وجبات، وملاحظات هضم.',cards:['الوزن الحالي','السعرات اليومية','البروتين','شرب المياه','ملاحظات القولون']},
+    {id:'medications',cat:'health',name:'مواعيد أدوية وتحاليل',icon:'💊',color:'#0ea5e9',type:'calendar',desc:'كالندر للأدوية، التحاليل، مواعيد الطبيب، وتجديد الروشتة.',events:['جرعة صباحية','جرعة مسائية','ميعاد تحليل','مراجعة طبيب']},
+    {id:'sleep_tracker',cat:'health',name:'متابعة النوم والطاقة',icon:'😴',color:'#6366f1',type:'list',desc:'Checklist يومي للنوم، الكافيين، الطاقة، وجودة اليوم.',items:['نمت بدري','صحيت بدون إرهاق','مفيش كافيين متأخر','تمارين تنفس','تقييم الطاقة']},
+    {id:'gym_schedule',cat:'health',name:'جدول تمرين أسبوعي',icon:'🏋️',color:'#f97316',type:'plans',desc:'تمارين قوة وكارديو واستشفاء، قابل للربط بيومي.',subs:['تمارين القوة','كارديو واستشفاء','قياسات الجسم','تمدد ومرونة']},
+
+    {id:'client_project',cat:'work',name:'مشروع عميل Motion',icon:'🎬',color:'#ec4899',type:'plans',desc:'Workflow كامل لمشروع موشن من Brief لحد التسليم.',subs:['Brief وReferences','Storyboard','Design','Animation','Revisions','Delivery']},
+    {id:'video_reels',cat:'work',name:'إنتاج Reels شهري',icon:'📱',color:'#06b6d4',type:'plans',desc:'خطة إنتاج ريلز شهرية، أفكار، سكريبت، مونتاج، نشر.',subs:['أفكار المحتوى','سكريبتات','تصميم ومونتاج','مراجعات العميل','النشر']},
+    {id:'agency_clients',cat:'work',name:'إدارة عملاء وكالة',icon:'🏢',color:'#2563eb',type:'dashboard',desc:'داشبورد لمتابعة العملاء، حالة كل عميل، مستحقات وتسليمات.',cards:['عملاء نشطين','مشاريع متأخرة','تسليمات الأسبوع','مستحقات']},
+    {id:'linkedin_brand',cat:'work',name:'Personal Branding LinkedIn',icon:'💼',color:'#0f766e',type:'plans',desc:'قالب لبناء حضور لينكدإن: أفكار، بوستات، مشاريع، تفاعل.',subs:['أفكار بوستات','مشاريع Portfolio','كابشنز','تعليقات وتواصل']},
+    {id:'portfolio_refresh',cat:'work',name:'تحديث Portfolio',icon:'🖼️',color:'#7c3aed',type:'list',desc:'Checklist لتجهيز Behance/Portfolio بشكل احترافي.',items:['اختيار أفضل المشاريع','كتابة Case Study','تصدير Mockups','رفع Behance','تحديث CV']},
+    {id:'freelance_pipeline',cat:'work',name:'Freelance Pipeline',icon:'🤝',color:'#16a34a',type:'dashboard',desc:'متابعة Leads، عروض أسعار، عقود، تحصيل، وتسليم.',cards:['Leads','Proposals','Active Deals','Invoices','Follow-ups']},
+
+    {id:'monthly_budget',cat:'finance',name:'ميزانية شهرية',icon:'💵',color:'#10b981',type:'finance',desc:'دخل، مصاريف، ادخار، ديون، وملاحظات مالية شهرية.',fin:['دخل أساسي','إيجار','أكل ومواصلات','ادخار','طوارئ']},
+    {id:'gold_investment',cat:'finance',name:'خطة استثمار ذهب',icon:'🥇',color:'#d97706',type:'dashboard',desc:'متابعة الذهب، متوسط الشراء، هدف الجرامات، ومراجعة شهرية.',cards:['إجمالي الجرامات','متوسط الشراء','هدف الجرامات','مراجعة السعر']},
+    {id:'debt_payoff',cat:'finance',name:'خطة سداد ديون',icon:'💳',color:'#ef4444',type:'plans',desc:'تقسيم الديون، مواعيد السداد، أولويات، وخطة Snowball.',subs:['ديون قصيرة','ديون طويلة','مواعيد سداد','خطة تخفيض']},
+    {id:'saving_goal',cat:'finance',name:'هدف ادخار كبير',icon:'🏦',color:'#3b82f6',type:'dashboard',desc:'داشبورد هدف مالي: مقدم شقة، عربية، سفر، زواج.',cards:['المبلغ الحالي','المبلغ المستهدف','المتبقي','نسبة الإنجاز','موعد الهدف']},
+    {id:'subscriptions_audit',cat:'finance',name:'مراجعة الاشتراكات',icon:'🔁',color:'#8b5cf6',type:'list',desc:'Checklist لمراجعة وإلغاء الاشتراكات غير المهمة.',items:['نتفلكس/منصات','برامج مدفوعة','Cloud Storage','مصاريف بنكية','إلغاء غير الضروري']},
+
+    {id:'daily_routine',cat:'life',name:'روتين يومي',icon:'☀️',color:'#f59e0b',type:'list',desc:'Morning/Night routine بمرونة عالية.',items:['مياه بعد الصحوة','ترتيب السرير','مراجعة أهم 3 مهام','تمشية قصيرة','مراجعة قبل النوم']},
+    {id:'weekly_review',cat:'life',name:'مراجعة أسبوعية',icon:'🧭',color:'#6366f1',type:'notes',desc:'ملاحظات منظمة لمراجعة الأسبوع والتخطيط للأسبوع القادم.',notes:['ما تم إنجازه','ما تعطل','أهم درس','أولويات الأسبوع القادم']},
+    {id:'travel_plan',cat:'life',name:'تخطيط سفر',icon:'✈️',color:'#0ea5e9',type:'plans',desc:'تذاكر، إقامة، فيزا، ميزانية، Packing list.',subs:['الفيزا والأوراق','الحجز والسكن','الميزانية','Packing List','أماكن الزيارة']},
+    {id:'marriage_prep',cat:'life',name:'تجهيزات زواج',icon:'💍',color:'#ec4899',type:'plans',desc:'ذهب، شقة، فرح، أوراق، ميزانية ومواعيد.',subs:['ميزانية الزواج','قائمة الذهب','الشقة والتجهيز','الأوراق','مواعيد مهمة']},
+    {id:'car_motorcycle',cat:'life',name:'صيانة عربية/موتوسيكل',icon:'🏍️',color:'#f97316',type:'calendar',desc:'مواعيد زيت، صيانة، تأمين، ترخيص، قطع غيار.',events:['تغيير زيت','شد جنزير','كشف كاوتش','تجديد رخصة']},
+
+    {id:'content_calendar',cat:'content',name:'Content Calendar',icon:'🗓️',color:'#2563eb',type:'calendar',desc:'تقويم نشر محتوى للسوشيال ميديا.',events:['Post Idea','Shoot Day','Edit Day','Publish','Analytics Review']},
+    {id:'youtube_channel',cat:'content',name:'إدارة قناة YouTube',icon:'▶️',color:'#dc2626',type:'plans',desc:'أفكار، سكريبت، تصوير، مونتاج، SEO، نشر.',subs:['أفكار فيديوهات','سكريبت','تصوير','مونتاج','SEO ونشر']},
+    {id:'brand_assets',cat:'content',name:'Brand Assets Library',icon:'🎨',color:'#7c3aed',type:'notes',desc:'ملاحظات وروابط الألوان، الخطوط، اللوجوهات، والأصول.',notes:['ألوان البراند','Fonts','Logo links','Motion rules','Export settings']},
+    {id:'campaign_launch',cat:'content',name:'Marketing Campaign Launch',icon:'🚀',color:'#10b981',type:'plans',desc:'خطة إطلاق حملة: Teasers، Ads، محتوى، Landing.',subs:['Strategy','Creative Assets','Media Buying','Launch Checklist','Reporting']},
+
+    {id:'course_learning',cat:'learning',name:'خطة كورس 30 يوم',icon:'📚',color:'#3b82f6',type:'plans',desc:'تقسيم كورس على 30 يوم مع تطبيق عملي ومراجعة.',subs:['مشاهدة الدروس','تطبيق عملي','ملاحظات','مراجعة أسبوعية']},
+    {id:'english_learning',cat:'learning',name:'تحسين English',icon:'🇬🇧',color:'#06b6d4',type:'list',desc:'روتين يومي للانجليزي: Listening, Speaking, Vocabulary.',items:['Listening 20 min','Shadowing','10 كلمات جديدة','كتابة فقرة','مراجعة أسبوعية']},
+    {id:'book_notes',cat:'learning',name:'ملاحظات كتب',icon:'📖',color:'#8b5cf6',type:'notes',desc:'قالب لتلخيص الكتب والأفكار والاقتباسات.',notes:['ملخص الكتاب','أهم الأفكار','اقتباسات','تطبيق عملي']},
+    {id:'exam_prep',cat:'learning',name:'تحضير امتحان/شهادة',icon:'🧪',color:'#f59e0b',type:'plans',desc:'خطة مذاكرة، مراجعة، Mock exams، نقاط ضعف.',subs:['المذاكرة اليومية','حل أسئلة','Mock Exams','نقاط ضعف','مراجعة نهائية']},
+
+    {id:'home_maintenance',cat:'home',name:'صيانة البيت',icon:'🛠️',color:'#64748b',type:'calendar',desc:'مواعيد صيانة أجهزة، كهرباء، سباكة، تنظيف دوري.',events:['تنظيف عميق','صيانة تكييف','مراجعة كهرباء','شراء مستلزمات']},
+    {id:'shopping_list',cat:'home',name:'قائمة مشتريات',icon:'🛒',color:'#22c55e',type:'list',desc:'Checklist للمشتريات اليومية والشهرية.',items:['خضار وفاكهة','بروتين','منتجات تنظيف','أدوية/مكملات','مستلزمات شخصية']},
+    {id:'meal_prep',cat:'home',name:'Meal Prep أسبوعي',icon:'🍱',color:'#f97316',type:'plans',desc:'تحضير وجبات أسبوعي ومتابعة مكونات.',subs:['بروتينات','كارب صحي','سناكس','تجهيزات الأسبوع']},
+    {id:'documents_vault',cat:'home',name:'أوراق ومستندات',icon:'📁',color:'#0ea5e9',type:'notes',desc:'روابط ومسارات ملفات مهمة: عقود، فواتير، ضمانات.',notes:['بطاقة/باسبور','عقود','فواتير مهمة','ضمانات أجهزة']},
+
+    {id:'startup_ideas',cat:'work',name:'أفكار مشاريع E-commerce',icon:'🛍️',color:'#14b8a6',type:'dashboard',desc:'تحليل منتجات، تكلفة، منافسة، هامش ربح، قرار.',cards:['اسم المنتج','تكلفة التصنيع','سعر البيع','المنافسين','الهامش المتوقع']},
+    {id:'product_research',cat:'work',name:'Product Research Sheet',icon:'🔎',color:'#6366f1',type:'list',desc:'Checklist لاختيار منتج مناسب للبيع.',items:['حل مشكلة واضحة','سهل التصنيع','سهل الشحن','هامش ربح جيد','منافسة مقبولة','محتوى تسويقي قوي']},
+    {id:'client_invoice',cat:'finance',name:'فواتير العملاء',icon:'🧾',color:'#0f766e',type:'finance',desc:'متابعة فواتير العملاء والمدفوع والمتبقي.',fin:['فاتورة جديدة','مدفوع','متبقي','ضريبة/خصم']},
+    {id:'personal_crm',cat:'life',name:'Personal CRM',icon:'👥',color:'#8b5cf6',type:'notes',desc:'متابعة علاقات ومعارف، ملاحظات، ومواعيد تواصل.',notes:['أشخاص مهمين','Follow-up','ملاحظات لقاء','فرص تعاون']},
+    {id:'decision_log',cat:'life',name:'Decision Log',icon:'⚖️',color:'#334155',type:'notes',desc:'سجل قرارات: القرار، السبب، البدائل، النتيجة بعد فترة.',notes:['القرار','ليه اخترته','البدائل','مراجعة النتيجة']},
+    {id:'focus_sprints',cat:'work',name:'Focus Sprints',icon:'🎯',color:'#ef4444',type:'plans',desc:'Sprints أسبوعية للشغل العميق وتحقيق أهداف محددة.',subs:['Sprint Goal','Deep Work Blocks','Deliverables','Review']},
+    {id:'habit_tracker',cat:'life',name:'Habit Tracker',icon:'📈',color:'#22c55e',type:'list',desc:'تتبع عادات يومية بسيطة بنظام Checkbox.',items:['شرب مياه','مشي','قراءة','تعلم','نوم بدري']},
+    {id:'medical_history',cat:'health',name:'Medical History',icon:'🏥',color:'#0ea5e9',type:'notes',desc:'سجل تقارير، أعراض، أدوية، نتائج تحاليل، مواعيد.',notes:['الأعراض','الأدوية','نتائج التحاليل','تقارير وصور','أسئلة للدكتور']}
+  ];
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function save(k,v){localStorage.setItem(k,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud()}
+  function esc(s){return (typeof window.esc==='function'?window.esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function uid(){return 'tpl_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function dynSections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function saveSections(v){save(DYN_KEY,v)}
+  function cleanName(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/[ًٌٍَُِّْ]/g,'').toLowerCase()}
+  function templateTypeLabel(t){return {plans:'خطط',notes:'ملاحظات',calendar:'كالندر',list:'Checklist',finance:'مالي',dashboard:'داشبورد'}[t]||t}
+
+  function buildSectionFromTemplate(t){
+    const base={id:uid(),name:t.name.replace(/^(قالب|قسم)\s*/,'').trim(),icon:t.icon,color:t.color,type:t.type,desc:t.desc,items:[],notes:[],events:[],finItems:[],cards:[],subsections:[]};
+    if(t.subs) base.subsections=t.subs.map((s,i)=>({id:uid(),name:s,icon:['📋','✅','📝','📆','🎯','🚀'][i%6],color:t.color,desc:'جزء من '+t.name,items:[],plans:[]}));
+    if(t.items) base.items=t.items.map(x=>({id:uid(),title:x,icon:'✅',color:t.color,done:false,desc:'',deadline:''}));
+    if(t.notes) base.notes=t.notes.map(x=>({id:uid(),title:x,icon:'📝',color:t.color,date:new Date().toISOString().slice(0,10),content:''}));
+    if(t.events) base.events=t.events.map((x,i)=>({id:uid(),title:x,icon:'📆',color:t.color,date:'',start:'',end:'',desc:'',location:'',link_day:false}));
+    if(t.fin) base.finItems=t.fin.map((x,i)=>({id:uid(),title:x,icon:'💰',color:t.color,amount:0,type:i===0?'in':'out',note:''}));
+    if(t.cards) base.cards=t.cards.map(x=>({id:uid(),title:x,icon:'📊',color:t.color,value:'',desc:''}));
+    return base;
+  }
+
+  window.createTemplateV30=function(id){
+    const t=TEMPLATES_V30.find(x=>x.id===id); if(!t)return;
+    const list=dynSections();
+    const sec=buildSectionFromTemplate(t);
+    const exists=list.find(s=>cleanName(s.name)===cleanName(sec.name));
+    if(exists && !confirm('القسم موجود بالفعل. تحب تضيف نسخة جديدة؟'))return;
+    list.push(sec); saveSections(list);
+    if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();
+    if(typeof renderCoreV29==='function')renderCoreV29('templates');
+    if(typeof toast==='function')toast('تم إنشاء تيمبلت: '+t.name);
+    if(typeof go==='function')setTimeout(()=>go('dyn_'+sec.id),120);
+  }
+
+  window.previewTemplateV30=function(id){
+    const t=TEMPLATES_V30.find(x=>x.id===id); if(!t)return;
+    const title=document.getElementById('systemSectionsModalTitle'), body=document.getElementById('systemSectionsModalBody');
+    title.textContent='Preview Template';
+    body.innerHTML=`<div class="core-card-v29" style="--tc:${t.color}"><h3>${t.icon} ${esc(t.name)}</h3><p>${esc(t.desc)}</p><div class="template-tags-v30"><span>${esc(templateTypeLabel(t.type))}</span><span>${esc(t.cat)}</span></div></div>
+    <div class="core-panel-v29" style="margin-top:12px"><h3>هيضيف إيه؟</h3><p>${esc((t.subs||t.items||t.notes||t.events||t.fin||t.cards||[]).join(' • '))}</p></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="createTemplateV30('${t.id}');closeSystemSectionsModal()">إنشاء التيمبلت</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+
+  window.filterTemplatesV30=function(cat='all',q=''){
+    document.querySelectorAll('.template-cat-v30').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
+    const query=(q||document.getElementById('tplSearchV30')?.value||'').trim().toLowerCase();
+    document.querySelectorAll('[data-template-card-v30]').forEach(card=>{
+      const okCat=cat==='all'||card.dataset.cat===cat;
+      const okQ=!query || card.dataset.search.includes(query);
+      card.style.display=(okCat&&okQ)?'block':'none';
+    });
+    const count=[...document.querySelectorAll('[data-template-card-v30]')].filter(c=>c.style.display!=='none').length;
+    const c=document.getElementById('tplCountV30'); if(c)c.textContent=count+' تيمبلت';
+  }
+
+  function renderTemplatesV30(){
+    return `<div class="templates-topbar-v30">
+      <div class="templates-search-v30"><span>🔎</span><input id="tplSearchV30" placeholder="ابحث في 40 تيمبلت..." oninput="filterTemplatesV30(document.querySelector('.template-cat-v30.active')?.dataset.cat||'all',this.value)"></div>
+      <div class="templates-count-v30" id="tplCountV30">${TEMPLATES_V30.length} تيمبلت</div>
+    </div>
+    <div class="template-cat-row-v30">${TEMPLATE_CATS.map(([id,n],i)=>`<button class="template-cat-v30 ${i===0?'active':''}" data-cat="${id}" onclick="filterTemplatesV30('${id}')">${n}</button>`).join('')}</div>
+    <div class="core-grid-v29">${TEMPLATES_V30.map(t=>`<div class="core-card-v29 template-card-v30" data-template-card-v30 data-cat="${t.cat}" data-search="${esc((t.name+' '+t.desc+' '+t.cat+' '+t.type).toLowerCase())}" style="--tc:${t.color}">
+      <div class="tpl-head"><div class="tpl-icon">${t.icon}</div><div><h3>${esc(t.name)}</h3><p>${esc(t.desc)}</p></div></div>
+      <div class="template-tags-v30"><span>${esc(templateTypeLabel(t.type))}</span><span>${esc(TEMPLATE_CATS.find(c=>c[0]===t.cat)?.[1]||t.cat)}</span><span>${(t.subs||t.items||t.notes||t.events||t.fin||t.cards||[]).length} عناصر</span></div>
+      <div class="template-actions-v30"><button class="use" onclick="createTemplateV30('${t.id}')">استخدم</button><button class="preview" onclick="previewTemplateV30('${t.id}')">معاينة</button></div>
+    </div>`).join('')}</div>`;
+  }
+
+  const oldRenderCore=window.renderCoreV29;
+  if(oldRenderCore && !oldRenderCore.__templatesV30){
+    const fn=function(tab='inbox'){
+      oldRenderCore(tab);
+      if(tab==='templates'){
+        const pane=document.querySelector('.core-pane-v29.active');
+        if(pane)pane.innerHTML=renderTemplatesV30();
+      }
+    };
+    fn.__templatesV30=true; window.renderCoreV29=fn;
+  }
+
+  // Also override old createTemplateV29 to redirect to closest professional template if called.
+  window.createTemplateV29=function(type){
+    const map={notes:'book_notes',calendar:'content_calendar',finance:'monthly_budget',list:'habit_tracker',treatment:'treatment_pcl',workout:'gym_schedule'};
+    createTemplateV30(map[type]||'daily_routine');
+  };
+
+  setTimeout(()=>{if(typeof cur!=='undefined' && cur==='core')window.renderCoreV29('templates')},300);
+})();
+</script>
+
+
+<style id="dynamic-sidebar-no-flicker-v31-style">
+/* ===== V31: No flicker for dynamic sidebar sections ===== */
+body[data-dyn-stabilizing="1"] [data-dyn-nav-v13],
+body[data-dyn-stabilizing="1"] [data-dyn-nav-v14],
+body[data-dyn-stabilizing="1"] [data-dyn-nav-v18],
+body[data-dyn-stabilizing="1"] [data-dyn-nav-v28],
+body[data-dyn-stabilizing="1"] [data-dyn-nav-v31],
+body[data-dyn-stabilizing="1"] [data-dyn-module-v13],
+body[data-dyn-stabilizing="1"] [data-dyn-module-v14],
+body[data-dyn-stabilizing="1"] [data-dyn-module-v18],
+body[data-dyn-stabilizing="1"] [data-dyn-module-v28],
+body[data-dyn-stabilizing="1"] [data-dyn-module-v31]{
+  visibility:visible!important;
+}
+.nav-item[data-dyn-nav-v31],
+.bnav-item[data-dyn-nav-v31]{
+  transition:background .18s ease, transform .18s ease, color .18s ease!important;
+}
+</style>
+
+<script id="dynamic-sidebar-no-flicker-v31">
+/* ===== V31: Stable dynamic nav rendering without remove/re-add on click ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function escx(s){return (typeof esc==='function'?esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function cleanName(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/[ًٌٍَُِّْ]/g,'').toLowerCase()}
+  function sectionsRaw(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function saveSections(v){localStorage.setItem(DYN_KEY,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud();}
+  function normSec(s){
+    s.type=s.type||'plans';
+    s.subsections=Array.isArray(s.subsections)?s.subsections:[];
+    s.items=Array.isArray(s.items)?s.items:[];
+    s.notes=Array.isArray(s.notes)?s.notes:[];
+    s.events=Array.isArray(s.events)?s.events:[];
+    s.finItems=Array.isArray(s.finItems)?s.finItems:[];
+    s.cards=Array.isArray(s.cards)?s.cards:[];
+    s.subsections.forEach(ss=>{ss.items=Array.isArray(ss.items)?ss.items:[];ss.plans=Array.isArray(ss.plans)?ss.plans:[]});
+    return s;
+  }
+  function mergeDupes(list){
+    const map=new Map(); let changed=false;
+    list.map(normSec).forEach(sec=>{
+      const k=cleanName(sec.name);
+      if(!k)return;
+      if(!map.has(k)){map.set(k,sec);return;}
+      changed=true;
+      const a=map.get(k);
+      ['items','notes','events','finItems','cards'].forEach(key=>a[key]=[...(a[key]||[]),...(sec[key]||[])]);
+      if((a.type||'plans')==='plans' && sec.type && sec.type!=='plans')a.type=sec.type;
+      const subMap=new Map((a.subsections||[]).map(s=>[cleanName(s.name),s]));
+      (sec.subsections||[]).forEach(s=>{
+        const kk=cleanName(s.name);
+        if(subMap.has(kk)){
+          const old=subMap.get(kk);
+          old.items=[...(old.items||[]),...(s.items||[])];
+          old.plans=[...(old.plans||[]),...(s.plans||[])];
+        } else subMap.set(kk,s);
+      });
+      a.subsections=[...subMap.values()];
+    });
+    const out=[...map.values()];
+    if(changed || out.length!==list.length) saveSections(out);
+    return out;
+  }
+  function sections(){return mergeDupes(sectionsRaw()).map(normSec)}
+  function typeIcon(t){return {plans:'📋',notes:'📝',calendar:'📆',list:'✅',finance:'💰',dashboard:'📊'}[t||'plans']||'🧩'}
+  function typeLabel(t){return {plans:'خطط وعناصر',notes:'ملاحظات',calendar:'كالندر ومواعيد',list:'قائمة مرنة',finance:'ثروتي مخصص',dashboard:'داشبورد حر'}[t||'plans']||'مرن'}
+
+  function heroActions(sec){
+    const id=sec.id;
+    if(sec.type==='notes')return `<button class="add-btn teal" onclick="openNoteEditorV28('${id}')">+ ملاحظة</button>`;
+    if(sec.type==='calendar')return `<button class="add-btn teal" onclick="openEventEditorV28('${id}')">+ موعد</button>`;
+    if(sec.type==='list')return `<button class="add-btn teal" onclick="openListItemEditorV28('${id}')">+ عنصر</button>`;
+    if(sec.type==='finance')return `<button class="add-btn teal" onclick="openFlexFinanceEditorV28('${id}')">+ عملية</button>`;
+    if(sec.type==='dashboard')return `<button class="add-btn teal" onclick="openDashboardCardEditorV28('${id}')">+ كارت</button>`;
+    return `<button class="add-btn teal" onclick="openSubsectionEditorV14('${id}')">+ قسم فرعي</button><button class="add-btn" onclick="openQuickItemEditorV14('${id}',null,null)">+ عنصر سريع</button>`;
+  }
+
+  function moduleHTML(sec){
+    return `<div class="dyn-v14-wrap">
+      <div class="dyn-v14-hero" style="--dyn-color:${sec.color||'#6366f1'}">
+        <div class="dyn-v14-hero-icon">${escx(sec.icon||typeIcon(sec.type))}</div>
+        <div class="dyn-v14-hero-text"><h2>${escx(sec.name||'قسم')}</h2><p>${escx(sec.desc||'قسم مرن قابل للتخصيص حسب نوعه.')}</p><div class="flex-section-type-badge">${typeIcon(sec.type)} ${typeLabel(sec.type)}</div></div>
+        <div class="dyn-v14-hero-actions">
+          ${heroActions(sec)}
+          <button class="add-btn pink" onclick="openDynSectionEditor('${sec.id}')">⚙️ تعديل القسم</button>
+        </div>
+      </div>
+      <div id="dynV28Board_${sec.id}" class="flex-board-v28"></div>
+    </div>`;
+  }
+
+  function stableRenderShellV31(){
+    document.body.removeAttribute('data-dyn-stabilizing');
+    const main=document.querySelector('main.main');
+    const nav=document.querySelector('.sidebar .nav-items');
+    const bottom=document.getElementById('bottomNav');
+    if(!main||!nav)return;
+
+    const secs=sections();
+    const ids=new Set(secs.map(s=>'dyn_'+s.id));
+
+    // remove only truly deleted dynamic sections, not every time
+    document.querySelectorAll('.nav-item[data-mod^="dyn_"], .bnav-item[data-mod^="dyn_"]').forEach(el=>{
+      if(!ids.has(el.dataset.mod)) el.remove();
+    });
+    document.querySelectorAll('.module[id^="mod-dyn_"]').forEach(el=>{
+      const mod=el.id.replace(/^mod-/,'');
+      if(!ids.has(mod)) el.remove();
+    });
+
+    secs.forEach(sec=>{
+      const mod='dyn_'+sec.id;
+      let n=nav.querySelector(`.nav-item[data-mod="${mod}"]`);
+      if(!n){
+        n=document.createElement('div');
+        n.className='nav-item';
+        n.dataset.mod=mod;
+        n.dataset.dynNavV31='1';
+        n.onclick=()=>go(mod);
+        nav.appendChild(n);
+      }
+      n.dataset.dynNavV31='1';
+      n.innerHTML=`<span class="nav-icon">${escx(sec.icon||typeIcon(sec.type))}</span><span>${escx(sec.name||'قسم')}</span>`;
+
+      if(bottom){
+        let b=bottom.querySelector(`.bnav-item[data-mod="${mod}"]`);
+        if(!b){
+          b=document.createElement('div');
+          b.className='bnav-item';
+          b.dataset.mod=mod;
+          b.dataset.dynNavV31='1';
+          b.onclick=()=>go(mod);
+          bottom.appendChild(b);
+        }
+        b.dataset.dynNavV31='1';
+        b.innerHTML=`<span class="bnav-icon">${escx(sec.icon||typeIcon(sec.type))}</span><span>${escx(sec.name||'قسم')}</span>`;
+      }
+
+      let m=document.getElementById('mod-'+mod);
+      if(!m){
+        m=document.createElement('section');
+        m.id='mod-'+mod;
+        m.className='module';
+        m.dataset.dynModuleV31='1';
+        main.appendChild(m);
+        m.innerHTML=moduleHTML(sec);
+      } else {
+        m.dataset.dynModuleV31='1';
+        // Update hero only when section data changed, without removing nav
+        const h=m.querySelector('.dyn-v14-hero-text h2');
+        if(h && h.textContent !== (sec.name||'قسم')) m.innerHTML=moduleHTML(sec);
+      }
+    });
+
+    removeDuplicateDynNavV31();
+  }
+
+  function removeDuplicateDynNavV31(){
+    const seen=new Set();
+    document.querySelectorAll('.nav-item[data-mod^="dyn_"], .bnav-item[data-mod^="dyn_"]').forEach(el=>{
+      const key=(el.classList.contains('bnav-item')?'b:':'s:')+el.dataset.mod;
+      if(seen.has(key)) el.remove();
+      else seen.add(key);
+    });
+  }
+
+  const previousGo=window.go;
+  window.go=function(mod){
+    if(String(mod).startsWith('dyn_')){
+      let target=document.getElementById('mod-'+mod);
+      if(!target) stableRenderShellV31();
+      target=document.getElementById('mod-'+mod);
+      cur=mod;
+      document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+      if(target) target.classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod===mod));
+      document.querySelectorAll('.bnav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod===mod));
+      const id=String(mod).slice(4);
+      if(typeof renderDynamicBoardV28==='function') renderDynamicBoardV28(id);
+      else if(typeof renderDynamicBoardV14==='function') renderDynamicBoardV14(id);
+      removeDuplicateDynNavV31();
+      return;
+    }
+    return previousGo(mod);
+  };
+
+  // Override older shell renderers that caused flicker by remove/re-add.
+  window.renderDynamicShellV14=stableRenderShellV31;
+  window.renderDynamicShellV18=stableRenderShellV31;
+  window.renderDynamicShell=stableRenderShellV31;
+
+  // Prevent old stabilizing CSS state from hiding anything.
+  const obs=new MutationObserver(()=>{
+    if(document.body.hasAttribute('data-dyn-stabilizing')) document.body.removeAttribute('data-dyn-stabilizing');
+    removeDuplicateDynNavV31();
+  });
+  obs.observe(document.body,{attributes:true,attributeFilter:['data-dyn-stabilizing']});
+
+  setTimeout(stableRenderShellV31,80);
+  setTimeout(stableRenderShellV31,500);
+})();
+</script>
+
+
+<style id="advanced-templates-v32-style">
+.adv-template-card-v32{min-height:240px}
+.adv-template-score-v32{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.adv-template-score-v32 span{font-size:10.5px;font-weight:950;padding:5px 8px;border-radius:999px;background:color-mix(in srgb,var(--tc,#6366f1) 14%,var(--panel2));color:var(--text-m)}
+.adv-preview-grid-v32{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
+.adv-preview-card-v32{padding:14px;border-radius:20px;background:var(--panel2);border:1px solid var(--border)}
+.adv-preview-card-v32 h4{font-size:15px;margin-bottom:7px}.adv-preview-card-v32 p{font-size:12px;color:var(--text-m);line-height:1.7}
+.adv-template-card-v32 .tpl-head h3{font-size:18px}
+.adv-template-card-v32 .tpl-head p{min-height:62px}
+.adv-template-card-v32 .template-actions-v30{margin-top:16px}
+</style>
+
+<script id="advanced-templates-v32">
+/* ===== V32: Real advanced templates, not skeletons ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+
+  const ADV_TEMPLATES_V32=[
+    {
+      id:'knee_rehab_advanced',cat:'health',name:'PCL / Knee Rehab Operating System',icon:'🦵',color:'#14b8a6',type:'plans',
+      desc:'نظام تأهيل ركبة كامل: مراحل، قياس ألم، تمارين، Progression Rules، مراجعة أسبوعية وربط بيومي.',
+      subs:[
+        {name:'Phase 1 — Pain & ROM',icon:'🧊',plans:[{title:'أول 14 يوم — ألم ومدى حركة',days:14,weekdays:['6','0','1','2','3','4','5'],tasks:['Pain score قبل التمرين','Heel slides','Quad sets','Ice / Elevation','ملاحظة التورم'],details:'لا تزود الألم عن 3/10. ركز على مدى الحركة والتحكم.'}]},
+        {name:'Phase 2 — Strength Base',icon:'💪',plans:[{title:'تقوية أساسية 4 أسابيع',days:28,weekdays:['6','1','3'],tasks:['Warm-up 8 min','Glute bridge','Mini squat supported','Step-up low height','Pain score بعد التمرين'],details:'زود المقاومة تدريجيًا فقط لو مفيش تورم اليوم التالي.'}]},
+        {name:'Phase 3 — Balance & Return',icon:'⚖️',plans:[{title:'توازن ورجوع تدريجي',days:21,weekdays:['0','2','4'],tasks:['Single-leg balance','Band walks','Controlled lunges','Stationary bike','Review notes'],details:'اختبارات ثبات قبل أي رجوع لنشاط أعلى.'}]}
+      ],
+      notes:['أسئلة للدكتور','ممنوعات الحركة','ملاحظات الألم','قياسات مدى الحركة'],
+      dashboard:['Pain Average','ROM Progress','Sessions Done','Next Doctor Visit','Red Flags']
+    },
+    {
+      id:'motion_client_pipeline_pro',cat:'work',name:'Motion Client Project OS',icon:'🎬',color:'#ec4899',type:'plans',
+      desc:'نظام كامل لمشروع موشن: Brief، Styleframes، Animation، Revisions، Delivery، Invoice.',
+      subs:[
+        {name:'01 Brief & Scope',icon:'🧾',items:['استلام Brief','تحديد Deliverables','تحديد المقاسات','تأكيد Deadline','تحديد سعر ومراحل دفع']},
+        {name:'02 Creative Direction',icon:'🎨',items:['Moodboard','References','Styleframes','Approval على الستايل']},
+        {name:'03 Production',icon:'⚙️',plans:[{title:'Production Sprint',days:10,weekdays:['6','0','1','2','3','4'],tasks:['Daily render/version','Update client note','Backup project','Export preview'],details:'كل يوم نسخة واضحة واسم ملف منظم.'}]},
+        {name:'04 Revisions & Delivery',icon:'🚀',items:['Revision round 1','Revision round 2','Final export','Source archive','Invoice follow-up']}
+      ],
+      notes:['Client Notes','Revision Log','Export Settings','Asset Links'],
+      dashboard:['Project Status','Hours Spent','Remaining Tasks','Payment Status','Delivery Date']
+    },
+    {
+      id:'ecommerce_product_research_pro',cat:'work',name:'E-commerce Product Research Lab',icon:'🛍️',color:'#14b8a6',type:'dashboard',
+      desc:'نظام بحث منتجات احترافي: Scorecard، تكلفة، تصنيع، شحن، محتوى، منافسة، قرار نهائي.',
+      cards:['Product Score /100','Manufacturing Cost','Selling Price','Gross Margin','Competitor Count','Content Potential','Shipping Difficulty','Decision'],
+      notes:['Product Ideas Dump','Supplier Questions','Competitor Ads Notes','Customer Pain Points'],
+      items:['يحل مشكلة واضحة','سهل التصنيع','سهل الشحن','ممكن يتصور بمحتوى قوي','منافسة مقبولة','Margin أعلى من 35%','Repeat purchase possible']
+    },
+    {
+      id:'monthly_finance_command',cat:'finance',name:'Monthly Finance Command Center',icon:'💵',color:'#10b981',type:'finance',
+      desc:'نظام مالي شهري: دخل، مصاريف ثابتة، متغيرة، ادخار، طوارئ، ديون، مراجعة نهاية الشهر.',
+      fin:['Salary / Income','Fixed Expenses','Variable Expenses','Savings','Emergency Fund','Debt Payment','Investment'],
+      notes:['مراجعة نهاية الشهر','أسباب زيادة المصاريف','قرارات الشهر القادم'],
+      dashboard:['Income','Expenses','Savings Rate','Debt Left','Net Worth Change']
+    },
+    {
+      id:'content_agency_calendar',cat:'content',name:'Agency Content Calendar Pro',icon:'📱',color:'#2563eb',type:'calendar',
+      desc:'تقويم إنتاج محتوى شهري: أفكار، تصوير، مونتاج، مراجعة، نشر، Analytics.',
+      events:['Idea Batch','Script Writing','Shoot Day','Edit Day','Client Review','Publishing','Analytics Review'],
+      notes:['Content Pillars','Hook Bank','Caption Bank','Client Feedback'],
+      dashboard:['Posts This Month','Approved','Pending Review','Published','Top Performing']
+    },
+    {
+      id:'youtube_video_factory',cat:'content',name:'YouTube Video Factory',icon:'▶️',color:'#dc2626',type:'plans',
+      desc:'مصنع فيديوهات يوتيوب: فكرة، سكريبت، تصوير، مونتاج، Thumbnail، SEO، نشر.',
+      subs:[
+        {name:'Ideas & Research',icon:'🔎',items:['Keyword research','Competitor scan','Angle selection','Title options']},
+        {name:'Script & Shoot',icon:'🎙️',items:['Outline','Full script','Shot list','Recording checklist']},
+        {name:'Edit & Publish',icon:'✂️',plans:[{title:'Video Production Sprint',days:7,weekdays:['6','0','1','2','3','4','5'],tasks:['Edit block','Thumbnail progress','SEO checklist','Upload notes'],details:'كل يوم تقدم واضح في الفيديو.'}]}
+      ],
+      dashboard:['Ideas Ready','Videos Editing','Scheduled','Published','CTR']
+    },
+    {
+      id:'wedding_prep_ops',cat:'life',name:'Wedding Preparation OS',icon:'💍',color:'#ec4899',type:'plans',
+      desc:'نظام تجهيز زواج: ميزانية، شقة، ذهب، قاعة، أوراق، مشتريات، مواعيد.',
+      subs:[
+        {name:'Budget & Gold',icon:'🥇',items:['تحديد ميزانية كاملة','قائمة الذهب','مصاريف شهرية','خطة ادخار']},
+        {name:'Apartment Setup',icon:'🏠',items:['أجهزة','أثاث','مطبخ','تشطيب/دهان','نواقص']},
+        {name:'Events & Papers',icon:'📆',items:['مواعيد أهل','قاعة/تصوير','أوراق رسمية','قائمة مدعوين']}
+      ],
+      dashboard:['Budget Used','Gold Progress','Apartment Ready','Days Left','Pending Decisions']
+    },
+    {
+      id:'learning_30day_course',cat:'learning',name:'30-Day Course Execution System',icon:'📚',color:'#3b82f6',type:'plans',
+      desc:'تنفيذ كورس 30 يوم بواجبات، تطبيق عملي، مراجعة أسبوعية، وملاحظات.',
+      subs:[
+        {name:'Daily Lessons',icon:'🎧',plans:[{title:'30-Day Course Plan',days:30,weekdays:['6','0','1','2','3','4','5'],tasks:['Watch lesson','Write notes','Apply exercise','Save resource link','Rate understanding'],details:'لا تكتفي بالمشاهدة، لازم تطبيق يومي.'}]},
+        {name:'Projects',icon:'🧪',items:['Mini project 1','Mini project 2','Final project','Portfolio publish']},
+        {name:'Review',icon:'🧠',items:['Weekly review','Weak points','Questions list','Revision session']}
+      ],
+      notes:['Course Notes','Resource Links','Questions']
+    },
+    {
+      id:'home_maintenance_pro',cat:'home',name:'Home Maintenance System',icon:'🛠️',color:'#64748b',type:'calendar',
+      desc:'تقويم صيانة البيت: أجهزة، تكييف، سباكة، كهرباء، تنظيف، ضمانات.',
+      events:['AC maintenance','Deep cleaning','Water filter','Electric check','Appliance warranty review','Monthly supplies'],
+      notes:['أرقام فنيين','ضمانات الأجهزة','مقاسات وقطع غيار'],
+      items:['مراجعة الفواتير','تنظيف عميق','شراء مستلزمات','فحص تسريب']
+    },
+    {
+      id:'medical_history_pro',cat:'health',name:'Medical History Vault',icon:'🏥',color:'#0ea5e9',type:'notes',
+      desc:'سجل طبي منظم: أعراض، أدوية، تحاليل، تقارير، أسئلة للدكتور، Timeline.',
+      notes:['Timeline المرض/الإصابة','الأدوية الحالية','نتائج تحاليل','تقارير وأشعات','أسئلة للدكتور','ملاحظات بعد الجلسات'],
+      dashboard:['Last Visit','Next Visit','Active Meds','Pending Tests','Symptoms Trend']
+    },
+    {
+      id:'freelance_crm_pro',cat:'work',name:'Freelance CRM & Sales Pipeline',icon:'🤝',color:'#16a34a',type:'dashboard',
+      desc:'CRM للفريلانس: Leads، عروض، Follow-up، عقود، فواتير، تحصيل.',
+      cards:['New Leads','Proposal Sent','Negotiation','Active Clients','Pending Payments','Lost Deals'],
+      notes:['Lead Notes','Pricing Objections','Follow-up Scripts','Client Requirements'],
+      items:['Follow-up اليوم','إرسال عرض سعر','تأكيد Scope','تحصيل دفعة']
+    }
+  ];
+
+  const BASE_EXTRA=[
+    ['daily_routine_plus','life','Daily Routine Advanced','☀️','#f59e0b','list',['Morning review','Deep work block','Movement','Evening shutdown','Sleep prep']],
+    ['habit_tracker_plus','life','Habit Tracker 12 Weeks','📈','#22c55e','list',['Water','Walk','Read','Learning','Sleep early','No sugar']],
+    ['travel_ops_plus','life','Travel Planner Pro','✈️','#0ea5e9','plans',['Visa & Papers','Flights & Hotel','Budget','Packing','Itinerary']],
+    ['personal_crm_plus','life','Personal CRM','👥','#8b5cf6','notes',['Important people','Follow-ups','Gift ideas','Meeting notes']],
+    ['decision_log_plus','life','Decision Log','⚖️','#334155','notes',['Decision','Context','Options','Why','Review result']],
+    ['focus_sprints_plus','work','Focus Sprint System','🎯','#ef4444','plans',['Sprint Goals','Daily Deep Work','Deliverables','Review']],
+    ['linkedin_os_plus','work','LinkedIn Personal Brand OS','💼','#0f766e','plans',['Post Ideas','Case Studies','Captions','Networking']],
+    ['portfolio_os_plus','work','Portfolio Upgrade OS','🖼️','#7c3aed','plans',['Project Selection','Case Study','Mockups','Publish']],
+    ['invoice_tracker_plus','finance','Client Invoice Tracker','🧾','#0f766e','finance',['Invoice issued','Paid','Remaining','Tax/discount']],
+    ['gold_strategy_plus','finance','Gold Strategy Dashboard','🥇','#d97706','dashboard',['Total grams','Average buy','Target grams','Current value','Profit/Loss']],
+    ['debt_snowball_plus','finance','Debt Snowball Plan','💳','#ef4444','plans',['Debt list','Payment dates','Priority','Monthly review']],
+    ['subscription_audit_plus','finance','Subscriptions Audit','🔁','#8b5cf6','list',['Software','Streaming','Cloud','Bank fees','Cancel unused']],
+    ['book_notes_plus','learning','Book Notes System','📖','#8b5cf6','notes',['Summary','Key ideas','Quotes','Actions']],
+    ['english_sprint_plus','learning','English Sprint','🇬🇧','#06b6d4','plans',['Listening','Shadowing','Vocabulary','Writing','Speaking']],
+    ['exam_prep_plus','learning','Exam Prep System','🧪','#f59e0b','plans',['Study blocks','Practice questions','Mock exams','Weak points']],
+    ['brand_assets_plus','content','Brand Assets Vault','🎨','#7c3aed','notes',['Colors','Fonts','Logos','Motion rules','Export settings']],
+    ['campaign_launch_plus','content','Campaign Launch OS','🚀','#10b981','plans',['Strategy','Assets','Ads','Launch','Report']],
+    ['shopping_list_plus','home','Smart Shopping List','🛒','#22c55e','list',['Proteins','Vegetables','Cleaning','Medicine','Personal care']],
+    ['meal_prep_plus','home','Meal Prep Weekly','🍱','#f97316','plans',['Proteins','Carbs','Snacks','Prep day']],
+    ['documents_vault_plus','home','Documents Vault','📁','#0ea5e9','notes',['IDs','Contracts','Invoices','Warranties']]
+  ];
+
+  const ALL_ADV_TEMPLATES_V32=[...ADV_TEMPLATES_V32, ...BASE_EXTRA.map(x=>({id:x[0],cat:x[1],name:x[2],icon:x[3],color:x[4],type:x[5],desc:'قالب متقدم جاهز فيه عناصر داخلية، ملاحظات، ومهام قابلة للتعديل.',quick:x[6]}))];
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function save(k,v){localStorage.setItem(k,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud()}
+  function esc(s){return (typeof window.esc==='function'?window.esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function uid(){return 'adv_tpl_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function today(){return new Date().toISOString().slice(0,10)}
+  function addDays(date,n){const d=new Date((date||today())+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+  function cleanName(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/[ًٌٍَُِّْ]/g,'').toLowerCase()}
+  function dynSections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function saveSections(v){save(DYN_KEY,v)}
+  function typeLabel(t){return {plans:'خطط احترافية',notes:'ملاحظات/Vault',calendar:'كالندر',list:'Checklist',finance:'مالي',dashboard:'داشبورد'}[t]||t}
+
+  function planObj(p,color){
+    const start=today();
+    const days=Array.from({length:p.days||14},(_,i)=>{
+      const date=addDays(start,i);
+      const wd=String(new Date(date+'T00:00:00').getDay());
+      const active=!p.weekdays || p.weekdays.includes(wd);
+      return active?{id:uid(),date,title:(p.title||'Plan')+' — يوم '+(i+1),details:p.details||'',start_time:p.start_time||null,end_time:p.end_time||null,deadline:date,done:false,tasks:(p.tasks||[]).map(t=>({text:t,done:false,deadline:date}))}:null;
+    }).filter(Boolean);
+    return {id:uid(),title:p.title||'خطة',icon:p.icon||'📋',color,desc:p.details||'',start_date:start,duration:p.days||14,weekdays:p.weekdays||[],link_day:false,default_tasks:p.tasks||[],days};
+  }
+
+  function buildAdvancedSection(t){
+    const sec={id:uid(),name:t.name,icon:t.icon,color:t.color,type:t.type,desc:t.desc,items:[],notes:[],events:[],finItems:[],cards:[],subsections:[]};
+    if(t.subs){
+      sec.subsections=t.subs.map((s,i)=>{
+        const sub=typeof s==='string'?{name:s}:s;
+        return {id:uid(),name:sub.name,icon:sub.icon||['📋','✅','📝','📆','🎯','🚀'][i%6],color:sub.color||t.color,desc:sub.desc||('جزء متقدم من '+t.name),items:(sub.items||[]).map(x=>({id:uid(),title:x,icon:'✅',color:t.color,done:false,desc:'',deadline:''})),plans:(sub.plans||[]).map(p=>planObj(p,t.color))};
+      });
+    }
+    (t.items||t.quick||[]).forEach(x=>sec.items.push({id:uid(),title:x,icon:'✅',color:t.color,done:false,desc:'',deadline:''}));
+    (t.notes||[]).forEach(x=>sec.notes.push({id:uid(),title:x,icon:'📝',color:t.color,date:today(),content:''}));
+    (t.events||[]).forEach((x,i)=>sec.events.push({id:uid(),title:x,icon:'📆',color:t.color,date:addDays(today(),i),start:'',end:'',desc:'',location:'',link_day:false}));
+    (t.fin||[]).forEach((x,i)=>sec.finItems.push({id:uid(),title:x,icon:'💰',color:t.color,amount:0,type:i===0?'in':'out',note:''}));
+    (t.cards||t.dashboard||[]).forEach(x=>sec.cards.push({id:uid(),title:x,icon:'📊',color:t.color,value:'',desc:''}));
+    return sec;
+  }
+
+  window.createAdvancedTemplateV32=function(id){
+    const t=ALL_ADV_TEMPLATES_V32.find(x=>x.id===id); if(!t)return;
+    const list=dynSections();
+    if(list.some(s=>cleanName(s.name)===cleanName(t.name)) && !confirm('التيمبلت موجود بالفعل. تعمل نسخة جديدة؟'))return;
+    const sec=buildAdvancedSection(t);
+    list.push(sec); saveSections(list);
+    if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();
+    if(typeof renderCoreV29==='function')renderCoreV29('templates');
+    if(typeof toast==='function')toast('تم إنشاء قالب احترافي: '+t.name);
+    if(typeof go==='function')setTimeout(()=>go('dyn_'+sec.id),150);
+  }
+
+  window.previewAdvancedTemplateV32=function(id){
+    const t=ALL_ADV_TEMPLATES_V32.find(x=>x.id===id); if(!t)return;
+    const pieces=[
+      ['Subsections',(t.subs||[]).length],
+      ['Plans',(t.subs||[]).reduce((a,s)=>a+((typeof s==='object'&&s.plans)?s.plans.length:0),0)],
+      ['Items',(t.items||t.quick||[]).length],
+      ['Notes',(t.notes||[]).length],
+      ['Events',(t.events||[]).length],
+      ['Cards',(t.cards||t.dashboard||[]).length]
+    ];
+    document.getElementById('systemSectionsModalTitle').textContent='معاينة تيمبلت احترافي';
+    document.getElementById('systemSectionsModalBody').innerHTML=`<div class="core-card-v29 adv-template-card-v32" style="--tc:${t.color}"><div class="tpl-head"><div class="tpl-icon">${t.icon}</div><div><h3>${esc(t.name)}</h3><p>${esc(t.desc)}</p></div></div><div class="adv-template-score-v32">${pieces.map(p=>`<span>${p[0]}: ${p[1]}</span>`).join('')}</div></div>
+      <div class="adv-preview-grid-v32">
+        ${(t.subs||[]).slice(0,6).map(s=>`<div class="adv-preview-card-v32"><h4>${esc(typeof s==='string'?s:s.name)}</h4><p>${esc(typeof s==='string'?'قسم فرعي جاهز':((s.items||[]).slice(0,4).join(' • ') || (s.plans||[]).map(p=>p.title).join(' • ') || 'جاهز للتخصيص'))}</p></div>`).join('')}
+        ${(t.notes||[]).slice(0,3).map(s=>`<div class="adv-preview-card-v32"><h4>📝 ${esc(s)}</h4><p>ملاحظة جاهزة داخل الـ Vault.</p></div>`).join('')}
+      </div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="createAdvancedTemplateV32('${t.id}');closeSystemSectionsModal()">إنشاء القالب</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+
+  function renderAdvancedTemplates(){
+    const cats=[['all','الكل'],['health','صحة'],['work','شغل'],['finance','فلوس'],['life','حياة'],['content','محتوى'],['learning','تعلم'],['home','منزل']];
+    return `<div class="templates-topbar-v30">
+      <div class="templates-search-v30"><span>🔎</span><input id="tplSearchV30" placeholder="ابحث في ${ALL_ADV_TEMPLATES_V32.length} تيمبلت متقدم..." oninput="filterAdvancedTemplatesV32(document.querySelector('.template-cat-v30.active')?.dataset.cat||'all',this.value)"></div>
+      <div class="templates-count-v30" id="tplCountV30">${ALL_ADV_TEMPLATES_V32.length} تيمبلت متقدم</div>
+    </div>
+    <div class="template-cat-row-v30">${cats.map(([id,n],i)=>`<button class="template-cat-v30 ${i===0?'active':''}" data-cat="${id}" onclick="filterAdvancedTemplatesV32('${id}')">${n}</button>`).join('')}</div>
+    <div class="core-grid-v29">${ALL_ADV_TEMPLATES_V32.map(t=>{
+      const counts=[(t.subs||[]).length,(t.items||t.quick||[]).length,(t.notes||[]).length,(t.events||[]).length,(t.cards||t.dashboard||[]).length].reduce((a,b)=>a+b,0);
+      return `<div class="core-card-v29 template-card-v30 adv-template-card-v32" data-template-card-v32 data-cat="${t.cat}" data-search="${esc((t.name+' '+t.desc+' '+t.cat+' '+t.type).toLowerCase())}" style="--tc:${t.color}">
+        <div class="tpl-head"><div class="tpl-icon">${t.icon}</div><div><h3>${esc(t.name)}</h3><p>${esc(t.desc)}</p></div></div>
+        <div class="adv-template-score-v32"><span>${typeLabel(t.type)}</span><span>${counts} مكونات</span><span>${(t.subs||[]).reduce((a,s)=>a+((typeof s==='object'&&s.plans)?s.plans.length:0),0)} خطط</span></div>
+        <div class="template-actions-v30"><button class="use" onclick="createAdvancedTemplateV32('${t.id}')">استخدم</button><button class="preview" onclick="previewAdvancedTemplateV32('${t.id}')">معاينة</button></div>
+      </div>`}).join('')}</div>`;
+  }
+
+  window.filterAdvancedTemplatesV32=function(cat='all',q=''){
+    document.querySelectorAll('.template-cat-v30').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
+    const query=(q||document.getElementById('tplSearchV30')?.value||'').trim().toLowerCase();
+    document.querySelectorAll('[data-template-card-v32]').forEach(card=>{
+      const okCat=cat==='all'||card.dataset.cat===cat;
+      const okQ=!query || card.dataset.search.includes(query);
+      card.style.display=(okCat&&okQ)?'block':'none';
+    });
+    const count=[...document.querySelectorAll('[data-template-card-v32]')].filter(c=>c.style.display!=='none').length;
+    const c=document.getElementById('tplCountV30'); if(c)c.textContent=count+' تيمبلت';
+  }
+
+  const oldRenderCore=window.renderCoreV29;
+  window.renderCoreV29=function(tab='inbox'){
+    oldRenderCore(tab);
+    if(tab==='templates'){
+      const pane=document.querySelector('.core-pane-v29.active');
+      if(pane)pane.innerHTML=renderAdvancedTemplates();
+    }
+  }
+
+  // Redirect older template buttons to more advanced templates.
+  window.createTemplateV30=function(id){
+    const map={treatment_pcl:'knee_rehab_advanced',gym_schedule:'gym_schedule',monthly_budget:'monthly_finance_command'};
+    createAdvancedTemplateV32(map[id]||id);
+  }
+  window.createTemplateV29=function(type){
+    const map={notes:'medical_history_pro',calendar:'content_agency_calendar',finance:'monthly_finance_command',list:'habit_tracker_plus',treatment:'knee_rehab_advanced',workout:'gym_schedule'};
+    createAdvancedTemplateV32(map[type]||'daily_routine_plus');
+  }
+
+  setTimeout(()=>{if(typeof cur!=='undefined' && cur==='core')window.renderCoreV29('templates')},250);
+})();
+</script>
+
+
+<style id="arabic-pro-templates-v33-style">
+.ar-templates-hero-v33{padding:22px;border-radius:30px;background:linear-gradient(135deg,#1d4ed8,#7c3aed 55%,#06b6d4);color:#fff;margin-bottom:16px;box-shadow:0 24px 55px rgba(37,99,235,.25)}
+.ar-templates-hero-v33 h3{font-size:28px;margin-bottom:6px}.ar-templates-hero-v33 p{font-size:14px;line-height:1.7;opacity:.9}
+.ar-template-card-v33{min-height:285px;display:flex;flex-direction:column;justify-content:space-between}
+.ar-template-card-v33 .tpl-head p{min-height:78px}
+.ar-template-meta-v33{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:12px}
+.ar-template-meta-v33 span{padding:7px 8px;border-radius:14px;background:color-mix(in srgb,var(--tc,#6366f1) 12%,var(--panel2));font-size:10.5px;font-weight:950;color:var(--text-m);text-align:center}
+.ar-template-quality-v33{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.ar-template-quality-v33 span{padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid color-mix(in srgb,var(--tc,#6366f1) 22%,transparent);font-size:10px;font-weight:900;color:var(--text-d)}
+.ar-preview-section-v33{padding:15px;border-radius:22px;background:var(--panel);border:1px solid var(--border);margin-bottom:10px}
+.ar-preview-section-v33 h4{font-size:16px;margin-bottom:8px}.ar-preview-section-v33 ul{margin:0;padding-right:18px;color:var(--text-m);font-size:12px;line-height:1.9}
+.ar-preview-summary-v33{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.ar-preview-summary-v33 div{padding:12px;border-radius:16px;background:color-mix(in srgb,var(--tc,#6366f1) 10%,var(--panel2));text-align:center}
+.ar-preview-summary-v33 b{display:block;font-size:20px;color:var(--tc,#6366f1)}.ar-preview-summary-v33 span{font-size:11px;color:var(--text-m);font-weight:900}
+body[data-theme="light"] .ar-templates-hero-v33,body[data-theme="light"] .ar-templates-hero-v33 *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+</style>
+
+<script id="arabic-pro-templates-v33">
+/* ===== V33: Arabic professional templates library ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+
+  const AR_TEMPLATES_V33=[
+    {
+      id:'rehab_knee_ar_pro',cat:'health',name:'نظام تأهيل الركبة الكامل',icon:'🦵',color:'#14b8a6',type:'plans',
+      desc:'قالب علاجي احترافي لإصابات الركبة: مراحل علاج، تمارين، قياس ألم، متابعة تورم، مراجعة أسبوعية وربط اختياري بيومي.',
+      sections:[
+        {name:'مرحلة تقليل الألم ومدى الحركة',icon:'🧊',items:['قياس الألم قبل التمرين','قياس التورم','تسجيل مدى الثني','ملاحظات بعد الجلسة'],plans:[{title:'خطة أول 14 يوم',days:14,weekdays:['6','0','1','2','3','4','5'],details:'الهدف: تقليل الألم وتحسين مدى الحركة بدون تحميل زائد.',tasks:['Pain score من 10','Heel slides','Quad sets','Ice 10 min','كتابة ملاحظة التورم']}]},
+        {name:'مرحلة التقوية الأساسية',icon:'💪',items:['اختبار تحمل التمرين','مستوى ألم اليوم التالي','زيادة مقاومة تدريجية'],plans:[{title:'تقوية 4 أسابيع',days:28,weekdays:['6','1','3'],details:'الهدف: تقوية تدريجية بدون زيادة تورم أو ألم.',tasks:['Warm-up 8 min','Glute bridge','Mini squat supported','Step-up low height','Pain score بعد التمرين']}]},
+        {name:'مرحلة الاتزان والعودة للنشاط',icon:'⚖️',items:['اختبار اتزان','اختبار مشي','ملاحظات العودة للنشاط'],plans:[{title:'اتزان وتحكم 21 يوم',days:21,weekdays:['0','2','4'],details:'تمارين اتزان وتحكم قبل الرجوع لأي نشاط أعلى.',tasks:['Single-leg balance','Band walks','Controlled lunge','Stationary bike','مراجعة الألم بعد 24 ساعة']}]}],
+      notes:['أسئلة للدكتور','ممنوعات الحركة','تعليمات العلاج الطبيعي','Timeline الإصابة','ملاحظات الألم والتورم'],
+      cards:['متوسط الألم','جلسات مكتملة','مدى الحركة','موعد الطبيب القادم','علامات خطر']
+    },
+    {
+      id:'motion_project_ar_pro',cat:'work',name:'نظام إدارة مشروع موشن جرافيك',icon:'🎬',color:'#ec4899',type:'plans',
+      desc:'قالب كامل لمشروع موشن من أول Brief لحد التسليم والفاتورة، مناسب لشغل العملاء والوكالات.',
+      sections:[
+        {name:'استلام المشروع والاتفاق',icon:'🧾',items:['استلام Brief','تحديد المقاسات','تحديد مدة الفيديو','تأكيد السعر','تحديد عدد المراجعات','تحديد موعد التسليم']},
+        {name:'الستايل والتحضير',icon:'🎨',items:['Moodboard','References','Styleframes','اعتماد الستايل','تجهيز Assets']},
+        {name:'الإنتاج والتحريك',icon:'⚙️',plans:[{title:'Sprint إنتاج المشروع',days:10,weekdays:['6','0','1','2','3','4'],details:'كل يوم نسخة Preview وBackup واضح.',tasks:['تحديث نسخة المشروع','Export Preview','كتابة ملاحظات العميل','Backup للملفات','تحديث حالة المشروع']}]},
+        {name:'المراجعات والتسليم',icon:'🚀',items:['Revision 1','Revision 2','Final Export','Source Archive','Invoice Follow-up']}],
+      notes:['ملاحظات العميل','Revision Log','روابط الملفات','Export Settings','سكريبت/Voiceover'],
+      cards:['حالة المشروع','نسبة الإنجاز','عدد المراجعات','المتبقي من الدفعة','موعد التسليم']
+    },
+    {
+      id:'ecommerce_research_ar_pro',cat:'business',name:'معمل بحث منتجات E-commerce',icon:'🛍️',color:'#14b8a6',type:'dashboard',
+      desc:'نظام احترافي لاختيار منتج: تقييم، تكلفة، تصنيع، شحن، منافسة، محتوى، هامش ربح، وقرار نهائي.',
+      sections:[{name:'Scorecard المنتج',icon:'📊',items:['يحل مشكلة واضحة','سهل التصنيع','سهل الشحن','محتواه التسويقي قوي','هامش الربح مناسب','منافسة مقبولة','Repeat purchase ممكن']},
+                {name:'بحث السوق والمنافسين',icon:'🔎',items:['تحليل 5 منافسين','تجميع أسعار السوق','مراجعة إعلانات المنافسين','استخراج Pain points','تحديد USP']}],
+      notes:['أفكار منتجات خام','أسئلة للمورد','ملاحظات المنافسين','اعتراضات العملاء','أفكار محتوى'],
+      cards:['Product Score','تكلفة التصنيع','سعر البيع المتوقع','هامش الربح','صعوبة الشحن','قوة المحتوى','قرار التنفيذ']
+    },
+    {
+      id:'finance_month_ar_pro',cat:'finance',name:'مركز إدارة الميزانية الشهرية',icon:'💵',color:'#10b981',type:'finance',
+      desc:'قالب مالي شهري: دخل، مصاريف، ادخار، ديون، استثمار، قرارات نهاية الشهر.',
+      finance:['الدخل الأساسي','دخل إضافي','مصاريف ثابتة','مصاريف متغيرة','ادخار','طوارئ','استثمار','سداد ديون'],
+      notes:['مراجعة نهاية الشهر','أسباب زيادة المصاريف','قرارات الشهر القادم','مصاريف غير ضرورية'],
+      cards:['إجمالي الدخل','إجمالي المصاريف','نسبة الادخار','صافي الشهر','التغير في الثروة']
+    },
+    {
+      id:'gold_strategy_ar_pro',cat:'finance',name:'نظام متابعة الذهب والاستثمار',icon:'🥇',color:'#d97706',type:'dashboard',
+      desc:'داشبورد لمتابعة الذهب: هدف الجرامات، متوسط الشراء، القيمة الحالية، الربح والخسارة، قرار شراء جديد.',
+      sections:[{name:'قرارات الشراء',icon:'🧠',items:['تحديد سعر مناسب','مراجعة متوسط الشراء','تحديد كمية الشراء','مراجعة السيولة','تسجيل سبب القرار']}],
+      notes:['ملاحظات السوق','أماكن شراء موثوقة','قرارات شراء سابقة','خطة زيادة الجرامات'],
+      cards:['إجمالي الجرامات','متوسط الشراء','هدف الجرامات','القيمة الحالية','الربح/الخسارة','قرار الشهر']
+    },
+    {
+      id:'content_calendar_ar_pro',cat:'content',name:'تقويم محتوى شهري احترافي',icon:'📱',color:'#2563eb',type:'calendar',
+      desc:'تقويم كامل للمحتوى: أفكار، سكريبت، تصوير، مونتاج، مراجعة، نشر، تحليل الأداء.',
+      events:['Batch أفكار الأسبوع','كتابة سكريبتات','يوم تصوير','يوم مونتاج','مراجعة العميل','نشر المحتوى','تحليل الأداء'],
+      notes:['Content Pillars','Hook Bank','Caption Bank','ملاحظات العميل','أفكار Reels سريعة'],
+      cards:['عدد المنشورات','تم اعتماده','في المراجعة','تم النشر','أفضل محتوى']
+    },
+    {
+      id:'youtube_factory_ar_pro',cat:'content',name:'مصنع فيديوهات يوتيوب',icon:'▶️',color:'#dc2626',type:'plans',
+      desc:'نظام إنتاج فيديو يوتيوب من الفكرة إلى النشر: Research، Script، Shooting، Editing، Thumbnail، SEO.',
+      sections:[
+        {name:'الأفكار والبحث',icon:'🔎',items:['Keyword Research','تحليل المنافسين','اختيار زاوية الفيديو','اقتراح 5 عناوين','تحديد Thumbnail idea']},
+        {name:'السكريبت والتصوير',icon:'🎙️',items:['Outline','Hook أول 10 ثواني','Full script','Shot list','Recording checklist']},
+        {name:'المونتاج والنشر',icon:'✂️',plans:[{title:'Sprint إنتاج فيديو',days:7,weekdays:['6','0','1','2','3','4','5'],details:'هدف الأسبوع: فيديو منشور بالكامل.',tasks:['Edit Block','Thumbnail progress','SEO checklist','Upload notes','Review retention points']}]}],
+      notes:['Video Ideas','Script Notes','SEO Keywords','Thumbnail References'],
+      cards:['أفكار جاهزة','قيد المونتاج','مجدول','منشور','CTR']
+    },
+    {
+      id:'client_crm_ar_pro',cat:'work',name:'CRM فريلانس ومتابعة العملاء',icon:'🤝',color:'#16a34a',type:'dashboard',
+      desc:'نظام لإدارة العملاء: Leads، عروض أسعار، Follow-up، عقود، فواتير، تحصيل.',
+      sections:[{name:'Pipeline العملاء',icon:'📌',items:['Lead جديد','تواصل أول','إرسال عرض سعر','متابعة بعد العرض','تأكيد Scope','تحصيل دفعة','تسليم نهائي']}],
+      notes:['ملاحظات العملاء','اعتراضات السعر','Scripts متابعة','متطلبات كل عميل'],
+      cards:['Leads جديدة','عروض مرسلة','عملاء نشطين','مدفوعات معلقة','فرص ضائعة']
+    },
+    {
+      id:'wedding_prep_ar_pro',cat:'life',name:'نظام تجهيز الزواج',icon:'💍',color:'#ec4899',type:'plans',
+      desc:'قالب منظم لتجهيز الزواج: ذهب، شقة، أجهزة، فرح، أوراق، ميزانية، مواعيد.',
+      sections:[
+        {name:'الميزانية والذهب',icon:'🥇',items:['تحديد الميزانية الكاملة','قائمة الذهب','مصاريف شهرية','خطة ادخار','تسجيل المدفوعات']},
+        {name:'الشقة والتجهيز',icon:'🏠',items:['أجهزة كهربائية','أثاث','مطبخ','تشطيب/دهان','نواقص']},
+        {name:'المواعيد والأوراق',icon:'📆',items:['مواعيد عائلية','قاعة/تصوير','أوراق رسمية','قائمة مدعوين']}],
+      cards:['Budget Used','Gold Progress','Apartment Ready','Days Left','Pending Decisions']
+    },
+    {
+      id:'course_30_ar_pro',cat:'learning',name:'نظام تنفيذ كورس 30 يوم',icon:'📚',color:'#3b82f6',type:'plans',
+      desc:'خطة عملية لتعلم كورس: مشاهدة، ملاحظات، تطبيق، مراجعة، مشروع نهائي.',
+      sections:[
+        {name:'الدروس اليومية',icon:'🎧',plans:[{title:'خطة كورس 30 يوم',days:30,weekdays:['6','0','1','2','3','4','5'],details:'المشاهدة وحدها لا تكفي. لازم تطبيق يومي.',tasks:['مشاهدة الدرس','كتابة ملاحظات','تطبيق عملي','حفظ رابط مهم','تقييم الفهم من 10']}]},
+        {name:'مشاريع التطبيق',icon:'🧪',items:['Mini project 1','Mini project 2','Final project','نشر المشروع في Portfolio']},
+        {name:'المراجعة',icon:'🧠',items:['مراجعة أسبوعية','نقاط ضعف','قائمة أسئلة','جلسة Revision']}],
+      notes:['ملاحظات الكورس','روابط مهمة','أسئلة للمراجعة']
+    },
+    {
+      id:'medical_vault_ar_pro',cat:'health',name:'الخزنة الطبية الشخصية',icon:'🏥',color:'#0ea5e9',type:'notes',
+      desc:'تنظيم طبي كامل: أعراض، أدوية، تحاليل، تقارير، أسئلة للطبيب، Timeline.',
+      notes:['Timeline الحالة','الأدوية الحالية','نتائج التحاليل','تقارير وأشعات','أسئلة للدكتور','ملاحظات بعد الجلسات'],
+      cards:['آخر زيارة','الزيارة القادمة','أدوية حالية','تحاليل معلقة','تطور الأعراض']
+    },
+    {
+      id:'travel_ar_pro',cat:'life',name:'نظام تخطيط السفر',icon:'✈️',color:'#0ea5e9',type:'plans',
+      desc:'تخطيط سفر كامل: فيزا، أوراق، حجوزات، ميزانية، Packing، برنامج الرحلة.',
+      sections:[
+        {name:'الفيزا والأوراق',icon:'🪪',items:['Passport valid','كشف حساب','حجز مبدئي','تأمين سفر','صور شخصية']},
+        {name:'الحجوزات والميزانية',icon:'💳',items:['طيران','فندق','مواصلات','مصروف يومي','طوارئ']},
+        {name:'برنامج الرحلة',icon:'🗺️',items:['أماكن زيارة','مطاعم','أنشطة','Shopping','ملاحظات مهمة']}],
+      notes:['Packing list','أرقام مهمة','خطة طوارئ']
+    }
+  ];
+
+  const EXTRA_AR=[
+    ['إدارة قناة يوتيوب طبية','🩺','#14b8a6','content','plans',['أفكار حلقات','سكريبت طبي','تصوير','مونتاج','نشر وتحليل']],
+    ['نظام متابعة العملاء الطبيين','🏥','#0ea5e9','work','dashboard',['Leads','حجوزات','مراجعات','مدفوعات','نتائج حملات']],
+    ['نظام إدارة إعلانات Meta','📣','#2563eb','content','plans',['Strategy','Creatives','Campaign Setup','Daily Optimization','Report']],
+    ['خطة بناء Portfolio قوي','🖼️','#7c3aed','work','plans',['اختيار المشاريع','Case Study','Mockups','Behance','LinkedIn Post']],
+    ['نظام تحسين اللغة الإنجليزية','🇬🇧','#06b6d4','learning','plans',['Listening','Shadowing','Vocabulary','Writing','Speaking']],
+    ['دفتر قرارات مهم','⚖️','#334155','life','notes',['القرار','البدائل','سبب الاختيار','مخاطر','مراجعة النتيجة']],
+    ['نظام عادات 12 أسبوع','📈','#22c55e','life','list',['مياه','مشي','قراءة','تعلم','نوم بدري','بدون سكر']],
+    ['صيانة الموتوسيكل','🏍️','#f97316','calendar','life',['تغيير زيت','شد جنزير','فحص كاوتش','غسيل','رخصة']],
+    ['نظام صيانة البيت','🛠️','#64748b','home','calendar',['تنظيف عميق','صيانة تكييف','فلتر مياه','كهرباء','ضمانات']],
+    ['قائمة مشتريات ذكية','🛒','#22c55e','home','list',['بروتين','خضار','تنظيف','أدوية','مستلزمات شخصية']],
+    ['Meal Prep أسبوعي','🍱','#f97316','health','plans',['تحضير بروتين','كارب صحي','سناكس','تجهيز الأسبوع']],
+    ['نظام إدارة الاشتراكات','🔁','#8b5cf6','finance','list',['برامج','منصات','Cloud','Bank fees','إلغاء غير الضروري']],
+    ['خطة سداد ديون','💳','#ef4444','finance','plans',['حصر الديون','أولوية السداد','مواعيد الدفع','مراجعة شهرية']],
+    ['فواتير العملاء','🧾','#0f766e','finance','finance',['فاتورة جديدة','مدفوع','متبقي','خصم/ضريبة']],
+    ['Brand Assets Vault','🎨','#7c3aed','content','notes',['ألوان البراند','Fonts','Logo links','Motion rules','Export settings']],
+    ['إطلاق حملة تسويقية','🚀','#10b981','content','plans',['Strategy','Assets','Ads','Launch','Report']],
+    ['تحضير امتحان أو شهادة','🧪','#f59e0b','learning','plans',['مذاكرة','حل أسئلة','Mock exams','نقاط ضعف','مراجعة نهائية']],
+    ['ملاحظات كتب','📖','#8b5cf6','learning','notes',['ملخص','أفكار رئيسية','اقتباسات','تطبيق عملي']],
+    ['Personal CRM','👥','#8b5cf6','life','notes',['أشخاص مهمين','Follow-up','ملاحظات لقاء','فرص تعاون']],
+    ['Focus Sprints','🎯','#ef4444','work','plans',['Sprint Goal','Deep Work Blocks','Deliverables','Review']]
+  ];
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function save(k,v){localStorage.setItem(k,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud()}
+  function esc(s){return (typeof window.esc==='function'?window.esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function uid(){return 'ar_tpl_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function today(){return new Date().toISOString().slice(0,10)}
+  function addDays(d,n){const x=new Date((d||today())+'T00:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)}
+  function cleanName(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/[ًٌٍَُِّْ]/g,'').toLowerCase()}
+  function dynSections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function saveSections(v){save(DYN_KEY,v)}
+  function catName(c){return {health:'صحة',work:'شغل',business:'بيزنس',finance:'فلوس',life:'حياة',content:'محتوى',learning:'تعلم',home:'منزل'}[c]||c}
+  function typeName(t){return {plans:'خطط كاملة',notes:'خزنة ملاحظات',calendar:'كالندر',list:'Checklist',finance:'مالي',dashboard:'داشبورد'}[t]||t}
+
+  const ALL_AR=[...AR_TEMPLATES_V33,...EXTRA_AR.map((x,i)=>({id:'extra_ar_'+i,name:x[0],icon:x[1],color:x[2],cat:x[3],type:x[4],desc:'قالب عربي احترافي جاهز للعمل، فيه عناصر داخلية منظمة قابلة للتعديل والربط حسب الحاجة.',quick:x[5]}))];
+
+  function makePlan(p,color){
+    const start=today();
+    return {id:uid(),title:p.title||'خطة جاهزة',icon:'📋',color,desc:p.details||'',start_date:start,duration:p.days||14,weekdays:p.weekdays||[],link_day:false,default_tasks:p.tasks||[],days:Array.from({length:p.days||14},(_,i)=>{
+      const date=addDays(start,i), wd=String(new Date(date+'T00:00:00').getDay());
+      if(p.weekdays && !p.weekdays.includes(wd))return null;
+      return {id:uid(),date,title:(p.title||'خطة')+' — يوم '+(i+1),details:p.details||'',start_time:null,end_time:null,deadline:date,done:false,tasks:(p.tasks||[]).map(t=>({text:t,done:false,deadline:date}))};
+    }).filter(Boolean)};
+  }
+
+  function buildSection(t){
+    const sec={id:uid(),name:t.name,icon:t.icon,color:t.color,type:t.type,desc:t.desc,items:[],notes:[],events:[],finItems:[],cards:[],subsections:[]};
+    (t.sections||[]).forEach((s,i)=>sec.subsections.push({id:uid(),name:s.name,icon:s.icon||'🧩',color:t.color,desc:s.desc||'قسم فرعي جاهز داخل '+t.name,items:(s.items||[]).map(x=>({id:uid(),title:x,icon:'✅',color:t.color,done:false,desc:'',deadline:''})),plans:(s.plans||[]).map(p=>makePlan(p,t.color))}));
+    (t.quick||[]).forEach(x=>{
+      if(t.type==='list')sec.items.push({id:uid(),title:x,icon:'✅',color:t.color,done:false,desc:'',deadline:''});
+      else if(t.type==='calendar')sec.events.push({id:uid(),title:x,icon:'📆',color:t.color,date:'',start:'',end:'',desc:'',location:'',link_day:false});
+      else if(t.type==='finance')sec.finItems.push({id:uid(),title:x,icon:'💰',color:t.color,amount:0,type:sec.finItems.length===0?'in':'out',note:''});
+      else if(t.type==='notes')sec.notes.push({id:uid(),title:x,icon:'📝',color:t.color,date:today(),content:''});
+      else sec.subsections.push({id:uid(),name:x,icon:'🧩',color:t.color,desc:'قسم جاهز',items:[],plans:[]});
+    });
+    (t.notes||[]).forEach(x=>sec.notes.push({id:uid(),title:x,icon:'📝',color:t.color,date:today(),content:''}));
+    (t.events||[]).forEach((x,i)=>sec.events.push({id:uid(),title:x,icon:'📆',color:t.color,date:addDays(today(),i),start:'',end:'',desc:'',location:'',link_day:false}));
+    (t.finance||[]).forEach((x,i)=>sec.finItems.push({id:uid(),title:x,icon:'💰',color:t.color,amount:0,type:i===0?'in':'out',note:''}));
+    (t.cards||[]).forEach(x=>sec.cards.push({id:uid(),title:x,icon:'📊',color:t.color,value:'',desc:''}));
+    return sec;
+  }
+
+  window.createArabicProTemplateV33=function(id){
+    const t=ALL_AR.find(x=>x.id===id); if(!t)return;
+    const list=dynSections();
+    if(list.some(s=>cleanName(s.name)===cleanName(t.name)) && !confirm('القالب موجود بالفعل. أعمل نسخة جديدة؟'))return;
+    const sec=buildSection(t); list.push(sec); saveSections(list);
+    if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();
+    if(typeof renderCoreV29==='function')renderCoreV29('templates');
+    if(typeof toast==='function')toast('تم إنشاء القالب الاحترافي ✅');
+    if(typeof go==='function')setTimeout(()=>go('dyn_'+sec.id),120);
+  }
+
+  window.previewArabicProTemplateV33=function(id){
+    const t=ALL_AR.find(x=>x.id===id); if(!t)return;
+    const counts={
+      sections:(t.sections||[]).length+(t.quick&&t.type==='plans'?t.quick.length:0),
+      plans:(t.sections||[]).reduce((a,s)=>a+(s.plans||[]).length,0),
+      items:(t.sections||[]).reduce((a,s)=>a+(s.items||[]).length,0)+(t.quick||[]).length,
+      notes:(t.notes||[]).length,
+      cards:(t.cards||[]).length
+    };
+    document.getElementById('systemSectionsModalTitle').textContent='معاينة القالب العربي الاحترافي';
+    document.getElementById('systemSectionsModalBody').innerHTML=`<div class="core-card-v29 ar-template-card-v33" style="--tc:${t.color}"><div class="tpl-head"><div class="tpl-icon">${t.icon}</div><div><h3>${esc(t.name)}</h3><p>${esc(t.desc)}</p></div></div><div class="ar-preview-summary-v33">${Object.entries(counts).map(([k,v])=>`<div><b>${v}</b><span>${k}</span></div>`).join('')}</div></div>
+      <div class="adv-preview-grid-v32">
+        ${(t.sections||[]).slice(0,8).map(s=>`<div class="ar-preview-section-v33"><h4>${s.icon||'🧩'} ${esc(s.name)}</h4><ul>${[...(s.items||[]).slice(0,5),...(s.plans||[]).map(p=>'خطة: '+p.title).slice(0,2)].map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}
+        ${(t.notes||[]).slice(0,4).map(n=>`<div class="ar-preview-section-v33"><h4>📝 ${esc(n)}</h4><p style="font-size:12px;color:var(--text-m)">ملاحظة جاهزة داخل القالب.</p></div>`).join('')}
+      </div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="createArabicProTemplateV33('${t.id}');closeSystemSectionsModal()">إنشاء القالب</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`;
+    document.getElementById('systemSectionsModal').classList.remove('hidden');
+  }
+
+  function renderArabicTemplates(){
+    const cats=[['all','الكل'],['health','صحة'],['work','شغل'],['business','بيزنس'],['finance','فلوس'],['life','حياة'],['content','محتوى'],['learning','تعلم'],['home','منزل']];
+    return `<div class="ar-templates-hero-v33"><h3>مكتبة قوالب عربية احترافية</h3><p>القوالب هنا أنظمة تشغيل صغيرة جاهزة، مش مجرد أسماء. كل قالب ينشئ أقسام، خطط، أيام، مهام، ملاحظات وكروت حسب نوعه.</p></div>
+    <div class="templates-topbar-v30"><div class="templates-search-v30"><span>🔎</span><input id="tplSearchV30" placeholder="ابحث في القوالب العربية الاحترافية..." oninput="filterArabicTemplatesV33(document.querySelector('.template-cat-v30.active')?.dataset.cat||'all',this.value)"></div><div class="templates-count-v30" id="tplCountV30">${ALL_AR.length} قالب عربي</div></div>
+    <div class="template-cat-row-v30">${cats.map(([id,n],i)=>`<button class="template-cat-v30 ${i===0?'active':''}" data-cat="${id}" onclick="filterArabicTemplatesV33('${id}')">${n}</button>`).join('')}</div>
+    <div class="core-grid-v29">${ALL_AR.map(t=>{
+      const sectionCount=(t.sections||[]).length+(t.quick&&t.type==='plans'?t.quick.length:0);
+      const planCount=(t.sections||[]).reduce((a,s)=>a+(s.plans||[]).length,0);
+      const componentCount=sectionCount+planCount+(t.notes||[]).length+(t.cards||[]).length+(t.quick||[]).length;
+      return `<div class="core-card-v29 template-card-v30 ar-template-card-v33" data-ar-template-v33 data-cat="${t.cat}" data-search="${esc((t.name+' '+t.desc+' '+catName(t.cat)+' '+typeName(t.type)).toLowerCase())}" style="--tc:${t.color}">
+        <div class="tpl-head"><div class="tpl-icon">${t.icon}</div><div><h3>${esc(t.name)}</h3><p>${esc(t.desc)}</p></div></div>
+        <div class="ar-template-meta-v33"><span>${typeName(t.type)}</span><span>${catName(t.cat)}</span><span>${componentCount} مكون</span></div>
+        <div class="ar-template-quality-v33"><span>جاهز للتعديل</span><span>عربي بالكامل</span><span>قابل للربط بيومي</span></div>
+        <div class="template-actions-v30"><button class="use" onclick="createArabicProTemplateV33('${t.id}')">استخدم</button><button class="preview" onclick="previewArabicProTemplateV33('${t.id}')">معاينة</button></div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  window.filterArabicTemplatesV33=function(cat='all',q=''){
+    document.querySelectorAll('.template-cat-v30').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));
+    const query=(q||document.getElementById('tplSearchV30')?.value||'').trim().toLowerCase();
+    document.querySelectorAll('[data-ar-template-v33]').forEach(card=>{
+      const okCat=cat==='all'||card.dataset.cat===cat;
+      const okQ=!query || card.dataset.search.includes(query);
+      card.style.display=(okCat&&okQ)?'flex':'none';
+    });
+    const count=[...document.querySelectorAll('[data-ar-template-v33]')].filter(c=>c.style.display!=='none').length;
+    const c=document.getElementById('tplCountV30'); if(c)c.textContent=count+' قالب';
+  }
+
+  const oldRenderCore=window.renderCoreV29;
+  window.renderCoreV29=function(tab='inbox'){
+    oldRenderCore(tab);
+    if(tab==='templates'){
+      const pane=document.querySelector('.core-pane-v29.active');
+      if(pane)pane.innerHTML=renderArabicTemplates();
+    }
+  }
+
+  window.createAdvancedTemplateV32=function(id){
+    const t=ALL_AR.find(x=>x.id===id) || ALL_AR[0];
+    createArabicProTemplateV33(t.id);
+  };
+  window.createTemplateV30=function(id){
+    const map={treatment_pcl:'rehab_knee_ar_pro',gym_schedule:'rehab_knee_ar_pro',monthly_budget:'finance_month_ar_pro'};
+    createArabicProTemplateV33(map[id]||'motion_project_ar_pro');
+  };
+  window.createTemplateV29=function(type){
+    const map={notes:'medical_vault_ar_pro',calendar:'content_calendar_ar_pro',finance:'finance_month_ar_pro',list:'course_30_ar_pro',treatment:'rehab_knee_ar_pro',workout:'rehab_knee_ar_pro'};
+    createArabicProTemplateV33(map[type]||'motion_project_ar_pro');
+  };
+
+  setTimeout(()=>{if(typeof cur!=='undefined' && cur==='core')window.renderCoreV29('templates')},250);
+})();
+</script>
+
+
+<style id="template-content-visible-v34-style">
+.tpl-content-board-v34{padding:24px}
+.tpl-section-grid-v34{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.tpl-content-card-v34{position:relative;overflow:hidden;border-radius:26px;padding:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--tc,#6366f1) 16%,var(--panel2)),color-mix(in srgb,var(--panel) 90%,transparent));border:1px solid color-mix(in srgb,var(--tc,#6366f1) 30%,transparent);box-shadow:var(--shadow-sm)}
+.tpl-content-card-v34:before{content:"";position:absolute;left:-35px;bottom:-50px;width:150px;height:150px;border-radius:50%;background:color-mix(in srgb,var(--tc,#6366f1) 15%,transparent)}
+.tpl-content-card-v34 h3{position:relative;font-size:20px;margin-bottom:8px}
+.tpl-content-card-v34 p{position:relative;font-size:13px;line-height:1.7;color:var(--text-m);white-space:pre-wrap}
+.tpl-mini-list-v34{position:relative;display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.tpl-mini-row-v34{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.18);font-size:12px;font-weight:850}
+.tpl-mini-row-v34 input{accent-color:var(--tc,#6366f1)}
+.tpl-board-title-v34{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.tpl-board-title-v34 h2{font-size:28px}
+.tpl-board-actions-v34{display:flex;gap:8px;flex-wrap:wrap}
+.tpl-board-actions-v34 button{border:0;border-radius:14px;padding:10px 12px;background:var(--panel2);color:var(--text);font-weight:900;cursor:pointer}
+.tpl-plan-day-v34{padding:9px 10px;border-radius:14px;background:var(--panel2);margin-top:7px;font-size:12px}
+.tpl-dashboard-grid-v34{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px}
+.tpl-dash-card-v34{padding:15px;border-radius:22px;background:linear-gradient(180deg,color-mix(in srgb,var(--tc,#6366f1) 16%,var(--panel2)),var(--panel));border:1px solid color-mix(in srgb,var(--tc,#6366f1) 25%,transparent)}
+.tpl-dash-card-v34 b{display:block;font-size:22px;color:var(--tc,#6366f1)}
+.tpl-dash-card-v34 span{font-size:12px;color:var(--text-m);font-weight:900}
+body[data-theme="light"] .tpl-content-card-v34,body[data-theme="light"] .tpl-dash-card-v34{color:#1e293b!important;-webkit-text-fill-color:initial!important}
+@media(max-width:800px){.tpl-section-grid-v34,.tpl-dashboard-grid-v34{grid-template-columns:1fr}.tpl-board-title-v34{flex-direction:column;align-items:flex-start}}
+</style>
+
+<script id="template-content-visible-v34">
+/* ===== V34: Fix templates creating empty sections — visible real content ===== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function save(k,v){localStorage.setItem(k,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud()}
+  function esc(s){return (typeof window.esc==='function'?window.esc(String(s??'')):String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])));}
+  function uid(){return 'tplfix_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16)}
+  function today(){return new Date().toISOString().slice(0,10)}
+  function addDays(d,n){const x=new Date((d||today())+'T00:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)}
+  function dynSections(){return parse(localStorage.getItem(DYN_KEY),'')||[]}
+  function saveSections(v){save(DYN_KEY,v)}
+  function cleanName(s){return String(s||'').trim().replace(/\s+/g,' ').replace(/[ًٌٍَُِّْ]/g,'').toLowerCase()}
+
+  const PRO_TEMPLATES_FIX_V34 = {
+    rehab_knee_ar_pro:{
+      name:'نظام تأهيل الركبة الكامل', icon:'🦵', color:'#14b8a6', type:'plans',
+      desc:'نظام تأهيل كامل فيه مراحل واضحة، تمارين، قياس ألم، ملاحظات طبية، وخطط بأيام جاهزة.',
+      sections:[
+        ['مرحلة تقليل الألم ومدى الحركة','🧊',['قياس الألم قبل التمرين','Heel slides','Quad sets','ثلج 10 دقائق','تسجيل التورم'],14],
+        ['مرحلة التقوية الأساسية','💪',['Warm-up 8 min','Glute bridge','Mini squat supported','Step-up low height','Pain score بعد التمرين'],28],
+        ['مرحلة الاتزان والعودة للنشاط','⚖️',['Single-leg balance','Band walks','Controlled lunge','Stationary bike','مراجعة الألم بعد 24 ساعة'],21]
+      ],
+      notes:['أسئلة للدكتور','ممنوعات الحركة','تعليمات العلاج الطبيعي','Timeline الإصابة','ملاحظات الألم والتورم'],
+      cards:['متوسط الألم','جلسات مكتملة','مدى الحركة','موعد الطبيب القادم','علامات خطر']
+    },
+    motion_project_ar_pro:{
+      name:'نظام إدارة مشروع موشن جرافيك', icon:'🎬', color:'#ec4899', type:'plans',
+      desc:'نظام إنتاج كامل لمشروع موشن من Brief إلى التسليم والفاتورة.',
+      sections:[
+        ['استلام المشروع والاتفاق','🧾',['استلام Brief','تحديد المقاسات','تحديد مدة الفيديو','تأكيد السعر','تحديد عدد المراجعات','تحديد موعد التسليم'],0],
+        ['الستايل والتحضير','🎨',['Moodboard','References','Styleframes','اعتماد الستايل','تجهيز Assets'],0],
+        ['الإنتاج والتحريك','⚙️',['تحديث نسخة المشروع','Export Preview','كتابة ملاحظات العميل','Backup للملفات','تحديث حالة المشروع'],10],
+        ['المراجعات والتسليم','🚀',['Revision 1','Revision 2','Final Export','Source Archive','Invoice Follow-up'],0]
+      ],
+      notes:['ملاحظات العميل','Revision Log','روابط الملفات','Export Settings','سكريبت/Voiceover'],
+      cards:['حالة المشروع','نسبة الإنجاز','عدد المراجعات','المتبقي من الدفعة','موعد التسليم']
+    },
+    ecommerce_research_ar_pro:{
+      name:'معمل بحث منتجات E-commerce', icon:'🛍️', color:'#14b8a6', type:'dashboard',
+      desc:'نظام بحث منتجات احترافي فيه Scorecard وتكلفة ومنافسة ومحتوى وقرار.',
+      sections:[
+        ['Scorecard المنتج','📊',['يحل مشكلة واضحة','سهل التصنيع','سهل الشحن','محتواه التسويقي قوي','هامش الربح مناسب','منافسة مقبولة','Repeat purchase ممكن'],0],
+        ['بحث السوق والمنافسين','🔎',['تحليل 5 منافسين','تجميع أسعار السوق','مراجعة إعلانات المنافسين','استخراج Pain points','تحديد USP'],0]
+      ],
+      notes:['أفكار منتجات خام','أسئلة للمورد','ملاحظات المنافسين','اعتراضات العملاء','أفكار محتوى'],
+      cards:['Product Score','تكلفة التصنيع','سعر البيع المتوقع','هامش الربح','صعوبة الشحن','قوة المحتوى','قرار التنفيذ']
+    },
+    finance_month_ar_pro:{
+      name:'مركز إدارة الميزانية الشهرية', icon:'💵', color:'#10b981', type:'finance',
+      desc:'قالب مالي شهري فيه دخل ومصاريف وادخار وديون واستثمار ومراجعة.',
+      finance:['الدخل الأساسي','دخل إضافي','مصاريف ثابتة','مصاريف متغيرة','ادخار','طوارئ','استثمار','سداد ديون'],
+      notes:['مراجعة نهاية الشهر','أسباب زيادة المصاريف','قرارات الشهر القادم','مصاريف غير ضرورية'],
+      cards:['إجمالي الدخل','إجمالي المصاريف','نسبة الادخار','صافي الشهر','التغير في الثروة']
+    },
+    gold_strategy_ar_pro:{
+      name:'نظام متابعة الذهب والاستثمار', icon:'🥇', color:'#d97706', type:'dashboard',
+      desc:'داشبورد لمتابعة الذهب وقرارات الشراء والهدف الشهري.',
+      sections:[['قرارات الشراء','🧠',['تحديد سعر مناسب','مراجعة متوسط الشراء','تحديد كمية الشراء','مراجعة السيولة','تسجيل سبب القرار'],0]],
+      notes:['ملاحظات السوق','أماكن شراء موثوقة','قرارات شراء سابقة','خطة زيادة الجرامات'],
+      cards:['إجمالي الجرامات','متوسط الشراء','هدف الجرامات','القيمة الحالية','الربح/الخسارة','قرار الشهر']
+    },
+    content_calendar_ar_pro:{
+      name:'تقويم محتوى شهري احترافي', icon:'📱', color:'#2563eb', type:'calendar',
+      desc:'تقويم محتوى فيه أفكار وتصوير ومونتاج ومراجعة ونشر وتحليل.',
+      events:['Batch أفكار الأسبوع','كتابة سكريبتات','يوم تصوير','يوم مونتاج','مراجعة العميل','نشر المحتوى','تحليل الأداء'],
+      notes:['Content Pillars','Hook Bank','Caption Bank','ملاحظات العميل','أفكار Reels سريعة'],
+      cards:['عدد المنشورات','تم اعتماده','في المراجعة','تم النشر','أفضل محتوى']
+    },
+    youtube_factory_ar_pro:{
+      name:'مصنع فيديوهات يوتيوب', icon:'▶️', color:'#dc2626', type:'plans',
+      desc:'نظام إنتاج فيديو يوتيوب من الفكرة للنشر.',
+      sections:[
+        ['الأفكار والبحث','🔎',['Keyword Research','تحليل المنافسين','اختيار زاوية الفيديو','اقتراح 5 عناوين','تحديد Thumbnail idea'],0],
+        ['السكريبت والتصوير','🎙️',['Outline','Hook أول 10 ثواني','Full script','Shot list','Recording checklist'],0],
+        ['المونتاج والنشر','✂️',['Edit Block','Thumbnail progress','SEO checklist','Upload notes','Review retention points'],7]
+      ],
+      notes:['Video Ideas','Script Notes','SEO Keywords','Thumbnail References'],
+      cards:['أفكار جاهزة','قيد المونتاج','مجدول','منشور','CTR']
+    },
+    client_crm_ar_pro:{
+      name:'CRM فريلانس ومتابعة العملاء', icon:'🤝', color:'#16a34a', type:'dashboard',
+      desc:'Pipeline للـ Leads والعروض والمتابعة والفواتير.',
+      sections:[['Pipeline العملاء','📌',['Lead جديد','تواصل أول','إرسال عرض سعر','متابعة بعد العرض','تأكيد Scope','تحصيل دفعة','تسليم نهائي'],0]],
+      notes:['ملاحظات العملاء','اعتراضات السعر','Scripts متابعة','متطلبات كل عميل'],
+      cards:['Leads جديدة','عروض مرسلة','عملاء نشطين','مدفوعات معلقة','فرص ضائعة']
+    },
+    wedding_prep_ar_pro:{
+      name:'نظام تجهيز الزواج', icon:'💍', color:'#ec4899', type:'plans',
+      desc:'قالب تجهيز زواج فيه ذهب وشقة وأوراق وميزانية ومواعيد.',
+      sections:[
+        ['الميزانية والذهب','🥇',['تحديد الميزانية الكاملة','قائمة الذهب','مصاريف شهرية','خطة ادخار','تسجيل المدفوعات'],0],
+        ['الشقة والتجهيز','🏠',['أجهزة كهربائية','أثاث','مطبخ','تشطيب/دهان','نواقص'],0],
+        ['المواعيد والأوراق','📆',['مواعيد عائلية','قاعة/تصوير','أوراق رسمية','قائمة مدعوين'],0]
+      ],
+      cards:['Budget Used','Gold Progress','Apartment Ready','Days Left','Pending Decisions']
+    },
+    course_30_ar_pro:{
+      name:'نظام تنفيذ كورس 30 يوم', icon:'📚', color:'#3b82f6', type:'plans',
+      desc:'خطة كورس فيها 30 يوم مشاهدة وتطبيق ومراجعة.',
+      sections:[
+        ['الدروس اليومية','🎧',['مشاهدة الدرس','كتابة ملاحظات','تطبيق عملي','حفظ رابط مهم','تقييم الفهم من 10'],30],
+        ['مشاريع التطبيق','🧪',['Mini project 1','Mini project 2','Final project','نشر المشروع في Portfolio'],0],
+        ['المراجعة','🧠',['مراجعة أسبوعية','نقاط ضعف','قائمة أسئلة','جلسة Revision'],0]
+      ],
+      notes:['ملاحظات الكورس','روابط مهمة','أسئلة للمراجعة']
+    },
+    medical_vault_ar_pro:{
+      name:'الخزنة الطبية الشخصية', icon:'🏥', color:'#0ea5e9', type:'notes',
+      desc:'خزنة طبية منظمة للأعراض والأدوية والتحاليل والتقارير.',
+      notes:['Timeline الحالة','الأدوية الحالية','نتائج التحاليل','تقارير وأشعات','أسئلة للدكتور','ملاحظات بعد الجلسات'],
+      cards:['آخر زيارة','الزيارة القادمة','أدوية حالية','تحاليل معلقة','تطور الأعراض']
+    },
+    travel_ar_pro:{
+      name:'نظام تخطيط السفر', icon:'✈️', color:'#0ea5e9', type:'plans',
+      desc:'تخطيط سفر كامل للفيزا والحجوزات والميزانية والبرنامج.',
+      sections:[
+        ['الفيزا والأوراق','🪪',['Passport valid','كشف حساب','حجز مبدئي','تأمين سفر','صور شخصية'],0],
+        ['الحجوزات والميزانية','💳',['طيران','فندق','مواصلات','مصروف يومي','طوارئ'],0],
+        ['برنامج الرحلة','🗺️',['أماكن زيارة','مطاعم','أنشطة','Shopping','ملاحظات مهمة'],0]
+      ],
+      notes:['Packing list','أرقام مهمة','خطة طوارئ']
+    }
+  };
+
+  function makePlan(title, tasks, days, color){
+    const start=today();
+    return {
+      id:uid(), title, icon:'📋', color, desc:'خطة جاهزة من القالب، تقدر تعدل أيامها وتربطها بيومي.',
+      start_date:start, duration:days, weekdays:['6','0','1','2','3','4','5'], link_day:false,
+      default_tasks:tasks,
+      days:Array.from({length:days},(_,i)=>{
+        const date=addDays(start,i);
+        return {id:uid(), date, title:title+' — يوم '+(i+1), details:'تفاصيل اليوم جاهزة للتعديل.', start_time:null, end_time:null, deadline:date, done:false,
+          tasks:tasks.map(t=>({text:t,done:false,deadline:date}))};
+      })
+    };
+  }
+
+  function buildSection(t){
+    const sec={id:uid(), name:t.name, icon:t.icon, color:t.color, type:t.type||'plans', desc:t.desc,
+      items:[], notes:[], events:[], finItems:[], cards:[], subsections:[], template_fixed_v34:true};
+
+    (t.sections||[]).forEach(([name,icon,tasks,days])=>{
+      const sub={id:uid(), name, icon, color:t.color, desc:'قسم جاهز من قالب: '+t.name,
+        items:tasks.map(x=>({id:uid(),title:x,icon:'✅',color:t.color,done:false,desc:'عنصر جاهز من القالب',deadline:''})),
+        plans:[]};
+      if(days && days>0) sub.plans.push(makePlan(name, tasks, days, t.color));
+      sec.subsections.push(sub);
+    });
+
+    (t.notes||[]).forEach(x=>sec.notes.push({id:uid(),title:x,icon:'📝',color:t.color,date:today(),content:'اكتب هنا التفاصيل الخاصة بـ '+x}));
+    (t.events||[]).forEach((x,i)=>sec.events.push({id:uid(),title:x,icon:'📆',color:t.color,date:addDays(today(),i),start:'',end:'',desc:'موعد جاهز للتعديل',location:'',link_day:false}));
+    (t.finance||[]).forEach((x,i)=>sec.finItems.push({id:uid(),title:x,icon:'💰',color:t.color,amount:0,type:i<2?'in':'out',note:'عملية مالية جاهزة للتعديل'}));
+    (t.cards||[]).forEach(x=>sec.cards.push({id:uid(),title:x,icon:'📊',color:t.color,value:'0',desc:'كارت متابعة جاهز'}));
+
+    // Important: add visible general items too, so no template looks empty even with old renderers.
+    if(!sec.items.length){
+      const general=[...(t.cards||[]),...(t.notes||[]),...(t.events||[]),...(t.finance||[])].slice(0,8);
+      general.forEach(x=>sec.items.push({id:uid(),title:x,icon:'✅',color:t.color,done:false,desc:'عنصر عام ظاهر من القالب',deadline:''}));
+    }
+    return sec;
+  }
+
+  window.createArabicProTemplateV33=function(id){
+    const t=PRO_TEMPLATES_FIX_V34[id] || PRO_TEMPLATES_FIX_V34.motion_project_ar_pro;
+    const list=dynSections();
+    if(list.some(s=>cleanName(s.name)===cleanName(t.name)) && !confirm('القالب موجود بالفعل. أعمل نسخة جديدة؟'))return;
+    const sec=buildSection(t);
+    list.push(sec);
+    saveSections(list);
+    if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();
+    if(typeof renderCoreV29==='function')renderCoreV29('templates');
+    if(typeof toast==='function')toast('تم إنشاء القالب بمحتوى ظاهر ✅');
+    if(typeof go==='function')setTimeout(()=>go('dyn_'+sec.id),150);
+  };
+
+  // Force a robust renderer that shows all content types together.
+  const oldBoard=window.renderDynamicBoardV28 || window.renderDynamicBoardV14;
+  window.renderDynamicBoardV28=function(secId){
+    const sec=dynSections().find(s=>s.id===secId);
+    if(!sec) return oldBoard?oldBoard(secId):null;
+    const board=document.getElementById('dynV28Board_'+secId) || document.getElementById('dynV14Board_'+secId);
+    if(!board) return oldBoard?oldBoard(secId):null;
+
+    const hasTemplateContent=sec.template_fixed_v34 || (sec.subsections&&sec.subsections.length) || (sec.notes&&sec.notes.length) || (sec.events&&sec.events.length) || (sec.cards&&sec.cards.length) || (sec.finItems&&sec.finItems.length);
+    if(!hasTemplateContent && oldBoard) return oldBoard(secId);
+
+    const cardsHTML=(sec.cards||[]).map(c=>`<div class="tpl-dash-card-v34" style="--tc:${sec.color||'#6366f1'}"><b>${esc(c.value||'0')}</b><span>${esc(c.title)}</span></div>`).join('');
+    const subsHTML=(sec.subsections||[]).map(sub=>`<div class="tpl-content-card-v34" style="--tc:${sub.color||sec.color||'#6366f1'}">
+      <h3>${esc(sub.icon||'🧩')} ${esc(sub.name)}</h3>
+      <p>${esc(sub.desc||'قسم جاهز')}</p>
+      <div class="tpl-mini-list-v34">
+        ${(sub.items||[]).slice(0,8).map(i=>`<label class="tpl-mini-row-v34"><input type="checkbox" ${i.done?'checked':''}> ${esc(i.title)}</label>`).join('')}
+        ${(sub.plans||[]).map(p=>`<div class="tpl-plan-day-v34">📋 ${esc(p.title)} — ${p.days?.length||0} يوم جاهز</div>`).join('')}
+      </div>
+      <div class="flex-actions-v28" style="margin-top:12px"><button onclick="renderSubsectionDetailV14&&renderSubsectionDetailV14('${sec.id}','${sub.id}')">فتح التفاصيل</button><button onclick="openSubsectionEditorV14&&openSubsectionEditorV14('${sec.id}','${sub.id}')">تعديل</button></div>
+    </div>`).join('');
+
+    const notesHTML=(sec.notes||[]).map(n=>`<div class="tpl-content-card-v34" style="--tc:${n.color||sec.color||'#6366f1'}"><h3>${esc(n.icon||'📝')} ${esc(n.title)}</h3><p>${esc(n.content||'ملاحظة جاهزة للتعبئة.')}</p><div class="flex-actions-v28" style="margin-top:12px"><button onclick="openNoteEditorV28&&openNoteEditorV28('${sec.id}',${sec.notes.indexOf(n)})">تعديل</button></div></div>`).join('');
+    const eventsHTML=(sec.events||[]).map(e=>`<div class="tpl-content-card-v34" style="--tc:${e.color||sec.color||'#6366f1'}"><h3>${esc(e.icon||'📆')} ${esc(e.title)}</h3><p>${esc(e.date||'بدون تاريخ')} ${e.start?' — '+esc(e.start):''}</p><div class="flex-actions-v28" style="margin-top:12px"><button onclick="openEventEditorV28&&openEventEditorV28('${sec.id}',${sec.events.indexOf(e)})">تعديل</button></div></div>`).join('');
+    const finHTML=(sec.finItems||[]).map(f=>`<div class="tpl-content-card-v34" style="--tc:${f.color||sec.color||'#10b981'}"><h3>${esc(f.icon||'💰')} ${esc(f.title)}</h3><p>${esc(f.note||'عملية مالية جاهزة للتعديل')} — ${f.amount||0}</p><div class="flex-actions-v28" style="margin-top:12px"><button onclick="openFlexFinanceEditorV28&&openFlexFinanceEditorV28('${sec.id}',${sec.finItems.indexOf(f)})">تعديل</button></div></div>`).join('');
+    const itemsHTML=(sec.items||[]).map(i=>`<div class="tpl-content-card-v34" style="--tc:${i.color||sec.color||'#6366f1'}"><h3>${esc(i.icon||'✅')} ${esc(i.title)}</h3><p>${esc(i.desc||'عنصر جاهز للتعديل.')}</p></div>`).join('');
+
+    board.innerHTML=`<div class="tpl-content-board-v34">
+      <div class="tpl-board-title-v34">
+        <div><h2>${esc(sec.icon||'📌')} ${esc(sec.name)}</h2><p style="color:var(--text-m);font-size:13px">${esc(sec.desc||'')}</p></div>
+        <div class="tpl-board-actions-v34">
+          <button onclick="openDynSectionEditor&&openDynSectionEditor('${sec.id}')">تعديل القسم</button>
+          <button onclick="openCoreItemEditorV29&&openCoreItemEditorV29()">إضافة للـ Inbox</button>
+        </div>
+      </div>
+      ${cardsHTML?`<div class="tpl-dashboard-grid-v34">${cardsHTML}</div>`:''}
+      <div class="tpl-section-grid-v34">${subsHTML}${notesHTML}${eventsHTML}${finHTML}${itemsHTML}</div>
+      ${!(subsHTML||notesHTML||eventsHTML||finHTML||itemsHTML||cardsHTML)?'<div class="flex-empty-v28">القسم فاضي — اضف محتوى من زر التعديل.</div>':''}
+    </div>`;
+  };
+  window.renderDynamicBoardV14=window.renderDynamicBoardV28;
+
+  // Repair previously created empty template sections by adding visible sample content.
+  window.repairEmptyTemplatesV34=function(){
+    const list=dynSections();
+    let fixed=0;
+    list.forEach(sec=>{
+      const empty=!(sec.subsections&&sec.subsections.length)&&!(sec.notes&&sec.notes.length)&&!(sec.events&&sec.events.length)&&!(sec.cards&&sec.cards.length)&&!(sec.items&&sec.items.length)&&!(sec.finItems&&sec.finItems.length);
+      if(empty){
+        sec.items=[
+          {id:uid(),title:'عنصر جاهز 1',icon:'✅',color:sec.color||'#6366f1',done:false,desc:'تم إضافته لإصلاح القالب الفارغ',deadline:''},
+          {id:uid(),title:'عنصر جاهز 2',icon:'✅',color:sec.color||'#6366f1',done:false,desc:'تقدر تعدله أو تحذفه',deadline:''}
+        ];
+        sec.template_fixed_v34=true;
+        fixed++;
+      }
+    });
+    if(fixed){saveSections(list); if(typeof renderDynamicShellV14==='function')renderDynamicShellV14(); if(typeof toast==='function')toast('تم إصلاح '+fixed+' قالب فارغ');}
+  };
+
+  setTimeout(window.repairEmptyTemplatesV34,600);
+})();
+</script>
+
 </body>
 </html>
