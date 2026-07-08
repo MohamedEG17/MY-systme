@@ -8,26 +8,10 @@
 <meta name="theme-color" content="#080c18">
 <title>MY System — نظامك الكامل</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script>
-/* Supabase CDN with mobile-friendly fallback loading */
-(function() {
-  var CDNS = [
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
-    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/supabase/2.39.3/umd/supabase.js'
-  ];
-  function load(i) {
-    if (i >= CDNS.length) return;
-    var s = document.createElement('script');
-    s.src = CDNS[i];
-    s.async = false; // Keep synchronous-ish loading order
-    s.onload = function() { window.__sbLoaded = true; };
-    s.onerror = function() { load(i + 1); };
-    document.head.appendChild(s);
-  }
-  load(0);
-})();
-</script>
+<!-- ملحوظة: كان هنا تحميل مكتبة supabase-js من 3 CDNs مختلفة (jsdelivr/unpkg/cdnjs)،
+     لكن المزامنة الفعلية في الابليكيشن كلها بتتم عن طريق fetch() مباشر على REST API
+     (شوف connect()/pushCloud()/pullCloud()) — المكتبة دي مكنتش بتتستخدم خالص (createClient
+     مكنش بينادى ولا مرة). اتشالت عشان تقلل وقت تحميل الصفحة، خصوصًا على نت الموبايل الضعيف. -->
 <style>
 /* ===== RESET ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -1812,7 +1796,22 @@ function apiBase() { return cleanSupabaseUrl(cloudUrl).replace(/\/+$/,'') + '/re
 function connStatus(text) { const el=document.getElementById('connStatus'); if(el) el.textContent=text; }
 function setSyncStatus(state, text) { document.getElementById('syncDot').className='sync-dot '+state; document.getElementById('syncText').textContent=text; }
 function stopPoll() { if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
-function startPoll() { if(pollTimer) clearInterval(pollTimer); pollTimer=setInterval(()=>pullCloud(false,true),2000); pullCloud(false,true); }
+function startPoll() {
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer=setInterval(()=>{ if(navigator.onLine) pullCloud(false,true); },2000);
+  if(navigator.onLine) pullCloud(false,true);
+}
+// لو النت اتقطع/رجع، نوقف/نكمل المزامنة فورًا بدل ما ننتظر الـ polling العادي —
+// ده بيوفر بيانات وبطارية على الموبايل وقت انقطاع النت.
+window.addEventListener('offline', ()=>{ setSyncStatus('err','لا يوجد اتصال بالإنترنت'); connStatus('لا يوجد اتصال بالإنترنت'); });
+window.addEventListener('online', ()=>{ if(cloudReady) pullCloud(true,true); });
+// طلب fetch بمهلة زمنية (timeout) عشان النت الضعيف/المتقطع على الموبايل يفشل بسرعة
+// بدل ما يفضل "معلّق" من غير ما يبين للمستخدم إن فيه مشكلة.
+function fetchTimeout(url, opts={}, ms=9000) {
+  const ctrl=new AbortController();
+  const id=setTimeout(()=>ctrl.abort(), ms);
+  return fetch(url, {...opts, signal:ctrl.signal}).finally(()=>clearTimeout(id));
+}
 function syncPulse(silent=false) { const d=document.getElementById('syncDot'); if(d){d.classList.add('loading'); setTimeout(()=>d.classList.remove('loading'),900);} if(!silent) toast('🔄 تم المزامنة'); }
 function touchCloud() { lastLocalEdit=Date.now(); if(!applyingRemote) queueCloudSave(); }
 function queueCloudSave() {
@@ -1858,8 +1857,9 @@ async function connect(rawUrl, rawKey, triedFallback=false) {
   sb=null; // مهم: إيقاف نظام الجداول القديمة بالكامل
   if(!cloudUrl || !cloudKey) { cloudReady=false; setSyncStatus('err','بيانات ناقصة'); connStatus('URL أو Key ناقص'); return false; }
   setSyncStatus('loading','جاري الاتصال...'); connStatus('جاري الاتصال...');
+  if(!navigator.onLine) { cloudReady=false; setSyncStatus('err','لا يوجد اتصال بالإنترنت'); connStatus('لا يوجد اتصال بالإنترنت — هيتم إعادة المحاولة تلقائيًا لما النت يرجع'); return false; }
   try {
-    const res = await fetch(apiBase()+`?select=system_id,updated_at&system_id=eq.${encodeURIComponent(SYSTEM_ID)}&limit=1`, { headers: apiHeaders({Accept:'application/json'}), cache:'no-store' });
+    const res = await fetchTimeout(apiBase()+`?select=system_id,updated_at&system_id=eq.${encodeURIComponent(SYSTEM_ID)}&limit=1`, { headers: apiHeaders({Accept:'application/json'}), cache:'no-store' });
     const txt = await res.text();
     if(!res.ok) throw new Error(parsePayloadError(res.status, txt));
     cloudReady=true;
@@ -1877,7 +1877,8 @@ async function connect(rawUrl, rawKey, triedFallback=false) {
       return connect(SB_URL, SB_KEY, true);
     }
     setSyncStatus('err','فشل الاتصال');
-    if(String(msg).includes('Failed to fetch')) connStatus('فشل وصول للشبكة: جرّب تحديث الصفحة أو تأكد أن الإنترنت شغال');
+    if(e?.name==='AbortError') connStatus('استغرق الاتصال وقت طويل (النت بطيء أو متقطع) — هيتم إعادة المحاولة تلقائيًا');
+    else if(String(msg).includes('Failed to fetch')) connStatus('فشل وصول للشبكة: جرّب تحديث الصفحة أو تأكد أن الإنترنت شغال');
     else if(String(msg).toLowerCase().includes('schema cache') || String(msg).includes('mysystem_state')) connStatus('جدول mysystem_state غير موجود — شغّل SQL الموجود في الأسفل مرة واحدة');
     else connStatus('خطأ: '+msg);
     console.error('Supabase connect error:', e);
@@ -1926,10 +1927,11 @@ function hasLocalPayload() {
 }
 async function pushCloud(mode='auto') {
   if(!cloudReady || applyingRemote) return false;
+  if(!navigator.onLine) { setSyncStatus('err','لا يوجد اتصال بالإنترنت'); return false; }
   const row={system_id:SYSTEM_ID,data:stateSnapshot(),client_id:clientId,updated_at:new Date().toISOString()};
   try {
     setSyncStatus('loading','جاري الحفظ...');
-    const res=await fetch(apiBase()+'?on_conflict=system_id', { method:'POST', headers:apiHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}), body:JSON.stringify(row), cache:'no-store' });
+    const res=await fetchTimeout(apiBase()+'?on_conflict=system_id', { method:'POST', headers:apiHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}), body:JSON.stringify(row), cache:'no-store' });
     const txt=await res.text();
     if(!res.ok) throw new Error(parsePayloadError(res.status,txt));
     const arr=txt?JSON.parse(txt):[];
@@ -1946,9 +1948,10 @@ async function pushCloud(mode='auto') {
 }
 async function pullCloud(force=false, silent=false) {
   if(!cloudReady) return false;
+  if(!navigator.onLine) return false;
   if(!force && Date.now()-lastLocalEdit<1100) return false;
   try {
-    const res=await fetch(apiBase()+`?select=data,updated_at,client_id&system_id=eq.${encodeURIComponent(SYSTEM_ID)}&limit=1`, { headers:apiHeaders({Accept:'application/json'}), cache:'no-store' });
+    const res=await fetchTimeout(apiBase()+`?select=data,updated_at,client_id&system_id=eq.${encodeURIComponent(SYSTEM_ID)}&limit=1`, { headers:apiHeaders({Accept:'application/json'}), cache:'no-store' });
     const txt=await res.text();
     if(!res.ok) throw new Error(parsePayloadError(res.status,txt));
     const arr=txt?JSON.parse(txt):[];
@@ -2645,7 +2648,9 @@ function workTaskFullHtml(t, eid, isFreelance, entColor='#6366f1') {
       ${t.description?`<div class="task-desc-w">${esc(t.description)}</div>`:''}
       ${links.map(l=>`<a class="link-chip" href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.name||l.url)}</a>`).join('')}
       <div style="display:flex;gap:5px;margin-top:3px;flex-wrap:wrap;align-items:center">
+        ${t.start_date&&t.start_date!==t.deadline?`<span class="deadline-badge db-gray">📅 من ${t.start_date}</span>`:''}
         ${dTxt?`<span class="deadline-badge ${dCls}">${dTxt}</span>`:''}
+        ${t.start_time||t.end_time?`<span class="deadline-badge db-gray">⏰ ${t.start_time||'--'}${t.end_time?' → '+t.end_time:''}</span>`:''}
         <span class="deadline-badge ${t.priority==='high'?'db-red':t.priority==='medium'?'db-yellow':'db-green'}">${t.priority==='high'?'🔥 عاجل':t.priority==='medium'?'متوسط':'عادي'}</span>
         ${isFreelance&&t.price?`<span class="deadline-badge db-green">💰 ${fmtNum(t.price)}</span>`:''}
       </div>
@@ -3138,6 +3143,50 @@ async function delGoal(gid) {
   closeGoalModal(); renderGoals(); updateBadges(); toast('تم الحذف');
 }
 
+// ===== إدارة أقسام أهدافي (إصلاح: كانت الدالة دي متنادى من 3 أزرار في الواجهة
+// من غير ما تكون معرّفة، فكانت الأزرار مش بتعمل حاجة خالص) =====
+function openGoalsAdmin() {
+  renderGoalsAdminBody();
+  document.getElementById('systemSectionsModalTitle').textContent='إدارة أقسام أهدافي';
+  document.getElementById('systemSectionsModal').classList.remove('hidden');
+}
+function renderGoalsAdminBody() {
+  const body=document.getElementById('systemSectionsModalBody');
+  body.innerHTML=`<div class="mf-row"><label>الأقسام الحالية</label></div>
+    <div id="goalsAdminList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">${GOALS.sections.map((s,i)=>goalsAdminRow(s,i)).join('')||'<p class="hub-empty">لا يوجد أقسام</p>'}</div>
+    <div class="mf-row"><label>قسم جديد</label></div>
+    <div class="mg3">
+      <div class="mf-row"><label>الاسم</label><input class="mf-inp" id="gaName" placeholder="مثلاً: أهداف مهنية"></div>
+      <div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="gaIcon" value="📌" maxlength="2"></div>
+      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="gaColor" type="color" value="#6366f1"></div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="addGoalsAdminSection()">+ إضافة القسم</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إغلاق</button></div>`;
+}
+function goalsAdminRow(s,i) {
+  const cnt=GOALS.items.filter(g=>g.section_id===s.id).length;
+  return `<div class="core-item-row-v29" style="--c:${s.color||'#6366f1'}">
+    <div class="core-item-icon-v29">${esc(s.icon||'📌')}</div>
+    <div style="flex:1"><input class="mf-inp" style="margin-bottom:4px" value="${esc(s.name)}" oninput="GOALS.sections[${i}].name=this.value" onblur="goalsSaveLocal();renderGoals()"><small>${cnt} هدف مرتبط</small></div>
+    <div class="core-row-actions-v29">
+      <input type="color" value="${s.color||'#6366f1'}" style="width:32px;height:32px;border:none;border-radius:8px;cursor:pointer" onchange="GOALS.sections[${i}].color=this.value;goalsSaveLocal();renderGoals();renderGoalsAdminBody()">
+      <button onclick="delGoalsAdminSection(${i})">حذف</button>
+    </div>
+  </div>`;
+}
+function addGoalsAdminSection() {
+  const name=document.getElementById('gaName').value.trim(); if(!name) return toast('اكتب اسم القسم');
+  const sec={id:uid(),name,icon:document.getElementById('gaIcon').value||'📌',color:document.getElementById('gaColor').value||'#6366f1',sort_order:GOALS.sections.length};
+  GOALS.sections.push(sec); goalsSaveLocal(); markWrite('goals');
+  renderGoalsAdminBody(); renderGoals(); toast('تم إضافة القسم ✅');
+}
+function delGoalsAdminSection(i) {
+  const s=GOALS.sections[i]; if(!s) return;
+  const cnt=GOALS.items.filter(g=>g.section_id===s.id).length;
+  if(cnt>0 && !confirm(`فيه ${cnt} هدف مرتبط بالقسم ده. حذف القسم هيسيبهم من غير قسم، مش هيمسحهم. تكمل؟`)) return;
+  GOALS.sections.splice(i,1); goalsSaveLocal(); markWrite('goals');
+  renderGoalsAdminBody(); renderGoals(); toast('تم حذف القسم');
+}
+
 function openSectionModal() { document.getElementById('sectionModal').classList.remove('hidden'); setTimeout(()=>document.getElementById('secName')?.focus(),60); }
 function closeSectionModal() { document.getElementById('sectionModal').classList.add('hidden'); }
 async function saveSection() {
@@ -3404,7 +3453,20 @@ openTaskModal=function(taskId, entId, isFreelance=false){
     <div class="mf-row"><label>اسم التاسك *</label><input class="mf-inp" id="tTitle" value="${esc(task?.title||'')}" placeholder="مثلاً: مونتاج فيديو" autofocus></div>
     <div class="mf-row"><label>الأيقونة اختياري</label><div class="optional-icon-row"><input class="mf-inp" id="tIcon" maxlength="2" value="${esc(task?.icon||'')}" placeholder="مثلاً 🎬"><button class="icon-clear-btn" onclick="document.getElementById('tIcon').value=''">بدون</button></div></div>
     <div class="mf-row"><label>الوصف</label><textarea class="mf-inp" id="tDesc" placeholder="تفاصيل...">${esc(task?.description||'')}</textarea></div>
-    <div class="mg3"><div class="mf-row"><label>تاريخ التاسك</label><input class="mf-inp" id="tDeadline" type="date" value="${task?.deadline?.slice(0,10)||dateKey()}"></div><div class="mf-row"><label>من</label><input class="mf-inp" id="tStart" type="time" value="${(task?.start_time||'10:00').slice(0,5)}"></div><div class="mf-row"><label>إلى</label><input class="mf-inp" id="tEnd" type="time" value="${(task?.end_time||'11:00').slice(0,5)}"></div></div>
+    <div class="task-date-group" style="margin-bottom:14px;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
+      <label style="display:block;font-size:12px;font-weight:900;color:var(--text-m);margin-bottom:8px">📅 تاريخ التاسك</label>
+      <div class="mg2">
+        <div class="mf-row"><label>من</label><input class="mf-inp" id="tStartDate" type="date" value="${task?.start_date||task?.deadline?.slice(0,10)||dateKey()}"></div>
+        <div class="mf-row"><label>إلى (تسليم)</label><input class="mf-inp" id="tDeadline" type="date" value="${task?.deadline?.slice(0,10)||dateKey()}"></div>
+      </div>
+    </div>
+    <div class="task-time-group" style="margin-bottom:14px;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
+      <label style="display:block;font-size:12px;font-weight:900;color:var(--text-m);margin-bottom:8px">⏰ موعد التسليم</label>
+      <div class="mg2">
+        <div class="mf-row"><label>من الساعة</label><input class="mf-inp" id="tStart" type="time" value="${(task?.start_time||'10:00').slice(0,5)}"></div>
+        <div class="mf-row"><label>لغاية الساعة</label><input class="mf-inp" id="tEnd" type="time" value="${(task?.end_time||'11:00').slice(0,5)}"></div>
+      </div>
+    </div>
     <div class="mg2"><div class="mf-row"><label>الأولوية</label><select class="mf-inp" id="tPriority"><option value="low" ${task?.priority==='low'?'selected':''}>عادي</option><option value="medium" ${(!task||task.priority==='medium')?'selected':''}>متوسط</option><option value="high" ${task?.priority==='high'?'selected':''}>عاجل 🔥</option></select></div><div class="mf-row"><label>لون التاسك</label><input class="mf-inp" id="tColor" type="color" value="${task?.color||ent?.color||WORK_PAL[0]}"></div></div>
     ${isFreelance?`<div class="mf-row"><label>السعر (EGP)</label><input class="mf-inp" id="tPrice" type="number" value="${task?.price||''}" dir="ltr"></div>`:''}
     <div class="mf-row"><label>تاسكات فرعية اختيارية</label><div id="tSubsBox">${tSubtasks.map((_,i)=>taskSubHtml(i)).join('')}</div><button type="button" class="add-task-row" onclick="addTaskSub()">+ تاسك فرعي</button></div>
@@ -3417,7 +3479,7 @@ saveTask=async function(){
   const title=document.getElementById('tTitle').value.trim(); if(!title)return toast('اكتب اسم التاسك');
   const links=tLinks.filter(l=>l.url.trim()).map(l=>({name:l.name||l.url,url:l.url.startsWith('http')?l.url:'https://'+l.url}));
   const subtasks=tSubtasks.filter(st=>String(st.text||'').trim()).map(st=>({id:st.id||'sub-'+uid().slice(0,8),text:st.text.trim()}));
-  const tData={id:editingTaskId||uid(),title,description:document.getElementById('tDesc').value.trim()||null,deadline:document.getElementById('tDeadline').value||dateKey(),start_time:document.getElementById('tStart')?.value||null,end_time:document.getElementById('tEnd')?.value||null,priority:document.getElementById('tPriority').value,price:isFreelanceTask?(+document.getElementById('tPrice')?.value||null):null,color:document.getElementById('tColor')?.value || '#6366f1',icon:document.getElementById('tIcon')?.value.trim()||'',links,subtasks,completed:false,day_synced:false};
+  const tData={id:editingTaskId||uid(),title,description:document.getElementById('tDesc').value.trim()||null,start_date:document.getElementById('tStartDate')?.value||null,deadline:document.getElementById('tDeadline').value||dateKey(),start_time:document.getElementById('tStart')?.value||null,end_time:document.getElementById('tEnd')?.value||null,priority:document.getElementById('tPriority').value,price:isFreelanceTask?(+document.getElementById('tPrice')?.value||null):null,color:document.getElementById('tColor')?.value || '#6366f1',icon:document.getElementById('tIcon')?.value.trim()||'',links,subtasks,completed:false,day_synced:false};
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===editingEntId); if(!ent)return;
   if(editingTaskId){ const idx=ent.tasks.findIndex(t=>t.id===editingTaskId); if(idx>=0){tData.completed=ent.tasks[idx].completed;tData.completed_at=ent.tasks[idx].completed_at;ent.tasks[idx]=tData;} }
   else ent.tasks.push(tData);
@@ -6517,12 +6579,13 @@ body[data-dyn-stabilizing="1"] [data-dyn-module-v28]{visibility:hidden!important
   }
   function heroActions(sec){
     const id=sec.id;
+    if(sec.type==='blocks')return '';
     if(sec.type==='notes')return `<button class="add-btn teal" onclick="openNoteEditorV28('${id}')">+ ملاحظة</button>`;
     if(sec.type==='calendar')return `<button class="add-btn teal" onclick="openEventEditorV28('${id}')">+ موعد</button>`;
     if(sec.type==='list')return `<button class="add-btn teal" onclick="openListItemEditorV28('${id}')">+ عنصر</button>`;
     if(sec.type==='finance')return `<button class="add-btn teal" onclick="openFlexFinanceEditorV28('${id}')">+ عملية</button>`;
     if(sec.type==='dashboard')return `<button class="add-btn teal" onclick="openDashboardCardEditorV28('${id}')">+ كارت</button>`;
-    return `<button class="add-btn teal" onclick="openSubsectionEditorV14('${id}')">+ قسم فرعي</button><button class="add-btn" onclick="openQuickItemEditorV14('${id}',null,null)">+ عنصر سريع</button>`;
+    return '';
   }
 
   function toolbar(sec, extra=''){
@@ -7328,12 +7391,13 @@ body[data-dyn-stabilizing="1"] [data-dyn-module-v31]{
 
   function heroActions(sec){
     const id=sec.id;
+    if(sec.type==='blocks')return '';
     if(sec.type==='notes')return `<button class="add-btn teal" onclick="openNoteEditorV28('${id}')">+ ملاحظة</button>`;
     if(sec.type==='calendar')return `<button class="add-btn teal" onclick="openEventEditorV28('${id}')">+ موعد</button>`;
     if(sec.type==='list')return `<button class="add-btn teal" onclick="openListItemEditorV28('${id}')">+ عنصر</button>`;
     if(sec.type==='finance')return `<button class="add-btn teal" onclick="openFlexFinanceEditorV28('${id}')">+ عملية</button>`;
     if(sec.type==='dashboard')return `<button class="add-btn teal" onclick="openDashboardCardEditorV28('${id}')">+ كارت</button>`;
-    return `<button class="add-btn teal" onclick="openSubsectionEditorV14('${id}')">+ قسم فرعي</button><button class="add-btn" onclick="openQuickItemEditorV14('${id}',null,null)">+ عنصر سريع</button>`;
+    return '';
   }
 
   function moduleHTML(sec){
@@ -9164,6 +9228,898 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
   window.syncAll38ToDay=function(secId){const {sec}=get(secId); seed(sec); if(sec.archetype==='appointments'){(sec.entities.appointments||[]).filter(x=>x.link_day).forEach((_,i)=>syncAll38Appointment(secId,i));return;} if(sec.archetype==='rehab'){(sec.entities.sessions||[]).slice(0,10).forEach((_,i)=>syncAll38Session(secId,i));return;} if(window.syncRealToDay37)return syncRealToDay37(secId);}
 })();
 </script>
+
+<script id="blocks-dashboard-builder-v2">
+/* =====================================================================
+   قسم مخصص (Blocks Builder) v2 — نسخة موسّعة:
+   - إزالة "المركز" بالكامل من الواجهة (نفس المنطق موجود لسه لغرض الأرشيف
+     الداخلي، بس مفيش أي زرار أو مسار وصول ليه من الواجهة تاني)
+   - موديول جديد مستقل تمامًا اسمه "➕ إضافة قسم مخصص"
+   - 8 أنواع Blocks: Checklist احترافي، List بسيط، Cards، Table بأعمدة
+     مبوّبة (نص/رقم/تاريخ/تشيك/اختيار)، Appointments، دفتر مالي، ملاحظات،
+     وBlock "خطة متداخلة" (مراحل ← عناصر ← تفاصيل/تاسكات في نافذة منبثقة)
+   - طريقة عرض List/Grid قابلة للتبديل في كل Block
+   ===================================================================== */
+(function(){
+  const DYN_KEY='ms_dynamic_main_sections_v13';
+  function parse(v,df){try{return v?JSON.parse(v):df}catch(_){return df}}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));}
+  function uid(){return 'blk_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16);}
+  function today(){return new Date().toISOString().slice(0,10);}
+  function dynSections(){return parse(localStorage.getItem(DYN_KEY),'')||[];}
+  function saveSections(v){localStorage.setItem(DYN_KEY,JSON.stringify(v)); if(typeof touchCloud==='function')touchCloud();}
+  function get(secId){const list=dynSections(); return {list, sec:list.find(s=>s.id===secId)};}
+  function val(id){return document.getElementById(id)?.value||'';}
+  function checked(id){return !!document.getElementById(id)?.checked;}
+  function modal(title,html){document.getElementById('systemSectionsModalTitle').textContent=title; document.getElementById('systemSectionsModalBody').innerHTML=html; document.getElementById('systemSectionsModal').classList.remove('hidden');}
+  function closeModal(){ if(typeof closeSystemSectionsModal==='function') closeSystemSectionsModal(); }
+  function money(v){return typeof fmtEGP==='function'?fmtEGP(v):((+v||0).toLocaleString('en-US')+' EGP');}
+  function boardEl(secId){return document.getElementById('dynV28Board_'+secId)||document.getElementById('dynV14Board_'+secId);}
+  const PRI_COLOR={low:'#38bdf8',medium:'#fbbf24',high:'#f87171'};
+  const PRI_LABEL={low:'منخفضة',medium:'متوسطة',high:'عالية'};
+
+  /* ربط أي عنصر (بتاريخ محدد) بـ "يومي" — بيحط تاسك جوه أقرب بلوك وقت
+     مناسب في اليوم المطلوب، بنفس آلية autoSyncTaskToDay المستخدمة في باقي
+     أجزاء السيستم، عشان أي بلوك جديد نضيفه يقدر "يسمع" في يومي. */
+  window.syncBlockItemToDay=function(secId,blkId,itemId,title,date,startTime,endTime){
+    if(!date){ if(typeof toast==='function')toast('حدد تاريخ للعنصر الأول عشان يتربط بيومي'); return; }
+    if(typeof dayVisibleBlocks!=='function'){ if(typeof toast==='function')toast('يومي مش متاح دلوقتي'); return; }
+    const blocks=dayVisibleBlocks(date)||[];
+    if(!blocks.length){ if(typeof toast==='function')toast('مفيش بلوك في يومي في التاريخ ده'); return; }
+    const minOf=typeof minOfTime==='function'?minOfTime:()=>null;
+    const ts=minOf(startTime), te=minOf(endTime);
+    let target=ts!=null?blocks.find(b=>typeof rangesOverlap==='function'&&rangesOverlap(ts,te,minOf(b.start_time)??0,minOf(b.end_time)??1440)):null;
+    if(!target)target=blocks[0];
+    const key=`${target.id}_${date}`, existing=DAY.overrides[key]||{...target};
+    const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
+    const id='blk-'+itemId;
+    const newTask={id,text:title,timeLabel:startTime?`${startTime}${endTime?' → '+endTime:''}`:'',source:itemId,sourceEnt:'قسم مخصص',subtasks:[],color:'#6366f1'};
+    const idx=tasks.findIndex(x=>x.id===id||x.source===itemId); if(idx>=0)tasks[idx]={...tasks[idx],...newTask}; else tasks.push(newTask);
+    DAY.overrides[key]={...existing,tasks};
+    if(typeof daySaveLocal==='function')daySaveLocal();
+    if(typeof toast==='function')toast(`اتربط بيومي داخل بلوك: ${target.title||''} ✅`);
+  };
+
+  /* ---------------------------------------------------------------
+     0) إزالة "المركز" خالص من الواجهة — بيتشال نهائيًا من الـ nav
+     وأي محاولة تنقل ليه بتترد لصفحة الرئيسية بدل ما تفتحه.
+  --------------------------------------------------------------- */
+  function stripCoreModule(){
+    document.querySelectorAll('.nav-item[data-mod="core"], .bnav-item[data-mod="core"]').forEach(el=>el.remove());
+    document.getElementById('mod-core')?.remove();
+  }
+  [50,450,900,1500,2500].forEach(ms=>setTimeout(stripCoreModule,ms));
+  const goBeforeCoreRemoval=window.go;
+  window.go=function(mod){
+    if(mod==='core'){ stripCoreModule(); return goBeforeCoreRemoval?goBeforeCoreRemoval('hub'):null; }
+    if(mod==='custom_hub'){ openCustomHubModule(); return; }
+    return goBeforeCoreRemoval?goBeforeCoreRemoval(mod):null;
+  };
+
+  /* ---------------------------------------------------------------
+     1) موديول مستقل جديد: "➕ إضافة قسم مخصص"
+  --------------------------------------------------------------- */
+  function ensureCustomHubNav(){
+    const nav=document.querySelector('.sidebar .nav-items');
+    const bottom=document.getElementById('bottomNav');
+    const main=document.querySelector('main.main');
+    if(nav && !document.querySelector('.nav-item[data-mod="custom_hub"]')){
+      const el=document.createElement('div'); el.className='nav-item'; el.dataset.mod='custom_hub';
+      el.onclick=()=>go('custom_hub');
+      el.innerHTML='<span class="nav-icon">➕</span><span>إضافة قسم مخصص</span>';
+      nav.appendChild(el);
+    }
+    if(bottom && !document.querySelector('.bnav-item[data-mod="custom_hub"]')){
+      const el=document.createElement('div'); el.className='bnav-item'; el.dataset.mod='custom_hub';
+      el.onclick=()=>go('custom_hub');
+      el.innerHTML='<span class="bnav-icon">➕</span><span>قسم مخصص</span>';
+      bottom.appendChild(el);
+    }
+    if(main && !document.getElementById('mod-custom_hub')){
+      const sec=document.createElement('section'); sec.id='mod-custom_hub'; sec.className='module';
+      sec.innerHTML='<div id="customHubBoard"></div>';
+      main.appendChild(sec);
+    }
+  }
+  window.openCustomHubModule=function(){
+    ensureCustomHubNav();
+    document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+    document.getElementById('mod-custom_hub')?.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod==='custom_hub'));
+    document.querySelectorAll('.bnav-item').forEach(n=>n.classList.toggle('active',n.dataset.mod==='custom_hub'));
+    if(typeof cur!=='undefined') cur='custom_hub';
+    renderCustomHub();
+  };
+  function existingBlocksSections(){ return dynSections().filter(s=>s.type==='blocks'); }
+  function renderCustomHub(){
+    const b=document.getElementById('customHubBoard'); if(!b)return;
+    const secs=existingBlocksSections();
+    b.innerHTML=`<div class="dyn-v14-wrap">
+      <div class="dyn-v14-hero" style="--dyn-color:#6366f1">
+        <div class="dyn-v14-hero-icon">➕</div>
+        <div class="dyn-v14-hero-text"><h2>إضافة قسم مخصص</h2><p>ابنِ أقسام رئيسية جديدة بشكلك إنت بالكامل من Blocks حرة — من غير قوالب جاهزة مقفولة.</p></div>
+      </div>
+      <div class="core-grid-v29" style="margin-bottom:18px">
+        <div class="core-card-v29" style="cursor:pointer;--tc:#6366f1;border:2px dashed color-mix(in srgb,#6366f1 45%,transparent)" onclick="openCreateBlocksSectionModal()">
+          <div class="tpl-head"><div class="tpl-icon">➕</div><div><h3>إنشاء قسم جديد</h3><p>سمّي القسم واختار شكله، وبعدين ضيف Blocks جواه.</p></div></div>
+        </div>
+        ${secs.map(s=>`<div class="core-card-v29" style="cursor:pointer;--tc:${s.color||'#6366f1'}" onclick="go('dyn_${s.id}')">
+          <div class="tpl-head"><div class="tpl-icon">${esc(s.icon||'🧩')}</div><div><h3>${esc(s.name)}</h3><p>${(s.blocks||[]).length} block${(s.blocks||[]).length===1?'':'s'} • ${esc(s.desc||'')}</p></div></div>
+        </div>`).join('')}
+      </div>
+      ${secs.length?'':'<p style="color:var(--text-m);font-size:13px">لسه معملتش أي قسم مخصص — دوس "إنشاء قسم جديد" فوق وابدأ.</p>'}
+    </div>`;
+  }
+
+  window.openCreateBlocksSectionModal=function(){
+    modal('قسم مخصص جديد',`
+      <div class="mg2"><div class="mf-row"><label>الأيقونة</label><input class="mf-inp" id="ncsIcon" value="🧩" maxlength="2"></div><div class="mf-row"><label>اللون</label><input class="mf-inp" id="ncsColor" type="color" value="#6366f1"></div></div>
+      <div class="mf-row"><label>اسم القسم *</label><input class="mf-inp" id="ncsName" placeholder="مثلاً: متابعة تأهيل العملية" autofocus></div>
+      <div class="mf-row"><label>وصف مختصر (اختياري)</label><textarea class="mf-inp" id="ncsDesc" placeholder="بيتابع إيه القسم ده؟"></textarea></div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="confirmCreateBlocksSection()">إنشاء وابدأ إضافة Blocks</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`);
+    setTimeout(()=>document.getElementById('ncsName')?.focus(),60);
+  };
+  window.confirmCreateBlocksSection=function(){
+    const name=val('ncsName').trim(); if(!name)return toast('اكتب اسم القسم');
+    const list=dynSections();
+    const sec={id:uid(),name,icon:val('ncsIcon')||'🧩',color:val('ncsColor')||'#6366f1',desc:val('ncsDesc').trim(),type:'blocks',blocks:[]};
+    list.push(sec); saveSections(list); closeModal();
+    if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();
+    setTimeout(()=>go('dyn_'+sec.id),100);
+    if(typeof toast==='function')toast('تم إنشاء القسم ✅ — دلوقتي ضيف أول Block');
+  };
+
+  /* ---------------------------------------------------------------
+     2) تعريف أنواع الـ Blocks
+  --------------------------------------------------------------- */
+  const BLOCK_TYPES={
+    checklist:{icon:'✅',label:'Checklist احترافي',hint:'مهام بأولوية وتاريخ استحقاق وشريط تقدّم'},
+    list:{icon:'📃',label:'قائمة بسيطة',hint:'عناصر مرتبة بدون تحديد إنجاز'},
+    cards:{icon:'🗂️',label:'كروت (Cards)',hint:'عناصر بأيقونة وعنوان وتفاصيل، شكل بصري'},
+    table:{icon:'📋',label:'جدول مخصص',hint:'أعمدة إنت تحددها بأنواع مختلفة: نص/رقم/تاريخ/تشيك/اختيار'},
+    appointments:{icon:'📅',label:'مواعيد',hint:'مواعيد بمكان وتكرار وحالة (علاج، دكاترة، اجتماعات...)'},
+    ledger:{icon:'💰',label:'دفتر مالي',hint:'دخل/مصروف بحساب صافي تلقائي'},
+    notes:{icon:'📝',label:'ملاحظات',hint:'نصوص حرة وملاحظات طويلة'},
+    plan:{icon:'🗺️',label:'خطة متداخلة (مراحل وعناصر)',hint:'مراحل (شهر1، شهر2...) وجوه كل مرحلة عناصر، وكل عنصر بتفاصيله وتاسكاته في نافذة منفصلة'},
+    kanban:{icon:'📌',label:'لوحة Kanban',hint:'أعمدة: قيد الانتظار / قيد التنفيذ / تم — لمتابعة سير عمل'},
+    habits:{icon:'🔥',label:'تتبع عادات',hint:'شبكة 7 أيام لكل عادة، دوس لتحديد يوم منجز'},
+    timeline:{icon:'📈',label:'خط زمني (معالم)',hint:'أحداث ومعالم مرتبة زمنيًا بخط متصل'},
+    links:{icon:'🔗',label:'روابط ومصادر',hint:'قائمة روابط بأيقونة ووصف، دوس تفتح مباشرة'}
+  };
+
+  window.renderBlocksBoard=function(secId){
+    const sec=dynSections().find(s=>s.id===secId); if(!sec)return;
+    const b=boardEl(secId); if(!b)return;
+    sec.blocks=Array.isArray(sec.blocks)?sec.blocks:[];
+    const layoutGrid=sec.blocksLayout==='grid';
+    b.innerHTML=`<div class="pro36-board" style="--pro-color:${sec.color||'#6366f1'}">
+      <div class="pro36-hero">
+        <div><h2>${esc(sec.icon||'🧩')} ${esc(sec.name||'قسم')}</h2><p>${esc(sec.desc||'')}</p></div>
+        <div class="pro36-hero-actions">
+          <button onclick="openAddBlockPicker('${sec.id}')">+ Block جديد</button>
+          <button title="ترتيب الـ Blocks بعضها ببعض" onclick="toggleSectionLayout('${sec.id}')">${layoutGrid?'☰ ترتيب: قائمة':'▦ ترتيب: شبكة'}</button>
+        </div>
+      </div>
+      <div id="blocksList_${sec.id}" style="${layoutGrid?'display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px;align-items:start':''}"></div>
+    </div>`;
+    renderBlocksList(sec.id);
+  };
+  window.toggleSectionLayout=function(secId){
+    const {list,sec}=get(secId); if(!sec)return;
+    sec.blocksLayout=sec.blocksLayout==='grid'?'list':'grid';
+    saveSections(list); renderBlocksBoard(secId);
+  };
+  function renderBlocksList(secId){
+    const sec=dynSections().find(s=>s.id===secId); if(!sec)return;
+    const wrap=document.getElementById('blocksList_'+secId); if(!wrap)return;
+    if(!sec.blocks.length){ wrap.innerHTML=`<div class="pro36-panel"><h3>مفيش Blocks لسه</h3><p style="color:var(--text-m);font-size:13px">دوس "+ Block جديد" فوق وابدأ تبني القسم بشكلك إنت.</p></div>`; return; }
+    wrap.innerHTML=sec.blocks.map((blk,bi)=>renderOneBlock(sec,blk,bi)).join('');
+  }
+  function blockHeader(sec,blk,bi){
+    const t=BLOCK_TYPES[blk.type]||{icon:'🧩',label:blk.type};
+    const isGrid=blk.viewMode==='grid';
+    return `<div class="pro36-hero-actions" style="justify-content:space-between;margin-bottom:10px;flex-wrap:wrap">
+      <h3 style="font-size:18px">${esc(t.icon)} ${esc(blk.title||t.label)}</h3>
+      <div class="pro36-row-actions">
+        ${['checklist','list','cards','appointments','ledger','notes','timeline','links'].includes(blk.type)?`<button title="طريقة العرض" onclick="toggleBlockView('${sec.id}','${blk.id}')">${isGrid?'☰ قائمة':'▦ شبكة'}</button>`:''}
+        ${bi>0?`<button onclick="moveBlock('${sec.id}','${blk.id}',-1)">⬆️</button>`:''}
+        ${bi<sec.blocks.length-1?`<button onclick="moveBlock('${sec.id}','${blk.id}',1)">⬇️</button>`:''}
+        <button onclick="openEditBlockMeta('${sec.id}','${blk.id}')">⚙️</button>
+        <button onclick="deleteBlock('${sec.id}','${blk.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }
+  window.toggleBlockView=function(secId,blkId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); if(!blk)return;
+    blk.viewMode=blk.viewMode==='grid'?'list':'grid';
+    saveSections(list); renderBlocksList(secId);
+  };
+  function renderOneBlock(sec,blk,bi){
+    blk.items=Array.isArray(blk.items)?blk.items:[];
+    if(blk.type==='checklist') return renderChecklistBlock(sec,blk,bi);
+    if(blk.type==='list') return renderListBlock(sec,blk,bi);
+    if(blk.type==='cards') return renderCardsBlock(sec,blk,bi);
+    if(blk.type==='table') return renderTableBlock(sec,blk,bi);
+    if(blk.type==='appointments') return renderAppointmentsBlock(sec,blk,bi);
+    if(blk.type==='ledger') return renderLedgerBlock(sec,blk,bi);
+    if(blk.type==='notes') return renderNotesBlock(sec,blk,bi);
+    if(blk.type==='plan') return renderPlanBlock(sec,blk,bi);
+    if(blk.type==='kanban') return renderKanbanBlock(sec,blk,bi);
+    if(blk.type==='habits') return renderHabitsBlock(sec,blk,bi);
+    if(blk.type==='timeline') return renderTimelineBlock(sec,blk,bi);
+    if(blk.type==='links') return renderLinksBlock(sec,blk,bi);
+    return '';
+  }
+  function gridWrap(isGrid,inner){ return isGrid?`<div class="pro36-mod-grid">${inner}</div>`:inner; }
+
+  /* ---------- Checklist (احترافي) ---------- */
+  function renderChecklistBlock(sec,blk,bi){
+    const items=blk.items; const done=items.filter(x=>x.done).length; const pct=items.length?Math.round(done/items.length*100):0;
+    const isGrid=blk.viewMode==='grid';
+    const rows=items.slice().sort((a,b)=>(a.done===b.done)?0:(a.done?1:-1)).map(it=>{
+      const pc=PRI_COLOR[it.priority]||PRI_COLOR.medium;
+      const cardStyle=isGrid?'border-radius:18px;padding:13px;background:var(--panel2);border:1px solid var(--border)':'';
+      return `<div class="${isGrid?'':'pro36-row'}" style="${isGrid?cardStyle:''}${isGrid?'':';grid-template-columns:44px 1fr auto'}">
+        <div class="${isGrid?'':'pro36-i'}" style="${isGrid?'display:flex;align-items:center;gap:8px;margin-bottom:8px':''};cursor:pointer;background:${isGrid?'none':pc}" onclick="toggleChecklistItem('${sec.id}','${blk.id}','${it.id}')">${isGrid?(it.done?'✔️ منجز':'⬜ لسه'):(it.done?'✔️':'⬜')}</div>
+        <div><b class="${it.done?'done-step':''}">${esc(it.text)}</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+          <span style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:20px;background:color-mix(in srgb,${pc} 22%,transparent);color:${pc}">${PRI_LABEL[it.priority]||'متوسطة'}</span>
+          ${it.startDate&&it.startDate!==it.deadline?`<span style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:20px;background:var(--panel);color:var(--text-m)">📅 من ${esc(it.startDate)}</span>`:''}
+          ${it.deadline?`<span style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:20px;background:var(--panel);color:var(--text-m)">🏁 ${esc(it.deadline)}</span>`:''}
+          ${it.startTime||it.endTime?`<span style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:20px;background:var(--panel);color:var(--text-m)">⏰ ${esc(it.startTime||'--')}${it.endTime?' → '+esc(it.endTime):''}</span>`:''}
+        </div>${it.notes?`<small style="display:block;margin-top:4px;color:var(--text-d)">${esc(it.notes)}</small>`:''}</div>
+        <div class="pro36-row-actions"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button>${it.deadline?`<button title="اربط بيومي" onclick="syncBlockItemToDay('${sec.id}','${blk.id}','${it.id}','${esc(it.text).replace(/'/g,"\\'")}','${it.deadline}','${it.startTime||''}','${it.endTime||''}')">🔗</button>`:''}<button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></div>
+      </div>`;
+    }).join('')||'<p style="color:var(--text-m);font-size:13px">مفيش مهام لسه</p>';
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}
+      <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-m);margin-bottom:5px"><span>التقدم</span><span>${done}/${items.length} (${pct}%)</span></div><div style="height:8px;border-radius:20px;background:var(--panel2);overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${blk.color||sec.color},#22c55e)"></div></div></div>
+      ${gridWrap(isGrid,rows)}
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ مهمة جديدة</button>
+    </div>`;
+  }
+  function checklistItemForm(it){
+    return `<div class="mf-row"><label>النص</label><input class="mf-inp" id="biText" value="${esc(it?.text||'')}" placeholder="اكتب المهمة"></div>
+      <div class="mf-row"><label>الأولوية</label><select class="mf-inp" id="biPriority"><option value="low" ${it?.priority==='low'?'selected':''}>منخفضة</option><option value="medium" ${!it||it.priority==='medium'?'selected':''}>متوسطة</option><option value="high" ${it?.priority==='high'?'selected':''}>عالية</option></select></div>
+      <div style="margin:12px 0;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
+        <label style="display:block;font-size:12px;font-weight:900;color:var(--text-m);margin-bottom:8px">📅 تاريخ التاسك</label>
+        <div class="mg2">
+          <div class="mf-row"><label>من</label><input class="mf-inp" id="biStartDate" type="date" value="${it?.startDate||it?.deadline||''}"></div>
+          <div class="mf-row"><label>إلى (تسليم)</label><input class="mf-inp" id="biDeadline" type="date" value="${it?.deadline||''}"></div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
+        <label style="display:block;font-size:12px;font-weight:900;color:var(--text-m);margin-bottom:8px">⏰ موعد التسليم (اختياري)</label>
+        <div class="mg2">
+          <div class="mf-row"><label>من الساعة</label><input class="mf-inp" id="biStartTime" type="time" value="${it?.startTime||''}"></div>
+          <div class="mf-row"><label>لغاية الساعة</label><input class="mf-inp" id="biEndTime" type="time" value="${it?.endTime||''}"></div>
+        </div>
+      </div>
+      <div class="mf-row"><label>ملاحظات (اختياري)</label><textarea class="mf-inp" id="biNotes">${esc(it?.notes||'')}</textarea></div>`;
+  }
+  function saveChecklistItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const text=val('biText').trim(); if(!text)return toast('اكتب المهمة');
+    const obj={id:itemId||uid(),text,priority:val('biPriority'),startDate:val('biStartDate')||'',deadline:val('biDeadline')||'',startTime:val('biStartTime')||'',endTime:val('biEndTime')||'',notes:val('biNotes'),done:itemId?blk.items.find(x=>x.id===itemId)?.done||false:false};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+  window.toggleChecklistItem=function(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const it=blk.items.find(x=>x.id===itemId); if(!it)return;
+    it.done=!it.done; saveSections(list); renderBlocksList(secId);
+  };
+
+
+  /* ---------- List بسيط (مرقّم) ---------- */
+  function renderListBlock(sec,blk,bi){
+    const isGrid=blk.viewMode==='grid';
+    const rows=blk.items.map((it,idx)=>{
+      const cardStyle=isGrid?'border-radius:18px;padding:13px;background:var(--panel2);border:1px solid var(--border)':'';
+      return `<div class="${isGrid?'':'pro36-row'}" style="${isGrid?cardStyle:''}">
+        <div class="${isGrid?'':'pro36-i'}" style="${isGrid?'font-size:13px;color:var(--text-m);margin-bottom:6px;font-weight:900':''}">${isGrid?'#'+(idx+1):(idx+1)}</div>
+        <div><b>${esc(it.title)}</b>${it.notes?`<small style="display:block;color:var(--text-d);margin-top:3px">${esc(it.notes)}</small>`:''}</div>
+        <div class="pro36-row-actions"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></div>
+      </div>`;
+    }).join('')||'<p style="color:var(--text-m);font-size:13px">مفيش عناصر لسه</p>';
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}
+      ${gridWrap(isGrid,rows)}
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ عنصر جديد</button>
+    </div>`;
+  }
+  function listItemForm(it){
+    return `<div class="mf-row"><label>العنوان</label><input class="mf-inp" id="biTitle" value="${esc(it?.title||'')}"></div>
+      <div class="mf-row"><label>تفاصيل (اختياري)</label><textarea class="mf-inp" id="biNotes">${esc(it?.notes||'')}</textarea></div>`;
+  }
+  function saveListItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const title=val('biTitle').trim(); if(!title)return toast('اكتب العنوان');
+    const obj={id:itemId||uid(),title,notes:val('biNotes')};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+
+  /* ---------- Cards ---------- */
+  function renderCardsBlock(sec,blk,bi){
+    const isGrid=blk.viewMode!=='list'; // كروت افتراضيًا شبكة
+    const rows=blk.items.map(it=>{
+      if(isGrid) return `<div class="pro36-mini" style="position:relative"><b>${esc(it.icon||'🔹')} ${esc(it.title)}</b>${it.subtitle?`<p style="font-weight:800;color:var(--text)">${esc(it.subtitle)}</p>`:''}${it.notes?`<p>${esc(it.notes)}</p>`:''}<div style="position:absolute;top:8px;left:8px;display:flex;gap:4px"><button style="padding:2px 6px;font-size:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button><button style="padding:2px 6px;font-size:10px" onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">✕</button></div></div>`;
+      return `<div class="pro36-row"><div class="pro36-i">${esc(it.icon||'🔹')}</div><div><b>${esc(it.title)}</b>${it.subtitle?`<small>${esc(it.subtitle)}</small>`:''}${it.notes?`<small style="color:var(--text-d)">${esc(it.notes)}</small>`:''}</div><div class="pro36-row-actions"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></div></div>`;
+    }).join('')||'<p style="color:var(--text-m);font-size:13px;grid-column:1/-1">مفيش كروت لسه</p>';
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}
+      ${isGrid?`<div class="pro36-mod-grid">${rows}</div>`:rows}
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ كارت جديد</button>
+    </div>`;
+  }
+  function cardsItemForm(it){
+    return `<div class="mg2"><div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="biIcon" value="${esc(it?.icon||'🔹')}" maxlength="2"></div><div class="mf-row"><label>العنوان</label><input class="mf-inp" id="biTitle" value="${esc(it?.title||'')}"></div></div>
+      <div class="mf-row"><label>عنوان فرعي (اختياري)</label><input class="mf-inp" id="biSubtitle" value="${esc(it?.subtitle||'')}"></div>
+      <div class="mf-row"><label>تفاصيل (اختياري)</label><textarea class="mf-inp" id="biNotes">${esc(it?.notes||'')}</textarea></div>`;
+  }
+  function saveCardsItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const title=val('biTitle').trim(); if(!title)return toast('اكتب العنوان');
+    const obj={id:itemId||uid(),icon:val('biIcon')||'🔹',title,subtitle:val('biSubtitle'),notes:val('biNotes')};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+
+  /* ---------- Table (أعمدة مبوّبة الأنواع) ---------- */
+  const COL_TYPES={text:'نص',number:'رقم',date:'تاريخ',checkbox:'تشيك ✔️',select:'اختيار من قائمة'};
+  function renderTableBlock(sec,blk,bi){
+    const cols=Array.isArray(blk.columns)&&blk.columns.length?blk.columns:[{name:'العنصر',type:'text'}];
+    function cell(it,c){
+      const v=it.values?.[c.name];
+      if(c.type==='checkbox') return `<span style="cursor:pointer" onclick="toggleTableCell('${sec.id}','${blk.id}','${it.id}','${esc(c.name)}')">${v?'✔️':'⬜'}</span>`;
+      if(c.type==='select'){ const color=(c.options||[]).find(o=>o.value===v)?.color||'#6366f1'; return v?`<span style="font-size:11px;font-weight:900;padding:2px 8px;border-radius:20px;background:color-mix(in srgb,${color} 22%,transparent);color:${color}">${esc(v)}</span>`:''; }
+      return esc(v||'');
+    }
+    const dateCol=cols.find(c=>c.type==='date');
+    const titleCol=cols[0];
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color};overflow-x:auto">${blockHeader(sec,blk,bi)}
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr>${cols.map(c=>`<th style="text-align:right;padding:8px;border-bottom:1px solid var(--border);color:var(--text-m)">${esc(c.name)}</th>`).join('')}<th></th></tr></thead>
+        <tbody>${blk.items.map(it=>`<tr>${cols.map(c=>`<td style="padding:8px;border-bottom:1px solid var(--border)">${cell(it,c)}</td>`).join('')}<td style="padding:8px;border-bottom:1px solid var(--border);white-space:nowrap"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button> ${dateCol&&it.values?.[dateCol.name]?`<button title="اربط بيومي" onclick="syncBlockItemToDay('${sec.id}','${blk.id}','${it.id}','${esc(String(it.values?.[titleCol.name]||'صف جدول')).replace(/'/g,"\\'")}','${it.values[dateCol.name]}','','')">🔗</button>`:''} <button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></td></tr>`).join('')||`<tr><td colspan="${cols.length+1}" style="padding:12px;color:var(--text-m)">مفيش صفوف لسه</td></tr>`}</tbody>
+      </table>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="pro36-btn pro36-primary" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ صف جديد</button>
+        <button class="pro36-btn" onclick="openTableColumnsEditor('${sec.id}','${blk.id}')">⚙️ تعديل الأعمدة</button>
+      </div>
+    </div>`;
+  }
+  window.toggleTableCell=function(secId,blkId,itemId,colName){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const it=blk.items.find(x=>x.id===itemId); if(!it)return;
+    it.values=it.values||{}; it.values[colName]=!it.values[colName];
+    saveSections(list); renderBlocksList(secId);
+  };
+  function tableItemForm(blk,it){
+    const cols=Array.isArray(blk.columns)&&blk.columns.length?blk.columns:[{name:'العنصر',type:'text'}];
+    return cols.map((c,i)=>{
+      const v=it?.values?.[c.name];
+      if(c.type==='checkbox') return `<label class="switch-line"><input type="checkbox" id="biCol${i}" ${v?'checked':''}> ${esc(c.name)}</label>`;
+      if(c.type==='date') return `<div class="mf-row"><label>${esc(c.name)}</label><input class="mf-inp" id="biCol${i}" type="date" value="${v||''}"></div>`;
+      if(c.type==='number') return `<div class="mf-row"><label>${esc(c.name)}</label><input class="mf-inp" id="biCol${i}" type="number" value="${v??''}"></div>`;
+      if(c.type==='select') return `<div class="mf-row"><label>${esc(c.name)}</label><select class="mf-inp" id="biCol${i}"><option value="">—</option>${(c.options||[]).map(o=>`<option value="${esc(o.value)}" ${v===o.value?'selected':''}>${esc(o.value)}</option>`).join('')}</select></div>`;
+      return `<div class="mf-row"><label>${esc(c.name)}</label><input class="mf-inp" id="biCol${i}" value="${esc(v||'')}"></div>`;
+    }).join('');
+  }
+  function saveTableItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const cols=Array.isArray(blk.columns)&&blk.columns.length?blk.columns:[{name:'العنصر',type:'text'}];
+    const values={}; cols.forEach((c,i)=>{ values[c.name]= c.type==='checkbox'?checked('biCol'+i):val('biCol'+i); });
+    const obj={id:itemId||uid(),values};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+  window.openTableColumnsEditor=function(secId,blkId){
+    const {sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const cols=Array.isArray(blk.columns)&&blk.columns.length?blk.columns:[{name:'العنصر',type:'text'}];
+    modal('تعديل أعمدة الجدول',`<div id="tcColsList">${cols.map((c,i)=>tcColRow(c,i)).join('')}</div>
+      <button type="button" class="add-task-row" onclick="addTcColRow()">+ عمود جديد</button>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="saveTableColumns('${secId}','${blkId}')">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`);
+  };
+  function tcColRow(c,i){
+    return `<div class="mg3" data-tc-row="${i}" style="align-items:end">
+      <div class="mf-row"><label>اسم العمود</label><input class="mf-inp" id="tcName${i}" value="${esc(c.name||'')}"></div>
+      <div class="mf-row"><label>النوع</label><select class="mf-inp" id="tcType${i}" onchange="onTcTypeChange(${i})">${Object.entries(COL_TYPES).map(([k,l])=>`<option value="${k}" ${c.type===k?'selected':''}>${l}</option>`).join('')}</select></div>
+      <div class="mf-row" id="tcOptWrap${i}">${c.type==='select'?`<label>خيارات (بفواصل)</label><input class="mf-inp" id="tcOpts${i}" value="${esc((c.options||[]).map(o=>o.value).join(', '))}">`:''}</div>
+    </div>`;
+  }
+  window.onTcTypeChange=function(i){
+    const wrap=document.getElementById('tcOptWrap'+i); const type=val('tcType'+i);
+    wrap.innerHTML=type==='select'?`<label>خيارات (بفواصل)</label><input class="mf-inp" id="tcOpts${i}" value="">`:'';
+  };
+  window.addTcColRow=function(){
+    const wrap=document.getElementById('tcColsList'); const i=wrap.children.length;
+    wrap.insertAdjacentHTML('beforeend', tcColRow({name:'',type:'text'},i));
+  };
+  window.saveTableColumns=function(secId,blkId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const wrap=document.getElementById('tcColsList'); const n=wrap.children.length;
+    const cols=[];
+    for(let i=0;i<n;i++){
+      const name=val('tcName'+i).trim(); if(!name)continue;
+      const type=val('tcType'+i);
+      const col={name,type};
+      if(type==='select'){ col.options=val('tcOpts'+i).split(',').map(x=>x.trim()).filter(Boolean).map((v,idx)=>({value:v,color:['#6366f1','#22c55e','#f59e0b','#f87171','#06b6d4'][idx%5]})); }
+      cols.push(col);
+    }
+    blk.columns=cols.length?cols:[{name:'العنصر',type:'text'}];
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  };
+
+  /* ---------- Appointments ---------- */
+  function renderAppointmentsBlock(sec,blk,bi){
+    const isGrid=blk.viewMode==='grid';
+    const rows=blk.items.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(it=>{
+      const cardStyle=isGrid?'border-radius:18px;padding:13px;background:var(--panel2);border:1px solid var(--border)':'';
+      const meta=`${it.date||'بدون تاريخ'}${it.time?' • ⏰ '+it.time+(it.endTime?' → '+it.endTime:''):''}${it.location?' • 📍'+esc(it.location):''}${it.person?' • '+esc(it.person):''}`;
+      if(isGrid) return `<div style="${cardStyle}"><b>${it.status==='done'?'✔️ ':'📅 '}${esc(it.title)}</b><p style="font-size:12px;color:var(--text-m);margin-top:4px">${meta}</p>${it.notes?`<p style="font-size:12px;color:var(--text-d);margin-top:4px">${esc(it.notes)}</p>`:''}<div class="pro36-row-actions" style="margin-top:8px"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">تعديل</button><button title="اربط بيومي" onclick="syncBlockItemToDay('${sec.id}','${blk.id}','${it.id}','${esc(it.title).replace(/'/g,"\\'")}','${it.date||''}','${it.time||''}','${it.endTime||''}')">🔗</button><button onclick="toggleAppointmentDone('${sec.id}','${blk.id}','${it.id}')">${it.status==='done'?'إلغاء الإتمام':'تم'}</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">حذف</button></div></div>`;
+      return `<div class="pro36-row"><div class="pro36-i">${it.status==='done'?'✔️':'📅'}</div><div><b>${esc(it.title)}</b><small>${meta}</small>${it.notes?`<small style="color:var(--text-d)">${esc(it.notes)}</small>`:''}</div><div class="pro36-row-actions"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">تعديل</button><button title="اربط بيومي" onclick="syncBlockItemToDay('${sec.id}','${blk.id}','${it.id}','${esc(it.title).replace(/'/g,"\\'")}','${it.date||''}','${it.time||''}','${it.endTime||''}')">🔗</button><button onclick="toggleAppointmentDone('${sec.id}','${blk.id}','${it.id}')">${it.status==='done'?'إلغاء':'تم'}</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">حذف</button></div></div>`;
+    }).join('')||'<p style="color:var(--text-m);font-size:13px">مفيش مواعيد لسه</p>';
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}
+      ${gridWrap(isGrid,rows)}
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ موعد جديد</button>
+    </div>`;
+  }
+  function appointmentItemForm(it){
+    return `<div class="mf-row"><label>العنوان</label><input class="mf-inp" id="biTitle" value="${esc(it?.title||'')}" placeholder="مثلاً: جلسة علاج طبيعي"></div>
+      <div style="margin-bottom:12px;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
+        <label style="display:block;font-size:12px;font-weight:900;color:var(--text-m);margin-bottom:8px">📅 تاريخ الموعد</label>
+        <div class="mg2">
+          <div class="mf-row"><label>التاريخ</label><input class="mf-inp" id="biDate" type="date" value="${it?.date||today()}"></div>
+          <div class="mf-row"><label>التكرار</label><select class="mf-inp" id="biRepeat"><option value="none">بدون</option><option value="weekly" ${it?.repeat==='weekly'?'selected':''}>أسبوعي</option><option value="monthly" ${it?.repeat==='monthly'?'selected':''}>شهري</option></select></div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
+        <label style="display:block;font-size:12px;font-weight:900;color:var(--text-m);margin-bottom:8px">⏰ الوقت</label>
+        <div class="mg2">
+          <div class="mf-row"><label>من الساعة</label><input class="mf-inp" id="biTime" type="time" value="${it?.time||''}"></div>
+          <div class="mf-row"><label>لغاية الساعة</label><input class="mf-inp" id="biEndTime" type="time" value="${it?.endTime||''}"></div>
+        </div>
+      </div>
+      <div class="mg2">
+        <div class="mf-row"><label>المكان</label><input class="mf-inp" id="biLocation" value="${esc(it?.location||'')}"></div>
+        <div class="mf-row"><label>الشخص/المقدم</label><input class="mf-inp" id="biPerson" value="${esc(it?.person||'')}" placeholder="مثلاً: د. أحمد"></div>
+      </div>
+      <div class="mf-row"><label>ملاحظات</label><textarea class="mf-inp" id="biNotes">${esc(it?.notes||'')}</textarea></div>`;
+  }
+  function saveAppointmentItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const title=val('biTitle').trim(); if(!title)return toast('اكتب عنوان الموعد');
+    const obj={id:itemId||uid(),title,date:val('biDate'),time:val('biTime'),endTime:val('biEndTime'),repeat:val('biRepeat'),location:val('biLocation'),person:val('biPerson'),notes:val('biNotes'),status:itemId?blk.items.find(x=>x.id===itemId)?.status||'planned':'planned'};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+  window.toggleAppointmentDone=function(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const it=blk.items.find(x=>x.id===itemId); if(!it)return;
+    it.status=it.status==='done'?'planned':'done'; saveSections(list); renderBlocksList(secId);
+  };
+
+  /* ---------- Ledger (زي قبل كده، مع Grid/List) ---------- */
+  function renderLedgerBlock(sec,blk,bi){
+    const income=blk.items.filter(x=>x.type!=='out').reduce((a,b)=>a+(+b.amount||0),0);
+    const out=blk.items.filter(x=>x.type==='out').reduce((a,b)=>a+(+b.amount||0),0);
+    const isGrid=blk.viewMode==='grid';
+    const rows=blk.items.map(it=>{
+      if(isGrid) return `<div style="border-radius:18px;padding:13px;background:var(--panel2);border:1px solid var(--border)"><b>${it.type==='out'?'📤':'📥'} ${esc(it.title)}</b><p style="font-size:12px;color:var(--text-m);margin-top:4px">${it.date||''} • ${money(it.amount)}</p><div class="pro36-row-actions" style="margin-top:8px"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">تعديل</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">حذف</button></div></div>`;
+      return `<div class="pro36-row"><div class="pro36-i">${it.type==='out'?'📤':'📥'}</div><div><b>${esc(it.title)}</b><small>${it.date||''} • ${money(it.amount)}</small></div><div class="pro36-row-actions"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">تعديل</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">حذف</button></div></div>`;
+    }).join('')||'<p style="color:var(--text-m);font-size:13px">مفيش عمليات لسه</p>';
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}
+      <div class="pro36-metrics" style="margin-bottom:12px"><div class="pro36-metric"><b>${money(income)}</b><span>دخل</span></div><div class="pro36-metric"><b>${money(out)}</b><span>مصروف</span></div><div class="pro36-metric"><b>${money(income-out)}</b><span>الصافي</span></div></div>
+      ${gridWrap(isGrid,rows)}
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ عملية جديدة</button>
+    </div>`;
+  }
+  function ledgerItemForm(it){
+    return `<div class="mf-row"><label>العنوان</label><input class="mf-inp" id="biTitle" value="${esc(it?.title||'')}"></div>
+      <div class="mg3">
+        <div class="mf-row"><label>القيمة</label><input class="mf-inp" id="biAmount" type="number" value="${it?.amount||''}"></div>
+        <div class="mf-row"><label>النوع</label><select class="mf-inp" id="biType"><option value="in" ${it?.type!=='out'?'selected':''}>دخل</option><option value="out" ${it?.type==='out'?'selected':''}>مصروف</option></select></div>
+        <div class="mf-row"><label>التاريخ</label><input class="mf-inp" id="biDate" type="date" value="${it?.date||today()}"></div>
+      </div>`;
+  }
+  function saveLedgerItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const title=val('biTitle').trim(); if(!title)return toast('اكتب اسم العملية');
+    const obj={id:itemId||uid(),title,amount:+val('biAmount')||0,type:val('biType'),date:val('biDate')};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+
+  /* ---------- Notes ---------- */
+  function renderNotesBlock(sec,blk,bi){
+    const isGrid=blk.viewMode!=='list';
+    const rows=blk.items.map(it=>{
+      const preview=(it.content||'').slice(0,140)+((it.content||'').length>140?'…':'');
+      if(isGrid) return `<div class="pro36-mini"><b>${esc(it.title||'ملاحظة')}</b><p>${esc(preview)}</p><div class="pro36-row-actions" style="margin-top:8px"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">تعديل</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">حذف</button></div></div>`;
+      return `<div class="pro36-row"><div class="pro36-i">📝</div><div><b>${esc(it.title||'ملاحظة')}</b><small>${esc(preview)}</small></div><div class="pro36-row-actions"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">تعديل</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">حذف</button></div></div>`;
+    }).join('')||'<p style="color:var(--text-m);font-size:13px">مفيش ملاحظات لسه</p>';
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}
+      ${isGrid?`<div class="pro36-mod-grid">${rows}</div>`:rows}
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ ملاحظة جديدة</button>
+    </div>`;
+  }
+  function notesItemForm(it){
+    return `<div class="mf-row"><label>العنوان</label><input class="mf-inp" id="biTitle" value="${esc(it?.title||'')}"></div>
+      <div class="mf-row"><label>المحتوى</label><textarea class="mf-inp" id="biContent" style="min-height:180px">${esc(it?.content||'')}</textarea></div>`;
+  }
+  function saveNotesItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const title=val('biTitle').trim()||'ملاحظة';
+    const obj={id:itemId||uid(),title,content:val('biContent'),date:today()};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+
+  /* ---------- Plan (خطة متداخلة: مراحل ← عناصر ← تفاصيل/تاسكات في نافذة منبثقة) ---------- */
+  function renderPlanBlock(sec,blk,bi){
+    blk.phases=Array.isArray(blk.phases)?blk.phases:[];
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}
+      ${blk.phases.map((ph,pi)=>renderPlanPhase(sec,blk,ph,pi)).join('')||'<p style="color:var(--text-m);font-size:13px">لسه مفيش مراحل — دوس "+ مرحلة جديدة"</p>'}
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openPlanPhaseEditor('${sec.id}','${blk.id}',null)">+ مرحلة جديدة</button>
+    </div>`;
+  }
+  function renderPlanPhase(sec,blk,ph,pi){
+    ph.items=Array.isArray(ph.items)?ph.items:[];
+    const doneCount=ph.items.filter(it=>(it.subtasks||[]).length && (it.subtasks||[]).every(s=>s.done)).length;
+    return `<div style="border:1px solid var(--border);border-radius:20px;padding:14px;margin-bottom:12px;background:var(--panel2)">
+      <div class="pro36-hero-actions" style="justify-content:space-between;margin-bottom:8px">
+        <b style="font-size:15px">🗓️ ${esc(ph.name)}</b>
+        <div class="pro36-row-actions">
+          ${pi>0?`<button onclick="movePlanPhase('${sec.id}','${blk.id}','${ph.id}',-1)">⬆️</button>`:''}
+          ${pi<blk.phases.length-1?`<button onclick="movePlanPhase('${sec.id}','${blk.id}','${ph.id}',1)">⬇️</button>`:''}
+          <button onclick="openPlanPhaseEditor('${sec.id}','${blk.id}','${ph.id}')">✏️</button>
+          <button onclick="deletePlanPhase('${sec.id}','${blk.id}','${ph.id}')">🗑️</button>
+        </div>
+      </div>
+      ${ph.items.map(it=>`<div class="pro36-row" style="cursor:pointer" onclick="openPlanItemModal('${sec.id}','${blk.id}','${ph.id}','${it.id}')">
+        <div class="pro36-i">${(it.subtasks||[]).length?'📌':'📄'}</div>
+        <div><b>${esc(it.title)}</b><small>${(it.subtasks||[]).length?`${(it.subtasks||[]).filter(s=>s.done).length}/${(it.subtasks||[]).length} تاسك مكتمل`:'دوس تعرض التفاصيل'}</small></div>
+        <div class="pro36-row-actions"><button onclick="event.stopPropagation();deletePlanItem('${sec.id}','${blk.id}','${ph.id}','${it.id}')">🗑️</button></div>
+      </div>`).join('')}
+      <button class="pro36-btn" style="margin-top:6px" onclick="openPlanItemMetaEditor('${sec.id}','${blk.id}','${ph.id}',null)">+ عنصر جديد في المرحلة دي</button>
+    </div>`;
+  }
+  window.openPlanPhaseEditor=function(secId,blkId,phaseId){
+    const {sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=phaseId?blk.phases.find(p=>p.id===phaseId):null;
+    modal(phaseId?'تعديل المرحلة':'مرحلة جديدة',`<div class="mf-row"><label>اسم المرحلة</label><input class="mf-inp" id="ppName" value="${esc(ph?.name||'')}" placeholder="مثلاً: الشهر الأول"></div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="savePlanPhase('${secId}','${blkId}',${phaseId?`'${phaseId}'`:'null'})">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`);
+  };
+  window.savePlanPhase=function(secId,blkId,phaseId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const name=val('ppName').trim(); if(!name)return toast('اكتب اسم المرحلة');
+    blk.phases=blk.phases||[];
+    if(phaseId){const ph=blk.phases.find(p=>p.id===phaseId); if(ph)ph.name=name;}
+    else blk.phases.push({id:uid(),name,items:[]});
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  };
+  window.deletePlanPhase=function(secId,blkId,phaseId){
+    if(!confirm('حذف المرحلة دي وكل العناصر جواها؟'))return;
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    blk.phases=blk.phases.filter(p=>p.id!==phaseId); saveSections(list); renderBlocksList(secId);
+  };
+  window.movePlanPhase=function(secId,blkId,phaseId,dir){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const i=blk.phases.findIndex(p=>p.id===phaseId); const j=i+dir; if(i<0||j<0||j>=blk.phases.length)return;
+    [blk.phases[i],blk.phases[j]]=[blk.phases[j],blk.phases[i]]; saveSections(list); renderBlocksList(secId);
+  };
+  window.openPlanItemMetaEditor=function(secId,blkId,phaseId,itemId){
+    const {sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId);
+    const it=itemId?ph.items.find(x=>x.id===itemId):null;
+    modal(itemId?'تعديل العنصر':'عنصر جديد',`<div class="mf-row"><label>العنوان</label><input class="mf-inp" id="piTitle" value="${esc(it?.title||'')}" placeholder="مثلاً: كورس كذا / مشروع كذا"></div>
+      <div class="mf-row"><label>تفاصيل حرة (اختياري)</label><textarea class="mf-inp" id="piNotes" placeholder="مثلاً: عدد الحلقات، ملاحظات عامة...">${esc(it?.notes||'')}</textarea></div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="savePlanItemMeta('${secId}','${blkId}','${phaseId}',${itemId?`'${itemId}'`:'null'})">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`);
+  };
+  window.savePlanItemMeta=function(secId,blkId,phaseId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId);
+    const title=val('piTitle').trim(); if(!title)return toast('اكتب العنوان');
+    if(itemId){const it=ph.items.find(x=>x.id===itemId); if(it){it.title=title;it.notes=val('piNotes');}}
+    else ph.items.push({id:uid(),title,notes:val('piNotes'),subtasks:[]});
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  };
+  window.deletePlanItem=function(secId,blkId,phaseId,itemId){
+    if(!confirm('حذف العنصر ده؟'))return;
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId);
+    ph.items=ph.items.filter(x=>x.id!==itemId); saveSections(list); renderBlocksList(secId);
+  };
+  // النافذة المنبثقة (Windows-style) لتفاصيل العنصر + تاسكاته الفرعية
+  window.openPlanItemModal=function(secId,blkId,phaseId,itemId){
+    const {sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId);
+    const it=ph.items.find(x=>x.id===itemId); if(!it)return;
+    it.subtasks=Array.isArray(it.subtasks)?it.subtasks:[];
+    const doneCount=it.subtasks.filter(s=>s.done).length;
+    modal('🗺️ '+ph.name+' ← '+it.title, `
+      <div class="mf-row"><label>العنوان</label><input class="mf-inp" id="piTitle" value="${esc(it.title)}" onblur="renamePlanItemInline('${secId}','${blkId}','${phaseId}','${itemId}',this.value)"></div>
+      <div class="mg2">
+        <div class="mf-row"><label>تاريخ مرتبط (اختياري)</label><input class="mf-inp" id="piDate" type="date" value="${it.date||''}" onchange="updatePlanItemDate('${secId}','${blkId}','${phaseId}','${itemId}',this.value)"></div>
+        <div class="mf-row"><label>&nbsp;</label>${it.date?`<button class="pro36-btn" onclick="syncBlockItemToDay('${secId}','${blkId}','${itemId}','${esc(it.title).replace(/'/g,"\\'")}','${it.date}','','')">🔗 اربط بيومي</button>`:'<small style="color:var(--text-m)">حدد تاريخ الأول</small>'}</div>
+      </div>
+      <div class="mf-row"><label>تفاصيل حرة</label><textarea class="mf-inp" id="piNotes" style="min-height:100px" onblur="updatePlanItemNotes('${secId}','${blkId}','${phaseId}','${itemId}',this.value)">${esc(it.notes||'')}</textarea></div>
+      <div class="mf-row"><label>تاسكات فرعية (${doneCount}/${it.subtasks.length})</label>
+        <div id="planSubtasksList">${it.subtasks.map(s=>`<div class="pro36-row"><div class="pro36-i" style="cursor:pointer" onclick="togglePlanSubtask('${secId}','${blkId}','${phaseId}','${itemId}','${s.id}')">${s.done?'✔️':'⬜'}</div><div><b class="${s.done?'done-step':''}">${esc(s.text)}</b></div><div class="pro36-row-actions"><button onclick="deletePlanSubtask('${secId}','${blkId}','${phaseId}','${itemId}','${s.id}')">🗑️</button></div></div>`).join('')||'<p style="color:var(--text-m);font-size:13px">مفيش تاسكات فرعية لسه</p>'}</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <input class="mf-inp" id="newSubtaskText" placeholder="تاسك فرعي جديد..." style="flex:1" onkeydown="if(event.key==='Enter')addPlanSubtask('${secId}','${blkId}','${phaseId}','${itemId}')">
+        <button class="btn btn-primary" onclick="addPlanSubtask('${secId}','${blkId}','${phaseId}','${itemId}')">+ إضافة</button>
+      </div>
+      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إغلاق</button></div>`);
+  };
+  window.updatePlanItemDate=function(secId,blkId,phaseId,itemId,newDate){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId); const it=ph.items.find(x=>x.id===itemId);
+    it.date=newDate; saveSections(list); renderBlocksList(secId); openPlanItemModal(secId,blkId,phaseId,itemId);
+  };
+  window.renamePlanItemInline=function(secId,blkId,phaseId,itemId,newTitle){
+    if(!newTitle.trim())return;
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId); const it=ph.items.find(x=>x.id===itemId);
+    it.title=newTitle.trim(); saveSections(list); renderBlocksList(secId);
+  };
+  window.updatePlanItemNotes=function(secId,blkId,phaseId,itemId,newNotes){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId); const it=ph.items.find(x=>x.id===itemId);
+    it.notes=newNotes; saveSections(list); renderBlocksList(secId);
+  };
+  window.addPlanSubtask=function(secId,blkId,phaseId,itemId){
+    const text=val('newSubtaskText').trim(); if(!text)return;
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId); const it=ph.items.find(x=>x.id===itemId);
+    it.subtasks=it.subtasks||[]; it.subtasks.push({id:uid(),text,done:false});
+    saveSections(list); renderBlocksList(secId); openPlanItemModal(secId,blkId,phaseId,itemId);
+  };
+  window.togglePlanSubtask=function(secId,blkId,phaseId,itemId,subId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId); const it=ph.items.find(x=>x.id===itemId);
+    const s=it.subtasks.find(x=>x.id===subId); if(!s)return;
+    s.done=!s.done; saveSections(list); renderBlocksList(secId); openPlanItemModal(secId,blkId,phaseId,itemId);
+  };
+  window.deletePlanSubtask=function(secId,blkId,phaseId,itemId,subId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const ph=blk.phases.find(p=>p.id===phaseId); const it=ph.items.find(x=>x.id===itemId);
+    it.subtasks=it.subtasks.filter(x=>x.id!==subId); saveSections(list); renderBlocksList(secId); openPlanItemModal(secId,blkId,phaseId,itemId);
+  };
+
+  /* ---------- Kanban (لوحة سير عمل) ---------- */
+  const KANBAN_COLS=[['todo','⬜ قيد الانتظار'],['doing','🔵 قيد التنفيذ'],['done','✅ تم']];
+  function renderKanbanBlock(sec,blk,bi){
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color};overflow-x:auto">${blockHeader(sec,blk,bi)}
+      <div style="display:flex;gap:12px;min-width:600px">
+        ${KANBAN_COLS.map(([key,label])=>{
+          const cards=blk.items.filter(it=>(it.status||'todo')===key);
+          return `<div style="flex:1;min-width:180px;background:var(--panel2);border-radius:16px;padding:10px">
+            <h4 style="font-size:13px;margin-bottom:8px">${label} (${cards.length})</h4>
+            ${cards.map(it=>`<div style="background:var(--panel);border-radius:12px;padding:10px;margin-bottom:8px;border:1px solid var(--border)">
+              <b style="font-size:13px">${esc(it.title)}</b>
+              ${it.dueDate?`<div style="font-size:10px;color:var(--text-m);margin-top:4px">🏁 ${esc(it.dueDate)}</div>`:''}
+              <div class="pro36-row-actions" style="margin-top:6px;justify-content:flex-start">
+                ${key!=='todo'?`<button onclick="moveKanbanCard('${sec.id}','${blk.id}','${it.id}','${KANBAN_COLS[KANBAN_COLS.findIndex(c=>c[0]===key)-1][0]}')">◀</button>`:''}
+                ${key!=='done'?`<button onclick="moveKanbanCard('${sec.id}','${blk.id}','${it.id}','${KANBAN_COLS[KANBAN_COLS.findIndex(c=>c[0]===key)+1][0]}')">▶</button>`:''}
+                <button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button>
+                ${it.dueDate?`<button title="اربط بيومي" onclick="syncBlockItemToDay('${sec.id}','${blk.id}','${it.id}','${esc(it.title).replace(/'/g,"\\'")}','${it.dueDate}','','')">🔗</button>`:''}
+                <button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button>
+              </div>
+            </div>`).join('')||'<p style="font-size:11px;color:var(--text-m)">فاضي</p>'}
+          </div>`;
+        }).join('')}
+      </div>
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ كارت جديد</button>
+    </div>`;
+  }
+  function kanbanItemForm(it){
+    return `<div class="mf-row"><label>العنوان</label><input class="mf-inp" id="biTitle" value="${esc(it?.title||'')}"></div>
+      <div class="mg2">
+        <div class="mf-row"><label>الحالة</label><select class="mf-inp" id="biStatus">${KANBAN_COLS.map(([k,l])=>`<option value="${k}" ${it?.status===k?'selected':''}>${l}</option>`).join('')}</select></div>
+        <div class="mf-row"><label>تاريخ استحقاق (اختياري)</label><input class="mf-inp" id="biDueDate" type="date" value="${it?.dueDate||''}"></div>
+      </div>
+      <div class="mf-row"><label>ملاحظات</label><textarea class="mf-inp" id="biNotes">${esc(it?.notes||'')}</textarea></div>`;
+  }
+  function saveKanbanItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const title=val('biTitle').trim(); if(!title)return toast('اكتب عنوان الكارت');
+    const obj={id:itemId||uid(),title,status:val('biStatus')||'todo',dueDate:val('biDueDate')||'',notes:val('biNotes')};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+  window.moveKanbanCard=function(secId,blkId,itemId,newStatus){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const it=blk.items.find(x=>x.id===itemId); if(!it)return;
+    it.status=newStatus; saveSections(list); renderBlocksList(secId);
+  };
+
+  /* ---------- Habits (تتبع عادات — آخر 7 أيام) ---------- */
+  function last7Dates(){ const out=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); out.push(d.toISOString().slice(0,10)); } return out; }
+  function renderHabitsBlock(sec,blk,bi){
+    const dates=last7Dates();
+    const dayLabel=d=>new Date(d+'T00:00:00').toLocaleDateString('ar-EG',{weekday:'short'});
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color};overflow-x:auto">${blockHeader(sec,blk,bi)}
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px">
+        <thead><tr><th style="text-align:right;padding:6px"></th>${dates.map(d=>`<th style="padding:6px;text-align:center;color:var(--text-m)">${dayLabel(d)}</th>`).join('')}<th></th></tr></thead>
+        <tbody>${blk.items.map(it=>{
+          const hist=it.history||{};
+          const streak=dates.filter(d=>hist[d]).length;
+          return `<tr><td style="padding:6px;font-weight:900">${esc(it.title)} <span style="font-size:10px;color:var(--text-m)">(${streak}/7)</span></td>${dates.map(d=>`<td style="text-align:center;padding:4px"><span style="cursor:pointer;font-size:16px" onclick="toggleHabitDay('${sec.id}','${blk.id}','${it.id}','${d}')">${hist[d]?'🔥':'⬜'}</span></td>`).join('')}<td><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></td></tr>`;
+        }).join('')||`<tr><td colspan="9" style="padding:12px;color:var(--text-m)">لسه مفيش عادات</td></tr>`}</tbody>
+      </table>
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ عادة جديدة</button>
+    </div>`;
+  }
+  function habitsItemForm(it){
+    return `<div class="mf-row"><label>اسم العادة</label><input class="mf-inp" id="biTitle" value="${esc(it?.title||'')}" placeholder="مثلاً: تمارين التأهيل"></div>`;
+  }
+  function saveHabitsItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const title=val('biTitle').trim(); if(!title)return toast('اكتب اسم العادة');
+    if(itemId){const it=blk.items.find(x=>x.id===itemId); if(it)it.title=title;}
+    else blk.items.push({id:uid(),title,history:{}});
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+  window.toggleHabitDay=function(secId,blkId,itemId,date){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); const it=blk.items.find(x=>x.id===itemId); if(!it)return;
+    it.history=it.history||{}; it.history[date]=!it.history[date];
+    saveSections(list); renderBlocksList(secId);
+  };
+
+  /* ---------- Timeline (معالم زمنية) ---------- */
+  function renderTimelineBlock(sec,blk,bi){
+    const isGrid=blk.viewMode==='grid';
+    const sorted=blk.items.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    if(isGrid){
+      const cards=sorted.map(it=>`<div style="border-radius:18px;padding:13px;background:var(--panel2);border:1px solid var(--border)"><div style="font-size:11px;color:var(--text-m);font-weight:900">${esc(it.date||'')}</div><b>${esc(it.title)}</b>${it.notes?`<p style="font-size:12px;color:var(--text-d);margin-top:4px">${esc(it.notes)}</p>`:''}<div class="pro36-row-actions" style="margin-top:8px"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button>${it.date?`<button title="اربط بيومي" onclick="syncBlockItemToDay('${sec.id}','${blk.id}','${it.id}','${esc(it.title).replace(/'/g,"\\'")}','${it.date}','','')">🔗</button>`:''}<button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></div></div>`).join('')||'<p style="grid-column:1/-1;color:var(--text-m);font-size:13px">لسه مفيش معالم</p>';
+      return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}<div class="pro36-mod-grid">${cards}</div><button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ معلم جديد</button></div>`;
+    }
+    const rows=sorted.map((it,i)=>`<div style="display:flex;gap:12px;position:relative">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div style="width:12px;height:12px;border-radius:50%;background:${blk.color||sec.color};flex-shrink:0"></div>
+        ${i<sorted.length-1?`<div style="flex:1;width:2px;background:var(--border);min-height:24px"></div>`:''}
+      </div>
+      <div style="padding-bottom:16px;flex:1">
+        <div style="font-size:11px;color:var(--text-m);font-weight:900">${esc(it.date||'بدون تاريخ')}</div>
+        <b>${esc(it.title)}</b>${it.notes?`<p style="font-size:12px;color:var(--text-d);margin-top:2px">${esc(it.notes)}</p>`:''}
+        <div class="pro36-row-actions" style="margin-top:4px;justify-content:flex-start"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button>${it.date?`<button title="اربط بيومي" onclick="syncBlockItemToDay('${sec.id}','${blk.id}','${it.id}','${esc(it.title).replace(/'/g,"\\'")}','${it.date}','','')">🔗</button>`:''}<button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></div>
+      </div>
+    </div>`).join('')||'<p style="color:var(--text-m);font-size:13px">لسه مفيش معالم</p>';
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}${rows}<button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ معلم جديد</button></div>`;
+  }
+  function timelineItemForm(it){
+    return `<div class="mf-row"><label>العنوان</label><input class="mf-inp" id="biTitle" value="${esc(it?.title||'')}"></div>
+      <div class="mf-row"><label>التاريخ</label><input class="mf-inp" id="biDate" type="date" value="${it?.date||today()}"></div>
+      <div class="mf-row"><label>تفاصيل (اختياري)</label><textarea class="mf-inp" id="biNotes">${esc(it?.notes||'')}</textarea></div>`;
+  }
+  function saveTimelineItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const title=val('biTitle').trim(); if(!title)return toast('اكتب عنوان المعلم');
+    const obj={id:itemId||uid(),title,date:val('biDate'),notes:val('biNotes')};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+
+  /* ---------- Links (روابط ومصادر) ---------- */
+  function renderLinksBlock(sec,blk,bi){
+    const isGrid=blk.viewMode!=='list';
+    const rows=blk.items.map(it=>{
+      const link=`<a href="${esc(it.url)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${esc(it.icon||'🔗')} ${esc(it.title||it.url)}</a>`;
+      if(isGrid) return `<div class="pro36-mini"><b>${link}</b>${it.notes?`<p>${esc(it.notes)}</p>`:''}<div class="pro36-row-actions" style="margin-top:8px"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></div></div>`;
+      return `<div class="pro36-row"><div class="pro36-i">${esc(it.icon||'🔗')}</div><div><b>${link}</b>${it.notes?`<small style="color:var(--text-d)">${esc(it.notes)}</small>`:''}</div><div class="pro36-row-actions"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button><button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></div></div>`;
+    }).join('')||'<p style="color:var(--text-m);font-size:13px;grid-column:1/-1">لسه مفيش روابط</p>';
+    return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}
+      ${isGrid?`<div class="pro36-mod-grid">${rows}</div>`:rows}
+      <button class="pro36-btn pro36-primary" style="margin-top:10px" onclick="openBlockItemEditor('${sec.id}','${blk.id}',null)">+ رابط جديد</button>
+    </div>`;
+  }
+  function linksItemForm(it){
+    return `<div class="mg2"><div class="mf-row"><label>أيقونة</label><input class="mf-inp" id="biIcon" value="${esc(it?.icon||'🔗')}" maxlength="2"></div><div class="mf-row"><label>العنوان</label><input class="mf-inp" id="biTitle" value="${esc(it?.title||'')}"></div></div>
+      <div class="mf-row"><label>الرابط (URL)</label><input class="mf-inp" id="biUrl" value="${esc(it?.url||'')}" placeholder="https://..." dir="ltr"></div>
+      <div class="mf-row"><label>ملاحظات (اختياري)</label><textarea class="mf-inp" id="biNotes">${esc(it?.notes||'')}</textarea></div>`;
+  }
+  function saveLinksItem(secId,blkId,itemId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId);
+    const title=val('biTitle').trim(); let url=val('biUrl').trim(); if(!url)return toast('اكتب الرابط');
+    if(!/^https?:\/\//.test(url))url='https://'+url;
+    const obj={id:itemId||uid(),icon:val('biIcon')||'🔗',title:title||url,url,notes:val('biNotes')};
+    if(itemId){const i=blk.items.findIndex(x=>x.id===itemId); if(i>=0)blk.items[i]=obj;} else blk.items.push(obj);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  }
+
+  /* ---------------------------------------------------------------
+     3) موجّه عام لمحرر عناصر الـ Blocks (ما عدا plan اللي ليه نوافذه الخاصة)
+  --------------------------------------------------------------- */
+  const ITEM_FORM={checklist:checklistItemForm,list:listItemForm,cards:cardsItemForm,table:tableItemForm,appointments:appointmentItemForm,ledger:ledgerItemForm,notes:notesItemForm,kanban:kanbanItemForm,habits:habitsItemForm,timeline:timelineItemForm,links:linksItemForm};
+  const ITEM_SAVE={checklist:saveChecklistItem,list:saveListItem,cards:saveCardsItem,table:saveTableItem,appointments:saveAppointmentItem,ledger:saveLedgerItem,notes:saveNotesItem,kanban:saveKanbanItem,habits:saveHabitsItem,timeline:saveTimelineItem,links:saveLinksItem};
+  window.openBlockItemEditor=function(secId,blkId,itemId){
+    const {sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); if(!blk)return;
+    const it=itemId?blk.items.find(x=>x.id===itemId):null;
+    const formFn=ITEM_FORM[blk.type]; if(!formFn)return;
+    const formHtml=blk.type==='table'?formFn(blk,it):formFn(it);
+    modal(itemId?'تعديل عنصر':'عنصر جديد', formHtml+`<div class="modal-actions"><button class="btn btn-primary" onclick="saveBlockItem('${secId}','${blkId}',${itemId?`'${itemId}'`:'null'})">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`);
+  };
+  window.saveBlockItem=function(secId,blkId,itemId){
+    const {sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); if(!blk)return;
+    const fn=ITEM_SAVE[blk.type]; if(fn)fn(secId,blkId,itemId);
+  };
+  window.deleteBlockItem=function(secId,blkId,itemId){
+    if(!confirm('حذف العنصر ده؟'))return;
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); if(!blk)return;
+    blk.items=blk.items.filter(x=>x.id!==itemId); saveSections(list); renderBlocksList(secId);
+  };
+
+  /* ---------------------------------------------------------------
+     4) إدارة الـ Block نفسه
+  --------------------------------------------------------------- */
+  window.openAddBlockPicker=function(secId){
+    modal('اختار نوع الـ Block',`<div class="core-grid-v29">${Object.entries(BLOCK_TYPES).map(([key,t])=>`<div class="core-card-v29" style="cursor:pointer" onclick="addBlock('${secId}','${key}')"><div class="tpl-head"><div class="tpl-icon">${t.icon}</div><div><h3>${esc(t.label)}</h3><p>${esc(t.hint)}</p></div></div></div>`).join('')}</div>`);
+  };
+  window.addBlock=function(secId,type){
+    const {list,sec}=get(secId); const t=BLOCK_TYPES[type]; if(!t)return;
+    const blk={id:uid(),type,title:t.label,color:sec.color,items:[],viewMode:'list'};
+    if(type==='table') blk.columns=[{name:'العنصر',type:'text'},{name:'التفاصيل',type:'text'}];
+    if(type==='plan') blk.phases=[];
+    if(type==='cards') blk.viewMode='grid';
+    sec.blocks=Array.isArray(sec.blocks)?sec.blocks:[]; sec.blocks.push(blk);
+    saveSections(list); closeModal(); renderBlocksList(secId);
+    if(typeof toast==='function')toast('تم إضافة Block ✅');
+  };
+  window.openEditBlockMeta=function(secId,blkId){
+    const {sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); if(!blk)return;
+    modal('إعدادات الـ Block',`<div class="mf-row"><label>العنوان</label><input class="mf-inp" id="bmTitle" value="${esc(blk.title||'')}"></div>
+      <div class="mf-row"><label>اللون</label><input class="mf-inp" id="bmColor" type="color" value="${blk.color||sec.color||'#6366f1'}"></div>
+      <div class="modal-actions"><button class="btn btn-primary" onclick="saveBlockMeta('${secId}','${blkId}')">حفظ</button><button class="btn btn-ghost" onclick="closeSystemSectionsModal()">إلغاء</button></div>`);
+  };
+  window.saveBlockMeta=function(secId,blkId){
+    const {list,sec}=get(secId); const blk=sec.blocks.find(b=>b.id===blkId); if(!blk)return;
+    blk.title=val('bmTitle').trim()||blk.title; blk.color=val('bmColor');
+    saveSections(list); closeModal(); renderBlocksList(secId);
+  };
+  window.deleteBlock=function(secId,blkId){
+    if(!confirm('حذف الـ Block ده وكل بياناته؟'))return;
+    const {list,sec}=get(secId); sec.blocks=sec.blocks.filter(b=>b.id!==blkId);
+    saveSections(list); renderBlocksList(secId);
+  };
+  window.moveBlock=function(secId,blkId,dir){
+    const {list,sec}=get(secId); const i=sec.blocks.findIndex(b=>b.id===blkId); if(i<0)return;
+    const j=i+dir; if(j<0||j>=sec.blocks.length)return;
+    [sec.blocks[i],sec.blocks[j]]=[sec.blocks[j],sec.blocks[i]];
+    saveSections(list); renderBlocksList(secId);
+  };
+
+  /* ---------------------------------------------------------------
+     5) ربط render engine بسلسلة renderDynamicBoardV28 (آخر override)
+  --------------------------------------------------------------- */
+  const prevBoardFn=window.renderDynamicBoardV28||window.renderDynamicBoardV14;
+  window.renderDynamicBoardV28=function(secId){
+    const sec=dynSections().find(s=>s.id===secId);
+    if(sec?.type==='blocks') return renderBlocksBoard(secId);
+    return prevBoardFn?prevBoardFn(secId):null;
+  };
+  window.renderDynamicBoardV14=window.renderDynamicBoardV28;
+
+  /* إضافة نفس فكرة "إضافة قسم مخصص" كنقطة دخول إضافية جوه تبويب Templates
+     القديم (تحسبًا لو حد لسه بيستخدم المسار القديم) — اختياري وغير أساسي */
+  /* ---------------------------------------------------------------
+     6) تحويل قسم من النظام القديم (subsections/plans/items) لنظام Blocks
+     — ده الحل الجذري لمشكلة إن أزرار "قسم فرعي"/"عنصر سريع" القديمة كانت
+     بتحفظ من خلال نسخة مختلفة من دالة getSections عن اللي بيعرضها الشاشة،
+     فالتعديلات مكنتش بتظهر. بدل ما نرقّع كود قديم متداخل في أكتر من نسخة،
+     بننقل بيانات القسم للنظام الجديد المستقر والمُختبر.
+  --------------------------------------------------------------- */
+  window.convertLegacySectionToBlocks=function(secId){
+    const list=dynSections(); const sec=list.find(s=>s.id===secId); if(!sec)return;
+    if(!confirm('هيتم نقل كل بيانات القسم ده (الأقسام الفرعية والعناصر والخطط) لنظام Blocks الجديد الأكثر استقرارًا. العملية دي لا تراجع فيها. تكمل؟'))return;
+    const blocks=[];
+    if(Array.isArray(sec.items)&&sec.items.length){
+      blocks.push({id:uid(),type:'checklist',title:'عناصر عامة',color:sec.color,viewMode:'list',items:sec.items.map(it=>({id:uid(),text:it.title||'عنصر',priority:'medium',startDate:'',deadline:it.deadline||it.date||'',startTime:it.start_time||'',endTime:it.end_time||'',notes:it.desc||'',done:!!it.done}))});
+    }
+    (sec.subsections||[]).forEach(sub=>{
+      if(Array.isArray(sub.items)&&sub.items.length){
+        blocks.push({id:uid(),type:'checklist',title:esc(sub.name||'قسم فرعي'),color:sub.color||sec.color,viewMode:'list',items:sub.items.map(it=>({id:uid(),text:it.title||'عنصر',priority:'medium',startDate:'',deadline:it.deadline||it.date||'',startTime:it.start_time||'',endTime:it.end_time||'',notes:it.desc||'',done:!!it.done}))});
+      }
+      if(Array.isArray(sub.plans)&&sub.plans.length){
+        blocks.push({id:uid(),type:'notes',title:'خطط — '+esc(sub.name||'قسم فرعي'),color:sub.color||sec.color,viewMode:'list',items:sub.plans.map(p=>({id:uid(),title:p.title||'خطة',content:`تبدأ: ${p.start_date||''} • عدد الأيام: ${(p.days||[]).length}\n${p.desc||''}\n\n(ملحوظة: التفاصيل اليومية للخطة القديمة محتاجة تتراجع وتتحط يدويًا في Block خطة متداخلة جديد لو عايز التفاصيل يوم بيوم)`,date:today()}))});
+      }
+    });
+    if(!blocks.length) blocks.push({id:uid(),type:'checklist',title:'ابدأ هنا',color:sec.color,viewMode:'list',items:[]});
+    sec.type='blocks'; sec.blocks=blocks;
+    delete sec.subsections; delete sec.items; delete sec.notes; delete sec.events; delete sec.finItems; delete sec.cards;
+    saveSections(list);
+    if(typeof renderDynamicShellV14==='function')renderDynamicShellV14();
+    setTimeout(()=>go('dyn_'+secId),100);
+    toast('تم نقل القسم لنظام Blocks ✅');
+  };
+
+  ensureCustomHubNav();
+})();
+</script>
+
 
 </body>
 </html>
