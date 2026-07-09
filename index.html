@@ -3454,10 +3454,10 @@ openTaskModal=function(taskId, entId, isFreelance=false){
     <div class="mf-row"><label>الأيقونة اختياري</label><div class="optional-icon-row"><input class="mf-inp" id="tIcon" maxlength="2" value="${esc(task?.icon||'')}" placeholder="مثلاً 🎬"><button class="icon-clear-btn" onclick="document.getElementById('tIcon').value=''">بدون</button></div></div>
     <div class="mf-row"><label>الوصف</label><textarea class="mf-inp" id="tDesc" placeholder="تفاصيل...">${esc(task?.description||'')}</textarea></div>
     <div class="task-date-group" style="margin-bottom:14px;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
-      <label style="display:block;font-size:12px;font-weight:900;color:var(--text-m);margin-bottom:8px">📅 تاريخ التاسك</label>
+      <label style="display:block;font-size:12px;font-weight:900;color:var(--text-m);margin-bottom:8px">📅 تاريخ التاسك <span style="font-weight:400">(الصيغة: سنة-شهر-يوم)</span></label>
       <div class="mg2">
-        <div class="mf-row"><label>من</label><input class="mf-inp" id="tStartDate" type="date" value="${task?.start_date||task?.deadline?.slice(0,10)||dateKey()}"></div>
-        <div class="mf-row"><label>إلى (تسليم)</label><input class="mf-inp" id="tDeadline" type="date" value="${task?.deadline?.slice(0,10)||dateKey()}"></div>
+        <div class="mf-row"><label>من</label><input class="mf-inp" id="tStartDate" type="date" value="${task?.start_date||task?.deadline?.slice(0,10)||dateKey()}" oninput="document.getElementById('tStartDateEcho').textContent=this.value"><small id="tStartDateEcho" style="color:var(--text-m)">${task?.start_date||task?.deadline?.slice(0,10)||dateKey()}</small></div>
+        <div class="mf-row"><label>إلى (تسليم)</label><input class="mf-inp" id="tDeadline" type="date" value="${task?.deadline?.slice(0,10)||dateKey()}" oninput="document.getElementById('tDeadlineEcho').textContent=this.value"><small id="tDeadlineEcho" style="color:var(--text-m)">${task?.deadline?.slice(0,10)||dateKey()}</small></div>
       </div>
     </div>
     <div class="task-time-group" style="margin-bottom:14px;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
@@ -3489,20 +3489,34 @@ saveTask=async function(){
 };
 function minOfTime(t){ if(!t)return null; const [h,m]=String(t).slice(0,5).split(':').map(Number); if(!Number.isFinite(h))return null; return h*60+(Number.isFinite(m)?m:0); }
 function rangesOverlap(s1,e1,s2,e2){ if(s1==null)return false; if(e1==null)e1=s1+30; if(e1<=s1)e1=s1+30; return s1<e2 && e1>s2; }
+function datesBetweenWork(start,end){
+  const out=[]; let d=new Date(start+'T00:00:00'); const endD=new Date(end+'T00:00:00');
+  if(isNaN(d)||isNaN(endD)||d>endD) return [end];
+  while(d<=endD){ out.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); if(out.length>60)break; }
+  return out;
+}
 autoSyncTaskToDay=function(task,ent,forceUpdate=false){
-  const targetDate=task.deadline||dateKey(); const blocks=dayVisibleBlocks(targetDate); if(!blocks.length){toast('مفيش بلوك في اليوم ده عشان أحط التاسك جواه');return;}
+  const endDate=task.deadline||dateKey();
+  const startDate=task.start_date&&task.start_date<=endDate?task.start_date:endDate;
+  const dates=datesBetweenWork(startDate,endDate);
   const ts=minOfTime(task.start_time), te=minOfTime(task.end_time);
-  let targetBlock=null;
-  if(ts!=null){ targetBlock=blocks.find(b=>rangesOverlap(ts,te,minOfTime(b.start_time)??0,minOfTime(b.end_time)??1440)); }
-  if(!targetBlock){ targetBlock=blocks[0]; }
-  const ovKey=`${targetBlock.id}_${targetDate}`; const existing=DAY.overrides[ovKey]||{...targetBlock}; const existTasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(targetBlock.tasks||[])];
-  const sub=(task.subtasks||[]).filter(st=>st.text).map((st,i)=>({id:`${task.id}-sub-${st.id||i}`,text:st.text,source:task.id}));
-  const textTime=task.start_time?`${fmtTime(task.start_time)}${task.end_time?' → '+fmtTime(task.end_time):''}`:'';
-  const newItem={id:`w-${task.id}`,text:task.title,timeLabel:textTime,source:task.id,sourceEnt:ent.name,subtasks:sub,color:task.color||ent.color||targetBlock.color};
-  const idx=existTasks.findIndex(t=>t.source===task.id || t.id===newItem.id);
-  if(idx>=0) existTasks[idx]={...existTasks[idx],...newItem}; else existTasks.push(newItem);
-  DAY.overrides[ovKey]={...existing,tasks:existTasks}; daySaveLocal(); markWrite('day');
-  notif({icon:'📅',title:'تم وضع التاسك داخل بلوك اليوم',sub:`"${task.title}" تحت "${targetBlock.title}"`,color:'#818cf8'});
+  let synced=0, lastBlockTitle='';
+  dates.forEach(targetDate=>{
+    const blocks=dayVisibleBlocks(targetDate); if(!blocks.length)return;
+    let targetBlock=null;
+    if(ts!=null){ targetBlock=blocks.find(b=>rangesOverlap(ts,te,minOfTime(b.start_time)??0,minOfTime(b.end_time)??1440)); }
+    if(!targetBlock){ targetBlock=blocks[0]; }
+    const ovKey=`${targetBlock.id}_${targetDate}`; const existing=DAY.overrides[ovKey]||{...targetBlock}; const existTasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(targetBlock.tasks||[])];
+    const sub=(task.subtasks||[]).filter(st=>st.text).map((st,i)=>({id:`${task.id}-sub-${st.id||i}`,text:st.text,source:task.id}));
+    const textTime=task.start_time?`${fmtTime(task.start_time)}${task.end_time?' → '+fmtTime(task.end_time):''}`:'';
+    const newItem={id:`w-${task.id}`,text:task.title,timeLabel:textTime,source:task.id,sourceEnt:ent.name,subtasks:sub,color:task.color||ent.color||targetBlock.color};
+    const idx=existTasks.findIndex(t=>t.source===task.id || t.id===newItem.id);
+    if(idx>=0) existTasks[idx]={...existTasks[idx],...newItem}; else existTasks.push(newItem);
+    DAY.overrides[ovKey]={...existing,tasks:existTasks}; synced++; lastBlockTitle=targetBlock.title;
+  });
+  if(!synced){toast('مفيش بلوك في الأيام دي عشان أحط التاسك جواه');return;}
+  daySaveLocal(); markWrite('day');
+  notif({icon:'📅',title:synced>1?`تم توزيع التاسك على ${synced} أيام`:'تم وضع التاسك داخل بلوك اليوم',sub:`"${task.title}" تحت "${lastBlockTitle}"`,color:'#818cf8'});
 };
 
 /* Day blocks: checkbox instead of status buttons, auto-missed when time passes */
@@ -9261,23 +9275,37 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
   /* ربط أي عنصر (بتاريخ محدد) بـ "يومي" — بيحط تاسك جوه أقرب بلوك وقت
      مناسب في اليوم المطلوب، بنفس آلية autoSyncTaskToDay المستخدمة في باقي
      أجزاء السيستم، عشان أي بلوك جديد نضيفه يقدر "يسمع" في يومي. */
-  window.syncBlockItemToDay=function(secId,blkId,itemId,title,date,startTime,endTime){
+  /* ربط أي عنصر بـ "يومي" — لو اتبعتله تاريخ بداية مختلف عن التاريخ (endDate)
+     بيتوزع على كل الأيام من البداية للنهاية، مش يوم التسليم بس. بنفس آلية
+     autoSyncTaskToDay المستخدمة في شغلي، عشان أي بلوك جديد يقدر "يسمع" في يومي. */
+  function datesBetweenBlk(start,end){
+    const out=[]; let d=new Date(start+'T00:00:00'); const endD=new Date(end+'T00:00:00');
+    if(isNaN(d)||isNaN(endD)||d>endD) return [end];
+    while(d<=endD){ out.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); if(out.length>60)break; }
+    return out;
+  }
+  window.syncBlockItemToDay=function(secId,blkId,itemId,title,date,startTime,endTime,startDate){
     if(!date){ if(typeof toast==='function')toast('حدد تاريخ للعنصر الأول عشان يتربط بيومي'); return; }
     if(typeof dayVisibleBlocks!=='function'){ if(typeof toast==='function')toast('يومي مش متاح دلوقتي'); return; }
-    const blocks=dayVisibleBlocks(date)||[];
-    if(!blocks.length){ if(typeof toast==='function')toast('مفيش بلوك في يومي في التاريخ ده'); return; }
+    const from=startDate&&startDate<=date?startDate:date;
+    const dates=datesBetweenBlk(from,date);
     const minOf=typeof minOfTime==='function'?minOfTime:()=>null;
     const ts=minOf(startTime), te=minOf(endTime);
-    let target=ts!=null?blocks.find(b=>typeof rangesOverlap==='function'&&rangesOverlap(ts,te,minOf(b.start_time)??0,minOf(b.end_time)??1440)):null;
-    if(!target)target=blocks[0];
-    const key=`${target.id}_${date}`, existing=DAY.overrides[key]||{...target};
-    const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
-    const id='blk-'+itemId;
-    const newTask={id,text:title,timeLabel:startTime?`${startTime}${endTime?' → '+endTime:''}`:'',source:itemId,sourceEnt:'قسم مخصص',subtasks:[],color:'#6366f1'};
-    const idx=tasks.findIndex(x=>x.id===id||x.source===itemId); if(idx>=0)tasks[idx]={...tasks[idx],...newTask}; else tasks.push(newTask);
-    DAY.overrides[key]={...existing,tasks};
+    let synced=0, lastTitle='';
+    dates.forEach(d=>{
+      const blocks=dayVisibleBlocks(d)||[]; if(!blocks.length)return;
+      let target=ts!=null?blocks.find(b=>typeof rangesOverlap==='function'&&rangesOverlap(ts,te,minOf(b.start_time)??0,minOf(b.end_time)??1440)):null;
+      if(!target)target=blocks[0];
+      const key=`${target.id}_${d}`, existing=DAY.overrides[key]||{...target};
+      const tasks=Array.isArray(existing.tasks)?[...existing.tasks]:[...(target.tasks||[])];
+      const id='blk-'+itemId;
+      const newTask={id,text:title,timeLabel:startTime?`${startTime}${endTime?' → '+endTime:''}`:'',source:itemId,sourceEnt:'قسم مخصص',subtasks:[],color:'#6366f1'};
+      const idx=tasks.findIndex(x=>x.id===id||x.source===itemId); if(idx>=0)tasks[idx]={...tasks[idx],...newTask}; else tasks.push(newTask);
+      DAY.overrides[key]={...existing,tasks}; synced++; lastTitle=target.title||'';
+    });
+    if(!synced){ if(typeof toast==='function')toast('مفيش بلوك في يومي في الأيام دي'); return; }
     if(typeof daySaveLocal==='function')daySaveLocal();
-    if(typeof toast==='function')toast(`اتربط بيومي داخل بلوك: ${target.title||''} ✅`);
+    if(typeof toast==='function')toast(synced>1?`اتربط بيومي في ${synced} أيام ✅`:`اتربط بيومي داخل بلوك: ${lastTitle} ✅`);
   };
 
   /* ---------------------------------------------------------------
@@ -9467,7 +9495,7 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
           ${it.deadline?`<span style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:20px;background:var(--panel);color:var(--text-m)">🏁 ${esc(it.deadline)}</span>`:''}
           ${it.startTime||it.endTime?`<span style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:20px;background:var(--panel);color:var(--text-m)">⏰ ${esc(it.startTime||'--')}${it.endTime?' → '+esc(it.endTime):''}</span>`:''}
         </div>${it.notes?`<small style="display:block;margin-top:4px;color:var(--text-d)">${esc(it.notes)}</small>`:''}</div>
-        <div class="pro36-row-actions"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button>${it.deadline?`<button title="اربط بيومي" onclick="syncBlockItemToDay('${sec.id}','${blk.id}','${it.id}','${esc(it.text).replace(/'/g,"\\'")}','${it.deadline}','${it.startTime||''}','${it.endTime||''}')">🔗</button>`:''}<button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></div>
+        <div class="pro36-row-actions"><button onclick="openBlockItemEditor('${sec.id}','${blk.id}','${it.id}')">✏️</button>${it.deadline?`<button title="اربط بيومي (في كل أيام التسليم)" onclick="syncBlockItemToDay('${sec.id}','${blk.id}','${it.id}','${esc(it.text).replace(/'/g,"\\'")}','${it.deadline}','${it.startTime||''}','${it.endTime||''}','${it.startDate||''}')">🔗</button>`:''}<button onclick="deleteBlockItem('${sec.id}','${blk.id}','${it.id}')">🗑️</button></div>
       </div>`;
     }).join('')||'<p style="color:var(--text-m);font-size:13px">مفيش مهام لسه</p>';
     return `<div class="pro36-panel" style="--pro-color:${blk.color||sec.color}">${blockHeader(sec,blk,bi)}
@@ -9482,8 +9510,8 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
       <div style="margin:12px 0;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
         <label style="display:block;font-size:12px;font-weight:900;color:var(--text-m);margin-bottom:8px">📅 تاريخ التاسك</label>
         <div class="mg2">
-          <div class="mf-row"><label>من</label><input class="mf-inp" id="biStartDate" type="date" value="${it?.startDate||it?.deadline||''}"></div>
-          <div class="mf-row"><label>إلى (تسليم)</label><input class="mf-inp" id="biDeadline" type="date" value="${it?.deadline||''}"></div>
+          <div class="mf-row"><label>من</label><input class="mf-inp" id="biStartDate" type="date" value="${it?.startDate||it?.deadline||''}" oninput="document.getElementById('biStartDateEcho').textContent=this.value"><small id="biStartDateEcho" style="color:var(--text-m)">${it?.startDate||it?.deadline||''}</small></div>
+          <div class="mf-row"><label>إلى (تسليم)</label><input class="mf-inp" id="biDeadline" type="date" value="${it?.deadline||''}" oninput="document.getElementById('biDeadlineEcho').textContent=this.value"><small id="biDeadlineEcho" style="color:var(--text-m)">${it?.deadline||''}</small></div>
         </div>
       </div>
       <div style="margin-bottom:12px;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid var(--border)">
