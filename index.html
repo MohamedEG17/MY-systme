@@ -3490,10 +3490,11 @@ saveTask=async function(){
 };
 function minOfTime(t){ if(!t)return null; const [h,m]=String(t).slice(0,5).split(':').map(Number); if(!Number.isFinite(h))return null; return h*60+(Number.isFinite(m)?m:0); }
 function rangesOverlap(s1,e1,s2,e2){ if(s1==null)return false; if(e1==null)e1=s1+30; if(e1<=s1)e1=s1+30; return s1<e2 && e1>s2; }
+function localISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function datesBetweenWork(start,end){
   const out=[]; let d=new Date(start+'T00:00:00'); const endD=new Date(end+'T00:00:00');
   if(isNaN(d)||isNaN(endD)||d>endD) return [end];
-  while(d<=endD){ out.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); if(out.length>60)break; }
+  while(d<=endD){ out.push(localISO(d)); d.setDate(d.getDate()+1); if(out.length>60)break; }
   return out;
 }
 /* بيشيل أي أثر قديم للتاسك ده من كل تواريخ يومي — ده أهم إصلاح: من غير
@@ -9293,10 +9294,11 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
   /* ربط أي عنصر بـ "يومي" — لو اتبعتله تاريخ بداية مختلف عن التاريخ (endDate)
      بيتوزع على كل الأيام من البداية للنهاية، مش يوم التسليم بس. بنفس آلية
      autoSyncTaskToDay المستخدمة في شغلي، عشان أي بلوك جديد يقدر "يسمع" في يومي. */
+  function localISOBlk(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   function datesBetweenBlk(start,end){
     const out=[]; let d=new Date(start+'T00:00:00'); const endD=new Date(end+'T00:00:00');
     if(isNaN(d)||isNaN(endD)||d>endD) return [end];
-    while(d<=endD){ out.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); if(out.length>60)break; }
+    while(d<=endD){ out.push(localISOBlk(d)); d.setDate(d.getDate()+1); if(out.length>60)break; }
     return out;
   }
   window.syncBlockItemToDay=function(secId,blkId,itemId,title,date,startTime,endTime,startDate){
@@ -9962,7 +9964,7 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
   };
 
   /* ---------- Habits (تتبع عادات — آخر 7 أيام) ---------- */
-  function last7Dates(){ const out=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); out.push(d.toISOString().slice(0,10)); } return out; }
+  function last7Dates(){ const out=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); out.push(localISOBlk(d)); } return out; }
   function renderHabitsBlock(sec,blk,bi){
     const dates=last7Dates();
     const dayLabel=d=>new Date(d+'T00:00:00').toLocaleDateString('ar-EG',{weekday:'short'});
