@@ -407,6 +407,8 @@ body[data-theme="light"] .day-topbar{background:rgba(240,244,255,.82)}
 .task-item-w.overdue{border-left-color:rgba(239,68,68,.3)}
 .task-chk{width:19px;height:19px;border-radius:6px;flex-shrink:0;border:1.5px solid var(--border2);background:transparent;cursor:pointer;display:grid;place-items:center;font-size:11px;transition:all .15s}
 .task-chk.done{background:var(--success);border-color:var(--success);color:#fff;animation:checkPop .25s var(--ease)}
+.task-status-pill{height:30px;flex-shrink:0;border-radius:10px;border:1.5px solid color-mix(in srgb,var(--st-color) 55%,transparent);background:color-mix(in srgb,var(--st-color) 16%,transparent);color:var(--st-color);cursor:pointer;font-size:11px;font-weight:800;padding:0 6px;max-width:110px}
+.task-status-pill option{color:#0f172a;background:#fff}
 .task-title-w{font-size:12px;font-weight:700;flex:1;min-width:0}
 .task-desc-w{font-size:10px;color:var(--text-d);margin-top:1px}
 .deadline-badge{padding:2px 7px;border-radius:99px;font-size:9px;font-weight:800;flex-shrink:0}
@@ -1598,7 +1600,7 @@ function splitTaskTextTime(txt){ const s=String(txt||''); const parts=s.split(' 
 const markWrite = g => { localWriteTs[g] = Date.now(); if (typeof queueCloudSave === 'function') queueCloudSave(); };
 
 /* ===== STATE ===== */
-const DAY = { blocks:[], overrides:{}, completions:{}, taskChecks:{}, date:new Date(), view:'list', layout:'list', scale:100, editing:null, modalTasks:[], modalLinks:[] };
+const DAY = { blocks:[], overrides:{}, completions:{}, taskChecks:{}, taskStatus:{}, date:new Date(), view:'list', layout:'list', scale:100, editing:null, modalTasks:[], modalLinks:[] };
 const WORK = { data:{company:[],client:[]}, tab:'dash', layout:'list' };
 const FIN = { banks:[], gold:[], salary:[], expenses:[], subscriptions:[], debts:[], increases:[], tab:'banks', layout:'list' };
 const GOALS = { items:[], sections:[], activeSection:'all', layout:'list' };
@@ -1890,7 +1892,7 @@ function stateSnapshot() {
   return JSON.parse(JSON.stringify({
     version: 10,
     saved_at: new Date().toISOString(),
-    day: { blocks:(DAY.blocks||[]).map(dayNorm), overrides:DAY.overrides||{}, completions:DAY.completions||{}, taskChecks:DAY.taskChecks||{} },
+    day: { blocks:(DAY.blocks||[]).map(dayNorm), overrides:DAY.overrides||{}, completions:DAY.completions||{}, taskChecks:DAY.taskChecks||{}, taskStatus:DAY.taskStatus||{} },
     work: WORK.data || {company:[],client:[]},
     fin: { banks:FIN.banks||[], gold:FIN.gold||[], salary:FIN.salary||[], expenses:FIN.expenses||[], subscriptions:FIN.subscriptions||[], debts:FIN.debts||[], increases:FIN.increases||[] },
     goals: { items:GOALS.items||[], sections:GOALS.sections||[] },
@@ -1902,6 +1904,7 @@ function saveAllLocalRaw() {
   localStorage.setItem('ms_day_ov',JSON.stringify(DAY.overrides||{}));
   localStorage.setItem('ms_day_comp',JSON.stringify(DAY.completions||{}));
   localStorage.setItem('ms_day_tc',JSON.stringify(DAY.taskChecks||{}));
+  localStorage.setItem('ms_day_ts',JSON.stringify(DAY.taskStatus||{}));
   localStorage.setItem('ms_work',JSON.stringify(WORK.data||{company:[],client:[]}));
   localStorage.setItem('ms_fin',JSON.stringify({banks:FIN.banks||[],gold:FIN.gold||[],salary:FIN.salary||[],expenses:FIN.expenses||[],subscriptions:FIN.subscriptions||[],debts:FIN.debts||[],increases:FIN.increases||[]}));
   localStorage.setItem('ms_goals',JSON.stringify({items:GOALS.items||[],sections:GOALS.sections||[]}));
@@ -1912,7 +1915,7 @@ function applyRemoteState(data) {
   try {
     const d=data.day||{};
     DAY.blocks=Array.isArray(d.blocks)?d.blocks.map(dayNorm):[];
-    DAY.overrides=d.overrides||{}; DAY.completions=d.completions||{}; DAY.taskChecks=d.taskChecks||{};
+    DAY.overrides=d.overrides||{}; DAY.completions=d.completions||{}; DAY.taskChecks=d.taskChecks||{}; DAY.taskStatus=d.taskStatus||{};
     const w=data.work||{}; WORK.data={company:Array.isArray(w.company)?w.company:[], client:Array.isArray(w.client)?w.client:[]};
     const f=data.fin||{}; FIN.banks=f.banks||[]; FIN.gold=f.gold||[]; FIN.salary=f.salary||[]; FIN.expenses=f.expenses||[]; FIN.subscriptions=f.subscriptions||[]; FIN.debts=f.debts||[]; FIN.increases=f.increases||[];
     const g=data.goals||{}; GOALS.items=Array.isArray(g.items)?g.items:[]; GOALS.sections=Array.isArray(g.sections)?g.sections:[];
@@ -1978,6 +1981,7 @@ async function loadLocal() {
   DAY.overrides = JSON.parse(localStorage.getItem('ms_day_ov')||'{}');
   DAY.completions = JSON.parse(localStorage.getItem('ms_day_comp')||'{}');
   DAY.taskChecks = JSON.parse(localStorage.getItem('ms_day_tc')||'{}');
+  DAY.taskStatus = JSON.parse(localStorage.getItem('ms_day_ts')||'{}');
   DAY.blocks = b.length ? b : [
     dayNorm({id:uid(),title:'وقت العمل',notes:'',start_time:'09:00',end_time:'17:00',color:'#6366f1',repeat_mode:'everyday'}),
     dayNorm({id:uid(),title:'راحة',notes:'',start_time:'13:00',end_time:'14:00',color:'#22c55e',repeat_mode:'everyday'}),
@@ -2227,6 +2231,19 @@ function dayNorm(b) {
 }
 function dayStatus(bid, d=dateKey(DAY.date)) { return DAY.completions[`${bid}_${d}`]||'pending'; }
 function dayTaskChecked(bid, tid, d=dateKey(DAY.date)) { return !!DAY.taskChecks[`${bid}_${d}_${tid}`]; }
+function dayTaskStatusOf(bid, tid, d=dateKey(DAY.date)) { const key=`${bid}_${d}_${tid}`; return DAY.taskStatus[key] || (DAY.taskChecks[key]?'done':'not_started'); }
+async function daySetTaskStatus(bid, tid, status) {
+  const d=dateKey(DAY.date); const key=`${bid}_${d}_${tid}`;
+  DAY.taskStatus[key]=status; DAY.taskChecks[key]=(status==='done');
+  daySaveLocal();
+  if(sb) try { await sb.from('task_checks').upsert({user_id:OWNER,recurring_block_id:bid,task_id:tid,check_date:d,is_checked:DAY.taskChecks[key],updated_at:new Date().toISOString()},{onConflict:'recurring_block_id,task_id,check_date'}); } catch(_){}
+  renderDay(); toast(taskStatusMeta(status)[2]+' '+taskStatusMeta(status)[1]);
+}
+async function cycleDayTaskStatus(bid, tid) {
+  const d=dateKey(DAY.date); const cur=dayTaskStatusOf(bid,tid,d); const idx=TASK_STATUSES.findIndex(s=>s[0]===cur);
+  const next=TASK_STATUSES[(idx+1)%TASK_STATUSES.length][0];
+  await daySetTaskStatus(bid,tid,next);
+}
 function dayVisibleBlocks(d=dateKey(DAY.date)) {
   const dd=new Date(d+'T00:00:00'), di=dd.getDay();
   return DAY.blocks.filter(t=>t.is_active!==false).map(t=>{
@@ -2245,6 +2262,7 @@ function daySaveLocal() {
   localStorage.setItem('ms_day_ov',JSON.stringify(DAY.overrides));
   localStorage.setItem('ms_day_comp',JSON.stringify(DAY.completions));
   localStorage.setItem('ms_day_tc',JSON.stringify(DAY.taskChecks));
+  localStorage.setItem('ms_day_ts',JSON.stringify(DAY.taskStatus||{}));
   touchCloud();
 }
 async function dayLoad() {
@@ -2578,7 +2596,7 @@ function workTaskItemHtml(t, showActions=false) {
   const ov=!t.completed&&t.deadline&&daysUntil(t.deadline)<0;
   const td=!t.completed&&t.deadline&&daysUntil(t.deadline)===0;
   return `<div class="task-item-w ${t.completed?'done':''} ${ov?'overdue':''}" style="--entity-color:${color}">
-    <div class="task-chk ${t.completed?'done':''}" onclick="workToggleTask('${t.id}','${ent?.id||''}')">${t.completed?'✓':''}</div>
+    ${statusPillHtml(taskStatusOf(t),'workSetTaskStatus',[t.id,ent?.id||''])}
     <div style="flex:1;min-width:0">
       <div class="task-title-w">${t.icon?`<span class="task-icon-dot" style="--entity-color:${rowColor}">${esc(t.icon)}</span>`:''}${esc(t.title)}</div>
       <div style="display:flex;gap:5px;margin-top:3px;flex-wrap:wrap;align-items:center">
@@ -2642,7 +2660,7 @@ function workTaskFullHtml(t, eid, isFreelance, entColor='#6366f1') {
   const dTxt=t.deadline?(ov?`متأخر ${Math.abs(daysUntil(t.deadline))}y`:td?'اليوم 🔥':daysUntil(t.deadline)+'y'):'';
   const links=(Array.isArray(t.links)?t.links:[]).slice(0,3);
   return `<div class="task-item-w ${t.completed?'done':''} ${ov?'overdue':''}" style="--entity-color:${rowColor}">
-    <div class="task-chk ${t.completed?'done':''}" onclick="workToggleTask('${t.id}','${eid}')">${t.completed?'✓':''}</div>
+    ${statusPillHtml(taskStatusOf(t),'workSetTaskStatus',[t.id,eid])}
     <div style="flex:1;min-width:0">
       <div class="task-title-w">${t.icon?`<span class="task-icon-dot" style="--entity-color:${rowColor}">${esc(t.icon)}</span>`:''}${esc(t.title)}</div>
       ${t.description?`<div class="task-desc-w">${esc(t.description)}</div>`:''}
@@ -2825,12 +2843,33 @@ function autoSyncTaskToDay(task, ent) {
   markWrite('day');
 }
 
-async function workToggleTask(tid, eid) {
+/* نظام حالة التاسك المتقدم (بدل تشيك بوكس بسيط): لم يبدأ / قيد التنفيذ /
+   معلّق / تم / ملغي. بنحافظ على t.completed (true بس لما الحالة "تم")
+   عشان كل حسابات "المتأخر/الإحصائيات/الدخل" القديمة اللي بتعتمد على
+   completed تفضل شغالة صح من غير ما نلمسها في كل مكان. */
+const TASK_STATUSES=[['not_started','⬜','لم يبدأ','#94a3b8'],['in_progress','🔵','قيد التنفيذ','#3b82f6'],['on_hold','⏸️','معلّق','#f59e0b'],['done','✅','تم','#22c55e'],['cancelled','❌','ملغي','#ef4444']];
+function taskStatusOf(t){ return t.status || (t.completed?'done':'not_started'); }
+function taskStatusMeta(status){ return TASK_STATUSES.find(s=>s[0]===status)||TASK_STATUSES[0]; }
+function statusPillHtml(status,fnName,args=[]){
+  const color=taskStatusMeta(status)[3];
+  const argsStr=args.map(a=>`'${String(a).replace(/'/g,"\\'")}'`).join(',');
+  const call=`${fnName}(${argsStr}${argsStr?',':''}this.value)`;
+  return `<select class="task-status-pill" style="--st-color:${color}" onchange="${call}" onclick="event.stopPropagation()" title="اختار حالة التاسك">
+    ${TASK_STATUSES.map(([k,icon,label])=>`<option value="${k}" ${k===status?'selected':''}>${icon} ${label}</option>`).join('')}
+  </select>`;
+}
+async function workSetTaskStatus(tid, eid, status) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); const task=ent?.tasks?.find(t=>t.id===tid); if(!task)return;
-  task.completed=!task.completed; task.completed_at=task.completed?new Date().toISOString():null;
+  task.status=status; task.completed=(status==='done'); task.completed_at=task.completed?new Date().toISOString():null;
   workSaveLocal(); markWrite('work');
   if(sb)try{await sb.from('tasks').update({completed:task.completed,completed_at:task.completed_at,updated_at:new Date().toISOString()}).eq('id',tid);}catch(_){}
-  renderWork(); updateBadges(); toast(task.completed?'✅ منجز!':'تم إلغاء الإنجاز');
+  renderWork(); updateBadges(); toast(taskStatusMeta(status)[2]+' '+taskStatusMeta(status)[1]);
+}
+async function workToggleTask(tid, eid) {
+  const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); const task=ent?.tasks?.find(t=>t.id===tid); if(!task)return;
+  const cur=taskStatusOf(task); const idx=TASK_STATUSES.findIndex(s=>s[0]===cur);
+  const next=TASK_STATUSES[(idx+1)%TASK_STATUSES.length][0];
+  await workSetTaskStatus(tid,eid,next);
 }
 async function workDelTask(tid, eid) {
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===eid); if(ent)ent.tasks=ent.tasks.filter(t=>t.id!==tid);
@@ -3543,7 +3582,7 @@ const __dayStatusV4=dayStatus;
 dayStatus=function(bid,d=dateKey(DAY.date)){ const explicit=DAY.completions[`${bid}_${d}`]; if(explicit && explicit!=='pending')return explicit; const b=dayVisibleBlocks(d).find(x=>x.id===bid); if(b && isBlockPast(b,d))return 'missed'; return explicit||'pending'; };
 renderBlock=function(b){
   const st=dayStatus(b.id), stCls=st==='done'?'done':st==='missed'?'missed':''; const c=b.color||'#6366f1';
-  const tasks=(b.tasks||[]).map(t=>{ const chk=dayTaskChecked(b.id,t.id); const split=splitTaskTextTime(t.text); const title=split.title; const ttime=t.timeLabel||split.time||''; const subs=(t.subtasks||[]).map(sta=>{const sid=sta.id||(`${t.id}-sub-${String(sta.text||'').slice(0,8)}`); const sch=dayTaskChecked(b.id,sid); return `<label class="block-subtask-item"><input type="checkbox" ${sch?'checked':''} onchange="toggleTask('${b.id}','${sid}',this.checked)"><span class="${sch?'checked':''}">${esc(sta.text||'')}</span></label>`;}).join(''); return `<div class="block-task-item"><div class="block-task-wrap"><div class="block-task-main"><input type="checkbox" ${chk?'checked':''} onchange="toggleTask('${b.id}','${t.id}',this.checked)"><span class="block-task-title ${chk?'checked':''}">${esc(title)}</span>${ttime?`<span class="block-task-time">${esc(ttime)}</span>`:''}${t.sourceEnt?`<span class="block-task-source">💼 ${esc(t.sourceEnt)}</span>`:t.source?`<span class="block-task-source">📌 من شغلي</span>`:''}</div>${subs?`<div class="block-subtask-list">${subs}</div>`:''}</div></div>`; }).join('');
+  const tasks=(b.tasks||[]).map(t=>{ const chk=dayTaskChecked(b.id,t.id); const tSt=dayTaskStatusOf(b.id,t.id); const split=splitTaskTextTime(t.text); const title=split.title; const ttime=t.timeLabel||split.time||''; const subs=(t.subtasks||[]).map(sta=>{const sid=sta.id||(`${t.id}-sub-${String(sta.text||'').slice(0,8)}`); const sSt=dayTaskStatusOf(b.id,sid); const sch=dayTaskChecked(b.id,sid); return `<label class="block-subtask-item">${statusPillHtml(sSt,'daySetTaskStatus',[b.id,sid])}<span class="${sch?'checked':''}">${esc(sta.text||'')}</span></label>`;}).join(''); return `<div class="block-task-item"><div class="block-task-wrap"><div class="block-task-main">${statusPillHtml(tSt,'daySetTaskStatus',[b.id,t.id])}<span class="block-task-title ${chk?'checked':''}">${esc(title)}</span>${ttime?`<span class="block-task-time">${esc(ttime)}</span>`:''}${t.sourceEnt?`<span class="block-task-source">💼 ${esc(t.sourceEnt)}</span>`:t.source?`<span class="block-task-source">📌 من شغلي</span>`:''}</div>${subs?`<div class="block-subtask-list">${subs}</div>`:''}</div></div>`; }).join('');
   const links=(b.links||[]).map(l=>`<a class="link-chip" href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.name||l.url)}</a>`).join('');
   const fromH=parseInt((b.start_time||'09:00').split(':')[0]); const fromM=(b.start_time||'09:00').split(':')[1]; const toH=parseInt((b.end_time||'10:00').split(':')[0]); const toM=(b.end_time||'10:00').split(':')[1];
   const fromPer=fromH<12?'am':'pm', toPer=toH<12?'am':'pm', from12=fromH%12||12, to12=toH%12||12;
