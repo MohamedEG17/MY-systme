@@ -3,6 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- ===== V40 EARLY NAV PAINT GUARD: prevent transient dynamic sections from ever painting ===== -->
+<script id="nav-paint-guard-v40-early">
+document.documentElement.classList.add('ms-nav-booting-v40');
+</script>
+<style id="nav-paint-guard-v40-style">
+/* Old dynamic renderers can briefly add/remove sidebar items while the app boots.
+   Keep ONLY those generated items out of paint until the final state is settled. */
+html.ms-nav-booting-v40 .sidebar .nav-item[data-mod^="dyn_"],
+html.ms-nav-booting-v40 #bottomNav .bnav-item[data-mod^="dyn_"],
+html.ms-nav-booting-v40 .sidebar [data-dyn-nav-v13],
+html.ms-nav-booting-v40 .sidebar [data-dyn-nav-v14],
+html.ms-nav-booting-v40 .sidebar [data-dyn-nav-v18],
+html.ms-nav-booting-v40 .sidebar [data-dyn-nav-v28],
+html.ms-nav-booting-v40 .sidebar [data-dyn-nav-v31],
+html.ms-nav-booting-v40 #bottomNav [data-dyn-nav-v13],
+html.ms-nav-booting-v40 #bottomNav [data-dyn-nav-v14],
+html.ms-nav-booting-v40 #bottomNav [data-dyn-nav-v18],
+html.ms-nav-booting-v40 #bottomNav [data-dyn-nav-v28],
+html.ms-nav-booting-v40 #bottomNav [data-dyn-nav-v31]{
+  display:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+/* Do not animate generated navigation on its first stable paint. */
+html.ms-nav-first-paint-v40 .sidebar .nav-item[data-mod^="dyn_"],
+html.ms-nav-first-paint-v40 #bottomNav .bnav-item[data-mod^="dyn_"]{
+  animation:none!important;
+  transition:none!important;
+}
+</style>
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MY System">
 <meta name="theme-color" content="#080c18">
@@ -3530,7 +3561,7 @@ saveTask=async function(){
   const subtasks=tSubtasks.filter(st=>String(st.text||'').trim()).map(st=>({id:st.id||'sub-'+uid().slice(0,8),text:st.text.trim()}));
   const tData={id:editingTaskId||uid(),title,description:document.getElementById('tDesc').value.trim()||null,start_date:document.getElementById('tStartDate')?.value||null,deadline:document.getElementById('tDeadline').value||dateKey(),start_time:document.getElementById('tStart')?.value||null,end_time:document.getElementById('tEnd')?.value||null,priority:document.getElementById('tPriority').value,price:isFreelanceTask?(+document.getElementById('tPrice')?.value||null):null,color:document.getElementById('tColor')?.value || '#6366f1',icon:document.getElementById('tIcon')?.value.trim()||'',links,subtasks,completed:false,day_synced:false};
   const all=WORK.data.company.concat(WORK.data.client); const ent=all.find(e=>e.id===editingEntId); if(!ent)return;
-  if(editingTaskId){ const idx=ent.tasks.findIndex(t=>t.id===editingTaskId); if(idx>=0){tData.completed=ent.tasks[idx].completed;tData.completed_at=ent.tasks[idx].completed_at;ent.tasks[idx]=tData;} }
+  if(editingTaskId){ const idx=ent.tasks.findIndex(t=>t.id===editingTaskId); if(idx>=0){tData.completed=ent.tasks[idx].completed;tData.completed_at=ent.tasks[idx].completed_at;tData.status=ent.tasks[idx].status||(ent.tasks[idx].completed?'done':'not_started');ent.tasks[idx]=tData;} }
   else ent.tasks.push(tData);
   if(sb){ try{ if(editingTaskId) await sb.from('tasks').update({title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,color:tData.color,icon:tData.icon}).eq('id',editingTaskId); else { const {data:ins}=await sb.from('tasks').insert({entity_id:editingEntId,title:tData.title,description:tData.description,deadline:tData.deadline,priority:tData.priority,price:tData.price,links:tData.links,color:tData.color,icon:tData.icon,day_synced:false}).select().single(); if(ins){tData.id=ins.id;} } }catch(_){} }
   if(!editingTaskId) autoSyncTaskToDay(tData, ent); else autoSyncTaskToDay(tData, ent, true);
@@ -3801,7 +3832,7 @@ boot();
           if(Array.isArray(data.dynamicSections.sections)) localStorage.setItem(DYN_KEY,JSON.stringify(data.dynamicSections.sections));
           if(data.dynamicSections.nav) localStorage.setItem(NAV_KEY,JSON.stringify(data.dynamicSections.nav));
         }
-        setTimeout(()=>{renderDynamicShell();applyNavLabels();},50);
+        setTimeout(()=>{if(typeof window.renderDynamicShellV14==='function')window.renderDynamicShellV14();applyNavLabels();},50);
       }
     }
     const oldSaveRaw=window.saveAllLocalRaw;
@@ -4043,7 +4074,7 @@ boot();
 
   patchCloudState();
   patchGo();
-  setTimeout(()=>{renderDynamicShell();applyNavLabels();},120);
+  setTimeout(()=>{if(typeof window.renderDynamicShellV14==='function')window.renderDynamicShellV14();applyNavLabels();},120);
 })();
 </script>
 <style id="system-dynamic-sections-v13-style">
@@ -5372,7 +5403,7 @@ button[onclick*="deletePlanV14"]:not(.btn-danger){display:none!important}
     window.renderDay=rd;
   }
 
-  setTimeout(()=>{dedupeDynamicSectionsV18(false); renderDynamicShellV18(); cleanDuplicateNavDOM(); if(cur==='day'&&typeof renderDay==='function')renderDay();},400);
+  setTimeout(()=>{dedupeDynamicSectionsV18(false); if(typeof window.renderDynamicShellV14==='function')window.renderDynamicShellV14(); cleanDuplicateNavDOM(); if(cur==='day'&&typeof renderDay==='function')renderDay();},400);
   setTimeout(cleanDuplicateNavDOM,1200);
 })();
 </script>
@@ -6910,7 +6941,7 @@ body[data-dyn-stabilizing="1"] [data-dyn-module-v28]{visibility:hidden!important
 
   const mo=new MutationObserver(()=>cleanupDynDom());
   setTimeout(()=>{const nav=document.querySelector('.sidebar .nav-items'); if(nav)mo.observe(nav,{childList:true}); const bn=document.getElementById('bottomNav'); if(bn)mo.observe(bn,{childList:true});},300);
-  setTimeout(()=>{renderShell(); cleanupDynDom(); if(cur&&String(cur).startsWith('dyn_'))renderDynamicBoardV28(String(cur).slice(4));},120);
+  setTimeout(()=>{if(typeof window.renderDynamicShellV14==='function')window.renderDynamicShellV14(); cleanupDynDom(); if(cur&&String(cur).startsWith('dyn_'))renderDynamicBoardV28(String(cur).slice(4));},120);
   setTimeout(()=>{cleanupDynDom();document.body.removeAttribute('data-dyn-stabilizing')},900);
 })();
 </script>
@@ -10261,11 +10292,15 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
 
   function loadHabitFrame(){
     const frame=document.getElementById('habit36Frame'); if(!frame)return;
-    let html=decodeHabitHtml();
     const currentData=localStorage.getItem(HABIT_KEY)||'';
     const isLight=document.body.getAttribute('data-theme')==='light';
+    const sig=(isLight?'light':'dark')+'|'+currentData;
+    if(frame.dataset.msLoadSig===sig && frame.dataset.msLoaded==='1') return;
+    frame.dataset.msLoadSig=sig;
+    let html=decodeHabitHtml();
     const initScript=`<script>window.__MS_INITIAL_DATA__=${JSON.stringify(currentData)};window.__MS_FORCE_THEME__=${JSON.stringify(isLight?'light':'dark')};window.__MS_FORCE_ACCENT__='#6366f1';window.__MS_FORCE_ACCENT2__='#7c3aed';<\/script>`;
     html=html.replace('<head>','<head>\n'+initScript);
+    frame.onload=()=>{frame.dataset.msLoaded='1';};
     frame.srcdoc=html;
   }
   // لو المستخدم بدّل الوضع الداكن/الفاتح في السيستم وهو فاتح الأداة، نعيد تحميلها بنفس الثيم الجديد
@@ -10314,9 +10349,12 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
     window.applyRemoteState=function(data){
       prevApplyHabit36(data);
       if(typeof data?.habit36==='string'){
-        localStorage.setItem(HABIT_KEY, data.habit36);
-        const frame=document.getElementById('habit36Frame');
-        if(frame && document.getElementById('mod-habit36')?.classList.contains('active')) loadHabitFrame();
+        const prev=localStorage.getItem(HABIT_KEY)||'';
+        if(data.habit36!==prev){
+          localStorage.setItem(HABIT_KEY, data.habit36);
+          const frame=document.getElementById('habit36Frame');
+          if(frame && document.getElementById('mod-habit36')?.classList.contains('active')) loadHabitFrame();
+        }
       }
     };
   }
@@ -10368,12 +10406,16 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
 
   function loadMedFrame(){
     const frame=document.getElementById('medschedFrame'); if(!frame)return;
-    let html=decodeMedHtml();
     const currentData=localStorage.getItem(MED_KEY)||'';
     const isLight=document.body.getAttribute('data-theme')==='light';
+    const sig=(isLight?'light':'dark')+'|'+currentData;
     frame.style.background=isLight?'#f0f4ff':'#0E1512';
+    if(frame.dataset.msLoadSig===sig && frame.dataset.msLoaded==='1') return;
+    frame.dataset.msLoadSig=sig;
+    let html=decodeMedHtml();
     const initScript=`<script>window.__MS_INITIAL_DATA__=${JSON.stringify(currentData)};window.__MS_FORCE_THEME__=${JSON.stringify(isLight?'light':'dark')};<\/script>`;
     html=html.replace('<head>','<head>\n'+initScript);
+    frame.onload=()=>{frame.dataset.msLoaded='1';};
     frame.srcdoc=html;
   }
   const prevToggleThemeMed=window.toggleTheme;
@@ -10419,8 +10461,11 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
     window.applyRemoteState=function(data){
       prevApplyMed(data);
       if(typeof data?.medsched==='string'){
-        localStorage.setItem(MED_KEY, data.medsched);
-        if(document.getElementById('mod-medsched')?.classList.contains('active')) loadMedFrame();
+        const prev=localStorage.getItem(MED_KEY)||'';
+        if(data.medsched!==prev){
+          localStorage.setItem(MED_KEY, data.medsched);
+          if(document.getElementById('mod-medsched')?.classList.contains('active')) loadMedFrame();
+        }
       }
     };
   }
@@ -10429,5 +10474,210 @@ body[data-theme="light"] .all38-hero,body[data-theme="light"] .all38-hero *,body
 })();
 </script>
 
+
+<style id="status-range-and-flicker-fix-v39">
+.module[id^="mod-dyn_"],#mod-medsched,#mod-habit36,#mod-custom_hub{animation:none!important}
+#mod-medsched iframe,#mod-habit36 iframe{display:block;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(0)}
+.sidebar .nav-items,.bottom-nav{overflow-anchor:none}
+</style>
+<script id="status-range-and-flicker-fix-v39-script">
+(function(){
+  function keyParts(k){
+    if(typeof dayOverrideKeyParts==='function') return dayOverrideKeyParts(k);
+    const m=String(k||'').match(/^(.*)_(\d{4}-\d{2}-\d{2})$/);
+    return m?{bid:m[1],date:m[2]}:null;
+  }
+  function findDayIdentity(bid,tid,date){
+    const blocks=(typeof dayVisibleBlocks==='function'?dayVisibleBlocks(date):[])||[];
+    const b=blocks.find(x=>x.id===bid);
+    if(b){
+      for(const t of (b.tasks||[])){
+        if(String(t.id)===String(tid)) return {kind:'task',source:t.source||null,taskId:t.id};
+        for(const st of (t.subtasks||[])){
+          if(String(st.id)===String(tid)) return {kind:'subtask',source:t.source||st.source||null,taskId:t.id,subId:st.id};
+        }
+      }
+    }
+    const found=typeof findWorkTaskByAnyId==='function'?findWorkTaskByAnyId(tid):null;
+    if(found?.type==='task') return {kind:'task',source:found.task.id,taskId:'w-'+found.task.id};
+    if(found?.type==='subtask') return {kind:'subtask',source:found.task.id,taskId:'w-'+found.task.id,subId:`${found.task.id}-sub-${found.sub.id}`};
+    return {kind:'task',source:null,taskId:tid};
+  }
+  function sameMain(dt,identity){
+    if(identity.source) return String(dt.source||'')===String(identity.source);
+    return String(dt.id||'')===String(identity.taskId||'');
+  }
+  function applyStatusToAllDayOccurrences(identity,status){
+    let changed=0;
+    Object.entries(DAY.overrides||{}).forEach(([k,ov])=>{
+      const p=keyParts(k); if(!p||!ov)return;
+      for(const dt of (ov.tasks||[])){
+        if(!sameMain(dt,identity)) continue;
+        if(identity.kind==='task'){
+          const key=`${p.bid}_${p.date}_${dt.id}`;
+          DAY.taskStatus[key]=status;
+          DAY.taskChecks[key]=(status==='done');
+          changed++;
+        }else{
+          for(const st of (dt.subtasks||[])){
+            const exact=String(st.id||'')===String(identity.subId||'');
+            if(exact){
+              const key=`${p.bid}_${p.date}_${st.id}`;
+              DAY.taskStatus[key]=status;
+              DAY.taskChecks[key]=(status==='done');
+              changed++;
+            }
+          }
+        }
+      }
+    });
+    return changed;
+  }
+  function updateWorkFromDay(tid,status){
+    const found=typeof findWorkTaskByAnyId==='function'?findWorkTaskByAnyId(tid):null;
+    if(!found)return false;
+    const obj=found.type==='subtask'?found.sub:found.task;
+    if(!obj)return false;
+    obj.status=status;
+    obj.completed=(status==='done');
+    obj.completed_at=obj.completed?new Date().toISOString():null;
+    if(typeof workSaveLocal==='function')workSaveLocal();
+    if(typeof markWrite==='function')markWrite('work');
+    return true;
+  }
+  function syncWorkStatusToDay(workTaskId,status,subId=null){
+    const identity=subId
+      ? {kind:'subtask',source:workTaskId,taskId:'w-'+workTaskId,subId:`${workTaskId}-sub-${subId}`}
+      : {kind:'task',source:workTaskId,taskId:'w-'+workTaskId};
+    const changed=applyStatusToAllDayOccurrences(identity,status);
+    if(changed){
+      if(typeof daySaveLocal==='function')daySaveLocal();
+      if(typeof markWrite==='function')markWrite('day');
+    }
+    return changed;
+  }
+
+  window.daySetTaskStatus=async function(bid,tid,status){
+    const d=dateKey(DAY.date);
+    const identity=findDayIdentity(bid,tid,d);
+    const changed=applyStatusToAllDayOccurrences(identity,status);
+    if(!changed){
+      const key=`${bid}_${d}_${tid}`;
+      DAY.taskStatus[key]=status;
+      DAY.taskChecks[key]=(status==='done');
+    }
+    updateWorkFromDay(tid,status);
+    if(typeof daySaveLocal==='function')daySaveLocal();
+    if(typeof markWrite==='function')markWrite('day');
+    if(typeof renderDay==='function')renderDay();
+    if(typeof cur!=='undefined' && cur==='work' && typeof renderWork==='function')renderWork();
+    if(typeof cur!=='undefined' && cur==='hub' && typeof renderHub==='function')renderHub();
+    if(typeof updateBadges==='function')updateBadges();
+    if(typeof toast==='function')toast(taskStatusMeta(status)[2]+' '+taskStatusMeta(status)[1]+' — على كل أيام التاسك');
+  };
+
+  window.workSetTaskStatus=async function(tid,eid,status){
+    const all=(WORK?.data?.company||[]).concat(WORK?.data?.client||[]);
+    const ent=all.find(e=>e.id===eid);
+    const task=ent?.tasks?.find(t=>t.id===tid);
+    if(!task)return;
+    task.status=status;
+    task.completed=(status==='done');
+    task.completed_at=task.completed?new Date().toISOString():null;
+    syncWorkStatusToDay(task.id,status,null);
+    if(typeof workSaveLocal==='function')workSaveLocal();
+    if(typeof markWrite==='function')markWrite('work');
+    if(typeof renderWork==='function')renderWork();
+    if(typeof cur!=='undefined' && cur==='day' && typeof renderDay==='function')renderDay();
+    if(typeof cur!=='undefined' && cur==='hub' && typeof renderHub==='function')renderHub();
+    if(typeof updateBadges==='function')updateBadges();
+    if(typeof toast==='function')toast(taskStatusMeta(status)[2]+' '+taskStatusMeta(status)[1]+' — على كل أيام التاسك');
+  };
+
+  const prevSyncChecks=window.syncWorkTaskChecksIntoDay;
+  window.syncWorkTaskChecksIntoDay=function(workTaskId,checked,subId=null){
+    const result=typeof prevSyncChecks==='function'?prevSyncChecks(workTaskId,checked,subId):false;
+    syncWorkStatusToDay(workTaskId,checked?'done':'not_started',subId);
+    return result;
+  };
+})();
+</script>
+
+
+<script id="nav-paint-guard-v40-release">
+/* ===== V40: release dynamic sidebar only after boot/sync/render churn has settled ===== */
+(function(){
+  const root=document.documentElement;
+  const started=Date.now();
+  let released=false, quietTimer=0, hardTimer=0, pollTimer=0;
+  let navObserver=null, syncObserver=null;
+
+  function syncIsSettled(){
+    const dot=document.getElementById('syncDot');
+    if(!dot) return true;
+    return !dot.classList.contains('loading');
+  }
+
+  function cleanup(){
+    try{navObserver&&navObserver.disconnect()}catch(_){}
+    try{syncObserver&&syncObserver.disconnect()}catch(_){}
+    clearTimeout(quietTimer); clearTimeout(hardTimer); clearInterval(pollTimer);
+  }
+
+  function finalRender(){
+    try{
+      if(typeof window.renderDynamicShellV14==='function') window.renderDynamicShellV14();
+      else if(typeof window.renderDynamicShellV18==='function') window.renderDynamicShellV18();
+      else if(typeof window.renderDynamicShell==='function') window.renderDynamicShell();
+    }catch(_){}
+    try{
+      if(typeof window.removeDuplicateDynNavV31==='function') window.removeDuplicateDynNavV31();
+    }catch(_){}
+  }
+
+  function release(force){
+    if(released) return;
+    // Normally wait for the first cloud connect/pull to finish. Hard fallback avoids
+    // keeping the menu hidden forever on a broken/offline connection.
+    if(!force && !syncIsSettled() && Date.now()-started<5500) return schedule();
+    released=true;
+    finalRender();
+    root.classList.add('ms-nav-first-paint-v40');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      root.classList.remove('ms-nav-booting-v40');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.remove('ms-nav-first-paint-v40')));
+      cleanup();
+    }));
+  }
+
+  function schedule(){
+    if(released) return;
+    clearTimeout(quietTimer);
+    // Every add/remove from an old renderer resets the quiet period, so none of
+    // the transient versions can become visible.
+    quietTimer=setTimeout(()=>release(false),360);
+  }
+
+  function start(){
+    const nav=document.querySelector('.sidebar .nav-items');
+    const bottom=document.getElementById('bottomNav');
+    const syncDot=document.getElementById('syncDot');
+    navObserver=new MutationObserver(schedule);
+    if(nav) navObserver.observe(nav,{childList:true});
+    if(bottom) navObserver.observe(bottom,{childList:true});
+    if(syncDot){
+      syncObserver=new MutationObserver(schedule);
+      syncObserver.observe(syncDot,{attributes:true,attributeFilter:['class']});
+    }
+    // Poll is cheap and covers text/class changes made by sync code that don't touch nav.
+    pollTimer=setInterval(schedule,220);
+    hardTimer=setTimeout(()=>release(true),5800);
+    schedule();
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
+})();
+</script>
 </body>
 </html>
